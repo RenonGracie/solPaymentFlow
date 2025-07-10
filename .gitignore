@@ -2,16 +2,10 @@ node_modules
 solPayments/node_modules
 **/node_modules
 .DS_Store
-solPayments/node_modules
-solPayments/.next
-solPayments/dist
-solPayments/build
-solPayments/out
-solPayments/public
-solPayments/src
-solPayments/test
-solPayments/types
+
 
 solPayments/node_modulessolPayments/node_modules/
 solPayments/.next/
 
+solPayments/node_modules/
+solPayments/.next/
