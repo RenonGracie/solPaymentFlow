@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "Sol Health Payments",
   description: "Payments for Sol Health",
 };
-
+ 
 export default function RootLayout({
   children,
 }: Readonly<{
