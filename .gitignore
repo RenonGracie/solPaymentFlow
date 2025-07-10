@@ -9,3 +9,6 @@ solPayments/.next/
 
 solPayments/node_modules/
 solPayments/.next/ 
+
+# Ignore TypeScript incremental build info
+solPayments/tsconfig.tsbuildinfo 
