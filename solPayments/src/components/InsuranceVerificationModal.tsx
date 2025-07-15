@@ -8,7 +8,6 @@ import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
 
 type ModalState =
-  | "provider-selection"
   | "insurance-form"
   | "verifying"
   | "verification-success"
@@ -28,7 +27,7 @@ export default function InsuranceVerificationModal({
   onContinueToQuestionnaire,
   initialState
 }: InsuranceVerificationModalProps) {
-  const [modalState, setModalState] = useState<ModalState>(initialState ?? "provider-selection");
+  const [modalState, setModalState] = useState<ModalState>(initialState ?? "insurance-form");
   const [selectedProvider, setSelectedProvider] = useState<InsuranceProvider | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -41,7 +40,7 @@ export default function InsuranceVerificationModal({
   // Reset modal state when it opens
   useEffect(() => {
     if (isOpen) {
-      setModalState("provider-selection");
+      setModalState("insurance-form");
       setSelectedProvider(null);
       setFormData({
         firstName: "",
@@ -107,77 +106,11 @@ export default function InsuranceVerificationModal({
         {/* Add transition container for smooth animations */}
         <div className="transition-all duration-500 ease-in-out">
 
-        {/* Provider Selection State */}
-        {modalState === "provider-selection" && (
-          <div className="space-y-8 py-6 animate-in fade-in-0 duration-500">
-            {/* Title */}
-            <div className="text-center space-y-4">
-              <h1 className="very-vogue-title text-4xl text-gray-800" style={{ fontSize: '40px', lineHeight: '1.1' }}>
-                Please Select Your Insurance Provider
-              </h1>
-              <p className="font-inter text-gray-600" style={{ fontSize: '18px', fontWeight: '400', lineHeight: '1.4' }}>
-                Please select your insurance provider or choose out-of-pocket ($30 per session).
-              </p>
-            </div>
-
-            {/* Provider Selection Container */}
-            <div className="mx-auto max-w-md">
-              <div className="border border-gray-300 rounded-xl p-6 bg-white space-y-1">
-                {/* Cash Pay Option */}
-                <div className="pb-4">
-                  <button
-                    onClick={() => handleProviderSelect("cash-pay")}
-                    className={`w-full px-6 py-3 text-center rounded-full border-2 transition-all duration-300 font-inter ${
-                      selectedProvider === "cash-pay"
-                        ? "border-gray-400 bg-gray-100 transform scale-105"
-                        : "border-gray-300 bg-white hover:bg-gray-50 hover:scale-102"
-                    }`}
-                    style={{ fontSize: '16px', fontWeight: '400' }}
-                  >
-                    I won't be using insurance
-                  </button>
-                </div>
-
-                {/* Insurance Providers */}
-                <div className="space-y-0">
-                  {insuranceProviders.map((provider, index) => (
-                    <button
-                      key={provider.id}
-                      onClick={() => handleProviderSelect(provider.id)}
-                      className={`w-full py-4 px-6 text-left font-inter transition-all duration-300 border-b last:border-b-0 border-gray-200 ${
-                        selectedProvider === provider.id
-                          ? "bg-orange-200/60 transform scale-102"
-                          : "bg-white hover:bg-gray-50"
-                      }`}
-                      style={{ fontSize: '16px', fontWeight: '400' }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-800">{provider.name}</span>
-                        {selectedProvider === provider.id && <Check className="w-5 h-5 text-gray-700 animate-in zoom-in-50 duration-300" />}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Continue Button */}
-            <div className="flex justify-center">
-              <Button
-                onClick={handleContinueFromProviderSelection}
-                disabled={!selectedProvider}
-                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
-                style={{ fontSize: '16px' }}
-              >
-                Continue →
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* Provider selection step removed; modal starts directly at insurance-form */}
 
         {/* Insurance Information Form */}
         {modalState === "insurance-form" && (
-          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-right-5 duration-500">
+          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
             <div className="text-center space-y-4">
               <h1 className="very-vogue-title text-4xl text-gray-800" style={{ fontSize: '36px', lineHeight: '1.1' }}>
                 Great, We're In Network!
@@ -189,6 +122,24 @@ export default function InsuranceVerificationModal({
 
             <div className="mx-auto max-w-md">
               <div className="border border-gray-300 rounded-xl p-6 bg-white space-y-6">
+                {/* Insurance Provider Dropdown */}
+                <div>
+                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                    Insurance Provider*
+                  </label>
+                  <select
+                    value={selectedProvider ?? ""}
+                    onChange={(e) => setSelectedProvider(e.target.value as InsuranceProvider)}
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter bg-white"
+                    style={{ fontSize: '16px' }}
+                  >
+                    <option value="" disabled>Select provider</option>
+                    {insuranceProviders.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     First Name*
@@ -219,14 +170,13 @@ export default function InsuranceVerificationModal({
 
                 <div>
                   <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
-                    Date of Birth* (mm/dd/yyyy)
+                    Date of Birth*
                   </label>
                   <input
-                    type="text"
+                    type="date"
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
                     className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
-                    placeholder="MM/DD/YYYY"
                     style={{ fontSize: '16px' }}
                   />
                 </div>
@@ -249,7 +199,7 @@ export default function InsuranceVerificationModal({
 
             <div className="flex justify-center space-x-4">
               <Button
-                onClick={() => setModalState("provider-selection")}
+                onClick={onClose}
                 variant="outline"
                 className="px-6 py-3 font-inter rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px', fontWeight: '500' }}
@@ -259,7 +209,7 @@ export default function InsuranceVerificationModal({
               </Button>
               <Button
                 onClick={handleVerifyInsurance}
-                disabled={!formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId}
+                disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId}
                 className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
                 style={{ fontSize: '16px' }}
               >
@@ -377,7 +327,7 @@ export default function InsuranceVerificationModal({
 
         {/* Cash Pay Form */}
         {modalState === "cash-pay-form" && (
-          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-right-5 duration-500">
+          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
             <div className="text-center space-y-4">
               <div className="flex justify-center mb-4">
                 <div className="bg-yellow-100 border border-yellow-400 rounded-full px-6 py-3 font-inter text-yellow-800 animate-in fade-in-0 duration-700 delay-300" style={{ fontSize: '16px', fontWeight: '500' }}>
@@ -440,7 +390,7 @@ export default function InsuranceVerificationModal({
 
             <div className="flex justify-center space-x-4">
               <Button
-                onClick={() => setModalState("provider-selection")}
+                onClick={onClose}
                 variant="outline"
                 className="px-6 py-3 font-inter rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px', fontWeight: '500' }}

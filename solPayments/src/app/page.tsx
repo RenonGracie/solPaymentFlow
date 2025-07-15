@@ -11,10 +11,22 @@ import Image from "next/image";
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [modalInitialState, setModalInitialState] = useState<"provider-selection" | "cash-pay-form">("provider-selection");
+  const [modalInitialState, setModalInitialState] = useState<"cash-pay-form" | undefined>(undefined);
+  // Card expansion states
+  const [insuranceExpanded, setInsuranceExpanded] = useState(false);
+  const [cashExpanded, setCashExpanded] = useState(false);
+
+  // Toggle helpers (cards can now be independent)
+  const toggleInsurance = () => {
+    setInsuranceExpanded(prev => !prev);
+  };
+
+  const toggleCash = () => {
+    setCashExpanded(prev => !prev);
+  };
 
   const handleOpenModal = () => {
-    setModalInitialState("provider-selection");
+    setModalInitialState(undefined); // opens modal at default insurance form
     setIsModalOpen(true);
   };
 
@@ -145,15 +157,24 @@ export default function Home() {
         </div>
 
         {/* Payment Options Cards */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        <div className="flex flex-col md:flex-row items-start gap-6 max-w-5xl mx-auto">
           {/* Use My Insurance Card */}
-          <Card className="hover:shadow-lg transition-shadow rounded-2xl overflow-hidden border" style={{ backgroundColor: '#FFF8CB', borderColor: '#E6CAAF' }}>
-            <CardHeader className="pb-3">
+          <Card className="hover:shadow-lg transition-shadow rounded-2xl overflow-hidden border w-full md:flex-1" style={{ backgroundColor: '#FFF8CB', borderColor: '#E6CAAF' }}>
+            <CardHeader
+              className="pb-3 cursor-pointer"
+              onClick={toggleInsurance}
+            >
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl font-inter font-semibold" style={{ color: '#363943' }}>Use My Insurance</CardTitle>
-                <Button variant="ghost" size="sm" className="font-inter" style={{ color: '#363943' }}>
-                  Learn More <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
+                <span
+                  className="font-inter flex items-center"
+                  style={{ color: '#363943' }}
+                >
+                  <span className="flex items-center">
+                    {insuranceExpanded ? 'Hide' : 'Learn More'}
+                    <ArrowRight className={`w-4 h-4 ml-1 transition-transform ${insuranceExpanded ? 'rotate-90' : ''}`} />
+                  </span>
+                </span>
               </div>
               <p className="text-sm font-inter" style={{ color: '#363943' }}>Associate-Level Therapists</p>
             </CardHeader>
@@ -164,39 +185,52 @@ export default function Home() {
                 </p>
               </div>
 
-              <div>
-                <p className="font-inter font-semibold mb-2" style={{ color: '#363943' }}>We currently accept:</p>
-                <p className="text-sm font-inter" style={{ color: '#363943' }}>
-                  Aetna, Cigna, Meritain, Carelon, BCBS, AmeriHealth
-                </p>
-              </div>
+              {insuranceExpanded && (
+                <>
+                  <div>
+                    <p className="font-inter font-semibold mb-2" style={{ color: '#363943' }}>We currently accept:</p>
+                    <p className="text-sm font-inter" style={{ color: '#363943' }}>
+                      Aetna, Cigna, Meritain, Carelon, BCBS, AmeriHealth
+                    </p>
+                  </div>
 
-              <div>
-                <p className="font-inter font-semibold mb-2" style={{ color: '#363943' }}>What to expect:</p>
-                <ul className="text-sm font-inter space-y-1" style={{ color: '#363943' }}>
-                  <li>• You'll be matched with an Associate-Level Therapist</li>
-                  <li>• Associate-Level Therapists have graduated from their counseling programs and are working towards full licensure.</li>
-                </ul>
-              </div>
+                  <div>
+                    <p className="font-inter font-semibold mb-2" style={{ color: '#363943' }}>What to expect:</p>
+                    <ul className="text-sm font-inter space-y-1" style={{ color: '#363943' }}>
+                      <li>• You'll be matched with an Associate-Level Therapist</li>
+                      <li>• Associate-Level Therapists have graduated from their counseling programs and are working towards full licensure.</li>
+                    </ul>
+                  </div>
 
-              <Button
-                className="w-full hover:opacity-90 rounded-full font-inter font-medium py-3 mt-6 border"
-                style={{ backgroundColor: '#FFFAEE', color: '#363943', borderColor: '#E6CAAF' }}
-                onClick={handleOpenModal}
-              >
-                Use My Insurance <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+                  <Button
+                    className="w-full hover:opacity-90 rounded-full font-inter font-medium py-3 mt-6 border"
+                    style={{ backgroundColor: '#FFFAEE', color: '#363943', borderColor: '#E6CAAF' }}
+                    onClick={handleOpenModal}
+                  >
+                    Use My Insurance <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 
           {/* Pay Out-of-Pocket Card */}
-          <Card className="hover:shadow-lg transition-shadow rounded-2xl overflow-hidden border" style={{ backgroundColor: '#FFF0D7', borderColor: '#E6CAAF' }}>
-            <CardHeader className="pb-3">
+          <Card className="hover:shadow-lg transition-shadow rounded-2xl overflow-hidden border w-full md:flex-1" style={{ backgroundColor: '#FFF0D7', borderColor: '#E6CAAF' }}>
+            <CardHeader
+              className="pb-3 cursor-pointer"
+              onClick={toggleCash}
+            >
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl font-inter font-semibold" style={{ color: '#363943' }}>Pay Out-of-Pocket</CardTitle>
-                <Button variant="ghost" size="sm" className="font-inter" style={{ color: '#363943' }}>
-                  Learn More <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
+                <span
+                  className="font-inter flex items-center"
+                  style={{ color: '#363943' }}
+                >
+                  <span className="flex items-center">
+                    {cashExpanded ? 'Hide' : 'Learn More'}
+                    <ArrowRight className={`w-4 h-4 ml-1 transition-transform ${cashExpanded ? 'rotate-90' : ''}`} />
+                  </span>
+                </span>
               </div>
               <p className="text-sm font-inter" style={{ color: '#363943' }}>Graduate-Level Therapists</p>
             </CardHeader>
@@ -207,28 +241,32 @@ export default function Home() {
                 </p>
               </div>
 
-              <div>
-                <p className="font-inter font-semibold mb-2" style={{ color: '#363943' }}>Who this is for:</p>
-                <p className="text-sm font-inter" style={{ color: '#363943' }}>
-                  • Those who are seeking a lighter form of care or who prefer not to go through insurance
-                </p>
-              </div>
+              {cashExpanded && (
+                <>
+                  <div>
+                    <p className="font-inter font-semibold mb-2" style={{ color: '#363943' }}>Who this is for:</p>
+                    <p className="text-sm font-inter" style={{ color: '#363943' }}>
+                      • Those who are seeking a lighter form of care or who prefer not to go through insurance
+                    </p>
+                  </div>
 
-              <div>
-                <p className="font-inter font-semibold mb-2" style={{ color: '#363943' }}>What to expect:</p>
-                <ul className="text-sm font-inter space-y-1" style={{ color: '#363943' }}>
-                  <li>• You'll be matched with a Graduate-Level Therapist</li>
-                  <li>• Graduate-Level Therapists are in their counseling programs obtaining supervised clinical hours.</li>
-                </ul>
-              </div>
+                  <div>
+                    <p className="font-inter font-semibold mb-2" style={{ color: '#363943' }}>What to expect:</p>
+                    <ul className="text-sm font-inter space-y-1" style={{ color: '#363943' }}>
+                      <li>• You'll be matched with a Graduate-Level Therapist</li>
+                      <li>• Graduate-Level Therapists are in their counseling programs obtaining supervised clinical hours.</li>
+                    </ul>
+                  </div>
 
-              <Button
-                className="w-full hover:opacity-90 rounded-full font-inter font-medium py-3 mt-6 border"
-                style={{ backgroundColor: '#E6CAAF', color: '#363943', borderColor: '#E6CAAF' }}
-                onClick={handleOpenCashPayModal}
-              >
-                Pay Out-of-Pocket <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+                  <Button
+                    className="w-full hover:opacity-90 rounded-full font-inter font-medium py-3 mt-6 border"
+                    style={{ backgroundColor: '#E6CAAF', color: '#363943', borderColor: '#E6CAAF' }}
+                    onClick={handleOpenCashPayModal}
+                  >
+                    Pay Out-of-Pocket <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
