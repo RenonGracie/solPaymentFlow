@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
+import { checkEligibility } from "../app/api/eligibility.js";
 
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
 
@@ -68,27 +69,63 @@ export default function InsuranceVerificationModal({
     { id: "amerihealth" as const, name: "AmeriHealth" }
   ];
 
-  const handleProviderSelect = (providerId: InsuranceProvider) => {
-    setSelectedProvider(providerId);
+  const tradingPartnerServiceIdMap: Record<InsuranceProvider, string> = {
+    aetna: "60054",
+    cigna: "62308",
+    meritain: "64157",
+    carelon: "47198",
+    bcbs: "", // not used for NJ; you could remove this or keep for structure
+    amerihealth: "54771",
+    "cash-pay": "" // not needed, but prevents TS error
   };
 
-  const handleContinueFromProviderSelection = () => {
-    if (selectedProvider === "cash-pay") {
-      setModalState("cash-pay-form");
-    } else if (selectedProvider) {
-      setModalState("insurance-form");
-    }
-  };
-
-  const handleVerifyInsurance = () => {
+  const handleVerifyInsurance = async () => {
+    if (!selectedProvider) return;
+  
     setModalState("verifying");
-
-    // Simulate API call with timer (3 seconds)
-    setTimeout(() => {
-      // Randomly simulate success or failure for demo
-      const isSuccess = Math.random() > 0.5;
-      setModalState(isSuccess ? "verification-success" : "verification-failed");
-    }, 3000);
+  
+    const formatDOB = (dobStr: string): string | null => {
+      const [year, month, day] = dobStr.split("-");
+      if (!year || !month || !day) return null;
+      return `${year}${month}${day}`;
+    };
+    
+  
+    const dobFormatted = formatDOB(formData.dateOfBirth);
+    console.log("📅 Raw DOB from form:", formData.dateOfBirth);
+    console.log("📅 Formatted DOB:", dobFormatted);
+  
+    if (!dobFormatted) {
+      console.error("❌ Invalid date of birth format");
+      setModalState("verification-failed");
+      return;
+    }
+  
+    const payload = {
+      controlNumber: "987654321", // optional
+      tradingPartnerServiceId: tradingPartnerServiceIdMap[selectedProvider],
+      provider: {
+        organizationName: "Health Clinic LLC",
+        npi: "1234567890"
+      },
+      subscriber: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: dobFormatted,
+        memberId: formData.memberId
+      }
+    };
+  
+    console.log("🚀 Payload to Stedi:", payload);
+  
+    try {
+      const result = await checkEligibility(payload);
+      console.log("✅ Eligibility result:", result);
+      setModalState("verification-success");
+    } catch (error) {
+      console.error("❌ Eligibility fetch failed:", error);
+      setModalState("verification-failed");
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -101,6 +138,7 @@ export default function InsuranceVerificationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogHeader><DialogTitle className="sr-only">Insurance Eligibility Modal</DialogTitle></DialogHeader>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#FFFBF3' }}>
 
         {/* Add transition container for smooth animations */}
