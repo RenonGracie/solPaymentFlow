@@ -75,7 +75,7 @@ export default function InsuranceVerificationModal({
     meritain: "64157",
     carelon: "47198",
     bcbs: "", // not used for NJ; you could remove this or keep for structure
-    amerihealth: "54771",
+    amerihealth: "60061",
     "cash-pay": "" // not needed, but prevents TS error
   };
 
