@@ -81,31 +81,26 @@ export default function InsuranceVerificationModal({
 
   const handleVerifyInsurance = async () => {
     if (!selectedProvider) return;
-  
+
     setModalState("verifying");
-  
+
     const formatDOB = (dobStr: string): string | null => {
       const [year, month, day] = dobStr.split("-");
       if (!year || !month || !day) return null;
       return `${year}${month}${day}`;
     };
-    
-  
+
     const dobFormatted = formatDOB(formData.dateOfBirth);
-    console.log("📅 Raw DOB from form:", formData.dateOfBirth);
-    console.log("📅 Formatted DOB:", dobFormatted);
-  
     if (!dobFormatted) {
-      console.error("❌ Invalid date of birth format");
       setModalState("verification-failed");
       return;
     }
-  
+
     const payload = {
-      controlNumber: "987654321", // optional
+      controlNumber: "987654321",
       tradingPartnerServiceId: tradingPartnerServiceIdMap[selectedProvider],
       provider: {
-        organizationName: "Health Clinic LLC",
+        organizationName: "Sol Health",
         npi: "1234567890"
       },
       subscriber: {
@@ -115,17 +110,65 @@ export default function InsuranceVerificationModal({
         memberId: formData.memberId
       }
     };
-  
-    console.log("🚀 Payload to Stedi:", payload);
-  
+
     try {
-      const result = await checkEligibility(payload);
-      console.log("✅ Eligibility result:", result);
-      setModalState("verification-success");
+      // This calls Lambda A which creates Insurance IntakeQ profile
+      await checkEligibility(payload);
+
+      // Redirect to Typeform with insurance flag and tracking params
+      const baseUrl = "https://muyhp7jd7hw.typeform.com/to/Dgi2e9lw";
+
+      // Query params (UTM)
+      const utmParams = new URLSearchParams({
+        utm_source: "website",
+        utm_medium: "modal",
+        utm_content: selectedProvider,
+        utm_term: "", // optional – fill as needed
+        utm_campaign: "", // optional – fill as needed
+        utm_adid: "", // optional – fill as needed
+        utm_adgroup: "" // optional – fill as needed
+      });
+
+      // Hash params (customer data)
+      const hashParams = new URLSearchParams({
+        session_id: crypto?.randomUUID?.() ?? Date.now().toString(),
+        client_id: formData.memberId || "", // using memberId as a stand-in client_id
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        client_type: "insurance"
+      });
+
+      window.location.href = `${baseUrl}?${utmParams.toString()}#${hashParams.toString()}`;
     } catch (error) {
-      console.error("❌ Eligibility fetch failed:", error);
       setModalState("verification-failed");
     }
+  };
+
+  // New handler for cash-pay flow
+  const handleOutOfPocketContinue = () => {
+    const baseUrl = "https://muyhp7jd7hw.typeform.com/to/Dgi2e9lw";
+
+    const utmParams = new URLSearchParams({
+      utm_source: "website",
+      utm_medium: "modal",
+      utm_content: "cash_pay",
+      utm_term: "",
+      utm_campaign: "",
+      utm_adid: "",
+      utm_adgroup: ""
+    });
+
+    const hashParams = new URLSearchParams({
+      session_id: crypto?.randomUUID?.() ?? Date.now().toString(),
+      client_id: "", // no memberId for cash-pay
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      email: formData.email,
+      client_type: "cash_pay"
+    });
+
+    window.location.href = `${baseUrl}?${utmParams.toString()}#${hashParams.toString()}`;
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -150,10 +193,10 @@ export default function InsuranceVerificationModal({
         {modalState === "insurance-form" && (
           <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
             <div className="text-center space-y-4">
-              <h1 className="very-vogue-title text-4xl text-gray-800" style={{ fontSize: '36px', lineHeight: '1.1' }}>
+              <h1 className="very-vogue-title text-4xl text-gray-800" style={{ fontSize: '30px', lineHeight: '1.1' }}>
                 Great, We're In Network!
               </h1>
-              <p className="font-inter text-gray-600" style={{ fontSize: '18px', fontWeight: '400', lineHeight: '1.4' }}>
+              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
                 Next, to verify your eligibility and estimate your co-pay, please enter your insurance information below.
               </p>
             </div>
@@ -232,6 +275,21 @@ export default function InsuranceVerificationModal({
                     style={{ fontSize: '16px' }}
                   />
                 </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                    Email*
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
+                    placeholder="Enter your email address"
+                    style={{ fontSize: '16px' }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -247,7 +305,7 @@ export default function InsuranceVerificationModal({
               </Button>
               <Button
                 onClick={handleVerifyInsurance}
-                disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId}
+                disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId || !formData.email}
                 className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
                 style={{ fontSize: '16px' }}
               >
@@ -269,7 +327,7 @@ export default function InsuranceVerificationModal({
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                 </div>
               </div>
-              <h2 className="very-vogue-title text-gray-800" style={{ fontSize: '32px', lineHeight: '1.2' }}>
+              <h2 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.2' }}>
                 Verifying Your Insurance...
               </h2>
               <div className="w-48 h-2 bg-gray-200 rounded-full mx-auto overflow-hidden">
@@ -289,7 +347,7 @@ export default function InsuranceVerificationModal({
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-700 delay-300">
                 <Check className="w-8 h-8 text-green-600" />
               </div>
-              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '36px', lineHeight: '1.1' }}>
+              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '30px', lineHeight: '1.1' }}>
                 You're Covered!<br />
                 Here's How It Works.
               </h1>
@@ -297,7 +355,7 @@ export default function InsuranceVerificationModal({
 
             <div className="mx-auto max-w-md">
               <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-6 text-center animate-in fade-in-0 duration-700 delay-500">
-                <p className="font-inter text-gray-800" style={{ fontSize: '18px', fontWeight: '500' }}>
+                <p className="font-inter text-gray-800" style={{ fontSize: '16px', fontWeight: '500' }}>
                   Given our estimates, you'll pay <strong>$50</strong> for your first session and <strong>$25</strong> for all follow-up sessions.
                 </p>
               </div>
@@ -333,10 +391,10 @@ export default function InsuranceVerificationModal({
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-700 delay-300">
                 <X className="w-8 h-8 text-red-600" />
               </div>
-              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '32px', lineHeight: '1.1' }}>
+              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.1' }}>
                 Sorry, we couldn't verify your eligibility.
               </h1>
-              <p className="font-inter text-gray-600" style={{ fontSize: '18px', fontWeight: '400', lineHeight: '1.4' }}>
+              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
                 Try re-entering your insurance information again, or learn about our Out-of-Pocket offering for $30/session.
               </p>
             </div>
@@ -372,10 +430,10 @@ export default function InsuranceVerificationModal({
                   💰 $30 / Session Out-of-Pocket Selected
                 </div>
               </div>
-              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '36px', lineHeight: '1.1' }}>
+              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '30px', lineHeight: '1.1' }}>
                 Let's Get You Matched
               </h1>
-              <p className="font-inter text-gray-600" style={{ fontSize: '18px', fontWeight: '400', lineHeight: '1.4' }}>
+              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
                 You'll now fill out a brief questionnaire to help us match you to your best fit therapist.
               </p>
             </div>
@@ -437,10 +495,7 @@ export default function InsuranceVerificationModal({
                 Back
               </Button>
               <Button
-                onClick={() => onContinueToQuestionnaire({
-                  type: 'cash-pay',
-                  ...formData
-                })}
+                onClick={handleOutOfPocketContinue}
                 disabled={!formData.firstName || !formData.lastName || !formData.email}
                 className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
                 style={{ fontSize: '16px' }}
