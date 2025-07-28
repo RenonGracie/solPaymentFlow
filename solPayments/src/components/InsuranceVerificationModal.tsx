@@ -125,14 +125,10 @@ export default function InsuranceVerificationModal({
       // This calls Lambda A which creates Insurance IntakeQ profile
       const responseData = await checkEligibility(payload);
       console.log("Response data:", responseData);
-      
-      if (responseData.success) {
-        setVerificationResponse(responseData);
-        setModalState("verification-success");
-      } else {
-        console.error("Verification failed:", responseData);
-        setModalState("verification-failed");
-      }
+
+      // Treat any 2xx response as success; API errors would have thrown above
+      setVerificationResponse(responseData);
+      setModalState("verification-success");
     } catch (error) {
       console.error("Verification error:", error);
       setModalState("verification-failed");
