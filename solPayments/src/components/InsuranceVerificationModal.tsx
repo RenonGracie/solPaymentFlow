@@ -37,6 +37,7 @@ export default function InsuranceVerificationModal({
     memberId: "",
     email: ""
   });
+  const [verificationResponse, setVerificationResponse] = useState<any>(null);
 
   // Reset modal state when it opens
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function InsuranceVerificationModal({
         memberId: "",
         email: ""
       });
+      setVerificationResponse(null);
     }
   }, [isOpen]);
 
@@ -84,6 +86,9 @@ export default function InsuranceVerificationModal({
 
     setModalState("verifying");
 
+    console.log("Raw dateOfBirth from form:", formData.dateOfBirth);
+    console.log("Type of dateOfBirth:", typeof formData.dateOfBirth);
+
     const formatDOB = (dobStr: string): string | null => {
       const [year, month, day] = dobStr.split("-");
       if (!year || !month || !day) return null;
@@ -91,6 +96,9 @@ export default function InsuranceVerificationModal({
     };
 
     const dobFormatted = formatDOB(formData.dateOfBirth);
+    console.log("Formatted DOB (YYYYMMDD):", dobFormatted);
+    console.log("Length of formatted DOB:", dobFormatted?.length);
+    
     if (!dobFormatted) {
       setModalState("verification-failed");
       return;
@@ -111,38 +119,52 @@ export default function InsuranceVerificationModal({
       }
     };
 
+    console.log("Full payload being sent:", JSON.stringify(payload, null, 2));
+
     try {
       // This calls Lambda A which creates Insurance IntakeQ profile
-      await checkEligibility(payload);
-
-      // Redirect to Typeform with insurance flag and tracking params
-      const baseUrl = "https://muyhp7jd7hw.typeform.com/to/Dgi2e9lw";
-
-      // Query params (UTM)
-      const utmParams = new URLSearchParams({
-        utm_source: "website",
-        utm_medium: "modal",
-        utm_content: selectedProvider,
-        utm_term: "", // optional – fill as needed
-        utm_campaign: "", // optional – fill as needed
-        utm_adid: "", // optional – fill as needed
-        utm_adgroup: "" // optional – fill as needed
-      });
-
-      // Hash params (customer data)
-      const hashParams = new URLSearchParams({
-        session_id: crypto?.randomUUID?.() ?? Date.now().toString(),
-        client_id: formData.memberId || "", // using memberId as a stand-in client_id
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        email: formData.email,
-        client_type: "insurance"
-      });
-
-      window.location.href = `${baseUrl}?${utmParams.toString()}#${hashParams.toString()}`;
+      const responseData = await checkEligibility(payload);
+      console.log("Response data:", responseData);
+      
+      if (responseData.success) {
+        setVerificationResponse(responseData);
+        setModalState("verification-success");
+      } else {
+        console.error("Verification failed:", responseData);
+        setModalState("verification-failed");
+      }
     } catch (error) {
+      console.error("Verification error:", error);
       setModalState("verification-failed");
     }
+  };
+
+  const handleContinueToQuestionnaire = () => {
+    // Redirect to Typeform with insurance flag and tracking params
+    const baseUrl = "https://muyhp7jd7hw.typeform.com/to/Dgi2e9lw";
+
+    // Query params (UTM)
+    const utmParams = new URLSearchParams({
+      utm_source: "website",
+      utm_medium: "modal",
+      utm_content: selectedProvider || "",
+      utm_term: "", // optional – fill as needed
+      utm_campaign: "", // optional – fill as needed
+      utm_adid: "", // optional – fill as needed
+      utm_adgroup: "" // optional – fill as needed
+    });
+
+    // Hash params (customer data)
+    const hashParams = new URLSearchParams({
+      session_id: crypto?.randomUUID?.() ?? Date.now().toString(),
+      client_id: formData.memberId || "", // using memberId as a stand-in client_id
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      email: formData.email,
+      client_type: "insurance"
+    });
+
+    window.location.href = `${baseUrl}?${utmParams.toString()}#${hashParams.toString()}`;
   };
 
   // New handler for cash-pay flow
@@ -356,9 +378,37 @@ export default function InsuranceVerificationModal({
             <div className="mx-auto max-w-md">
               <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-6 text-center animate-in fade-in-0 duration-700 delay-500">
                 <p className="font-inter text-gray-800" style={{ fontSize: '16px', fontWeight: '500' }}>
-                  Given our estimates, you'll pay <strong>$50</strong> for your first session and <strong>$25</strong> for all follow-up sessions.
+                  {verificationResponse?.benefits ? (
+                    <>
+                      Based on your benefits, your estimated costs are:<br />
+                      <strong>Copay: {verificationResponse.benefits.copay}</strong><br />
+                      {verificationResponse.benefits.coinsurance !== "0%" && (
+                        <>
+                          <strong>Coinsurance: {verificationResponse.benefits.coinsurance}</strong><br />
+                        </>
+                      )}
+                      {verificationResponse.benefits.memberObligation !== "$0.00" && (
+                        <>
+                          <strong>Your cost per session: {verificationResponse.benefits.memberObligation}</strong><br />
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>Given our estimates, you'll pay <strong>$50</strong> for your first session and <strong>$25</strong> for all follow-up sessions.</>
+                  )}
                 </p>
               </div>
+
+              {verificationResponse?.benefits && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4 text-sm animate-in fade-in-0 duration-700 delay-600">
+                  <p className="font-inter text-gray-700">
+                    <strong>Additional Coverage Details:</strong><br />
+                    Deductible: {verificationResponse.benefits.deductible} (Remaining: {verificationResponse.benefits.remainingDeductible})<br />
+                    Out-of-Pocket Max: {verificationResponse.benefits.oopMax} (Remaining: {verificationResponse.benefits.remainingOopMax})<br />
+                    Benefit Structure: {verificationResponse.benefits.benefitStructure}
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-4 text-center text-gray-700 mt-6 animate-in fade-in-0 duration-700 delay-700">
                 <p className="font-inter" style={{ fontSize: '16px', lineHeight: '1.5' }}>
@@ -372,13 +422,11 @@ export default function InsuranceVerificationModal({
 
             <div className="flex justify-center">
               <Button
-                asChild
+                onClick={handleContinueToQuestionnaire}
                 className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px' }}
               >
-                <a href="https://stg.solhealth.co/" target="_blank" rel="noopener noreferrer">
-                  Continue to Questionnaire
-                </a>
+                Continue to Questionnaire
               </Button>
             </div>
           </div>
@@ -409,13 +457,11 @@ export default function InsuranceVerificationModal({
                 Re-Enter Insurance
               </Button>
               <Button
-                asChild
+                onClick={() => setModalState("cash-pay-form")}
                 className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px' }}
               >
-                <a href="https://stg.solhealth.co/" target="_blank" rel="noopener noreferrer">
-                  Pay Out-of-Pocket for $30/Session
-                </a>
+                Pay Out-of-Pocket for $30/Session
               </Button>
             </div>
           </div>
