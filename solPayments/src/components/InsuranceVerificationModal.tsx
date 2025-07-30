@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { checkEligibility } from "../app/api/eligibility.js";
 import EmbeddedTypeform from "./EmbeddedTypeform";
+import { generateTypeformResponseId, sendTypeformWebhook } from "../lib/typeform-webhook";
 
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
 
@@ -14,7 +15,9 @@ type ModalState =
   | "verifying"
   | "verification-success"
   | "verification-failed"
-  | "cash-pay-form";
+  | "cash-pay-form"
+  | "submitting"
+  | "submission-failed";
 
 interface EligibilityBenefits {
   copay: string;
@@ -53,7 +56,10 @@ export default function InsuranceVerificationModal({
     lastName: "",
     dateOfBirth: "",
     memberId: "",
-    email: ""
+    email: "",
+    phone: "",  // optional extras
+    age: "",
+    gender: ""
   });
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
   // Toggle for showing the embedded Typeform overlay
@@ -69,7 +75,10 @@ export default function InsuranceVerificationModal({
         lastName: "",
         dateOfBirth: "",
         memberId: "",
-        email: ""
+        email: "",
+        phone: "",
+        age: "",
+        gender: ""
       });
       setVerificationResponse(null);
     }
@@ -155,13 +164,78 @@ export default function InsuranceVerificationModal({
     }
   };
 
-  const handleContinueToQuestionnaire = () => {
-    setShowTypeform(true);
+  const handleContinueToQuestionnaire = async () => {
+    try {
+      setModalState("submitting");
+
+      const responseId = generateTypeformResponseId();
+
+      const result = await sendTypeformWebhook({
+        responseId,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        age: formData.age || undefined,
+        gender: formData.gender || undefined,
+        insuranceProvider: selectedProvider || undefined,
+        paymentType: "insurance",
+        phqScore: 9,
+        gadScore: 6,
+        suicidalIdeation: 2,
+        alcoholUse: 1,
+        drugUse: 0
+      });
+
+      if (result.success) {
+        await new Promise((res) => setTimeout(res, 2000));
+        const solHealthUrl = process.env.NEXT_PUBLIC_SOL_HEALTH_URL || "https://stg.solhealth.co";
+        window.location.href = `${solHealthUrl}/${responseId}`;
+      } else {
+        console.error("Webhook failed:", result.error);
+        setModalState("submission-failed");
+      }
+    } catch (error: any) {
+      console.error("Failed to submit:", error);
+      setModalState("submission-failed");
+    }
   };
 
   // New handler for cash-pay flow
-  const handleOutOfPocketContinue = () => {
-    setShowTypeform(true);
+  const handleOutOfPocketContinue = async () => {
+    try {
+      setModalState("submitting");
+
+      const responseId = generateTypeformResponseId();
+
+      const result = await sendTypeformWebhook({
+        responseId,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        age: formData.age || undefined,
+        gender: formData.gender || undefined,
+        paymentType: "cash",
+        phqScore: 9,
+        gadScore: 6,
+        suicidalIdeation: 2,
+        alcoholUse: 0,
+        drugUse: 0
+      });
+
+      if (result.success) {
+        await new Promise((res) => setTimeout(res, 2000));
+        const solHealthUrl = process.env.NEXT_PUBLIC_SOL_HEALTH_URL || "https://stg.solhealth.co";
+        window.location.href = `${solHealthUrl}/${responseId}`;
+      } else {
+        console.error("Cash pay webhook failed:", result.error);
+        setModalState("submission-failed");
+      }
+    } catch (error: any) {
+      console.error("Failed to submit cash pay:", error);
+      setModalState("submission-failed");
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -283,6 +357,58 @@ export default function InsuranceVerificationModal({
                     placeholder="Enter your email address"
                     style={{ fontSize: '16px' }}
                   />
+                </div>
+
+                {/* Phone Number (optional) */}
+                <div>
+                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
+                    placeholder="(555) 123-4567"
+                    style={{ fontSize: '16px' }}
+                  />
+                </div>
+
+                {/* Age (optional) */}
+                <div>
+                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                    Age
+                  </label>
+                  <input
+                    type="number"
+                    min="18"
+                    max="100"
+                    value={formData.age}
+                    onChange={(e) => handleInputChange("age", e.target.value)}
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
+                    placeholder="25"
+                    style={{ fontSize: '16px' }}
+                  />
+                </div>
+
+                {/* Gender (optional) */}
+                <div>
+                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                    Gender
+                  </label>
+                  <select
+                    value={formData.gender}
+                    onChange={(e) => handleInputChange("gender", e.target.value)}
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter bg-white"
+                    style={{ fontSize: '16px' }}
+                  >
+                    <option value="">Select gender (optional)</option>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="transgender">Transgender</option>
+                    <option value="non-binary">Non-binary</option>
+                    <option value="other">Other</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -524,20 +650,46 @@ export default function InsuranceVerificationModal({
           </div>
         )}
 
+        {/* Submission Failed State */}
+        {modalState === "submission-failed" && (
+          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
+            <div className="text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-700 delay-300">
+                <X className="w-8 h-8 text-red-600" />
+              </div>
+              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.1' }}>
+                Submission Failed
+              </h1>
+              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
+                We were unable to submit your information. Please try again later or contact support.
+              </p>
+            </div>
+
+            <div className="flex justify-center space-x-4">
+              <Button
+                onClick={() => setModalState("insurance-form")}
+                variant="outline"
+                className="px-6 py-3 font-inter rounded-full border-2 border-yellow-500 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                style={{ fontSize: '16px', fontWeight: '500' }}
+              >
+                Re-Enter Insurance
+              </Button>
+              <Button
+                onClick={() => setModalState("cash-pay-form")}
+                className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
+                style={{ fontSize: '16px' }}
+              >
+                Pay Out-of-Pocket for $30/Session
+              </Button>
+            </div>
+          </div>
+        )}
+
         </div>
       </DialogContent>
     </Dialog>
 
-    {showTypeform && (
-      <EmbeddedTypeform
-        firstName={formData.firstName}
-        lastName={formData.lastName}
-        email={formData.email}
-        insuranceProvider={selectedProvider || undefined}
-        paymentType={modalState === "cash-pay-form" ? "cash_pay" : "insurance"}
-        onClose={() => setShowTypeform(false)}
-      />
-    )}
+    {/* No embedded Typeform – submission handled via webhook */}
     </>
   );
 }
