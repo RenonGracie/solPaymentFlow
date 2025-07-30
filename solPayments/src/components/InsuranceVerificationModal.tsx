@@ -1,3 +1,4 @@
+// src/components/InsuranceVerificationModal.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -58,6 +59,7 @@ export default function InsuranceVerificationModal({
     gender: "",
   });
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
+  const [typeformResponseId, setTypeformResponseId] = useState<string | null>(null);
 
   // Reset modal state when it opens
   useEffect(() => {
@@ -73,8 +75,9 @@ export default function InsuranceVerificationModal({
         gender: "",
       });
       setVerificationResponse(null);
+      setTypeformResponseId(null);
     }
-  }, [isOpen, initialState]); // Fixed: Added initialState to dependencies
+  }, [isOpen, initialState]);
 
   const insuranceProviders = [
     { id: "aetna" as const, name: "Aetna" },
@@ -151,31 +154,60 @@ export default function InsuranceVerificationModal({
     setModalState("typeform");
   };
 
-// Add this enhanced debug version to InsuranceVerificationModal.tsx
-// Replace the handleTypeformSubmit function with this:
-
-const handleTypeformSubmit = ({ responseId }: { responseId: string }) => {
-  console.log('🎯 Typeform onSubmit called');
-  console.log('📄 Full event data:', { responseId });
-  console.log('📝 ResponseId type:', typeof responseId);
-  console.log('📏 ResponseId length:', responseId?.length);
-  console.log('🔍 ResponseId value:', JSON.stringify(responseId));
-  
-  if (!responseId) {
-    console.error('❌ ResponseId is falsy:', responseId);
-    alert('Error: No response ID received from Typeform');
-    return;
-  }
-  
-  if (responseId.trim() === '') {
-    console.error('❌ ResponseId is empty string');
-    alert('Error: Empty response ID received from Typeform');
-    return;
-  }
-  
-  console.log('✅ Valid responseId received, calling parent handler');
-  onContinueToQuestionnaire(responseId);
-};
+  const handleTypeformSubmit = async ({ responseId }: { responseId: string }) => {
+    console.log('🎯 Typeform onSubmit called');
+    console.log('📄 Full event data:', { responseId });
+    console.log('📝 ResponseId type:', typeof responseId);
+    console.log('📏 ResponseId length:', responseId?.length);
+    console.log('🔍 ResponseId value:', JSON.stringify(responseId));
+    
+    if (!responseId) {
+      console.error('❌ ResponseId is falsy:', responseId);
+      alert('Error: No response ID received from Typeform');
+      return;
+    }
+    
+    if (responseId.trim() === '') {
+      console.error('❌ ResponseId is empty string');
+      alert('Error: Empty response ID received from Typeform');
+      return;
+    }
+    
+    console.log('✅ Valid responseId received, storing it');
+    setTypeformResponseId(responseId);
+    
+    // Poll the backend to check if the client signup has been processed
+    console.log('🔄 Starting to poll backend for client status');
+    const pollInterval = setInterval(async () => {
+      try {
+        console.log(`🔍 Checking client status for response_id: ${responseId}`);
+        const response = await fetch(`/api/check-client?response_id=${responseId}`);
+        const data = await response.json();
+        
+        console.log('📡 Backend response:', data);
+        
+        if (response.ok && data.response_id) {
+          console.log('✅ Client found in backend!');
+          clearInterval(pollInterval);
+          // Call parent handler to continue to the main questionnaire flow
+          onContinueToQuestionnaire(responseId);
+        } else if (!response.ok && response.status !== 404) {
+          console.error('❌ Backend error:', data);
+          clearInterval(pollInterval);
+          setModalState("submission-failed");
+        }
+      } catch (error) {
+        console.error('❌ Polling error:', error);
+      }
+    }, 2000); // Poll every 2 seconds
+    
+    // Stop polling after 40 seconds (20 attempts)
+    setTimeout(() => {
+      clearInterval(pollInterval);
+      console.log('⏱️ Polling timeout reached');
+      setModalState("submission-failed");
+    }, 40000);
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -244,6 +276,44 @@ const handleTypeformSubmit = ({ responseId }: { responseId: string }) => {
             >
               ✕
             </button>
+          </div>
+        )}
+
+        {/* Submission Failed State */}
+        {modalState === "submission-failed" && (
+          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
+            <div className="text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-700 delay-300">
+                <X className="w-8 h-8 text-red-600" />
+              </div>
+              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.1' }}>
+                Sorry, there was an issue processing your submission.
+              </h1>
+              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
+                {typeformResponseId ? 
+                  `We received your form (ID: ${typeformResponseId}) but couldn't process it. Please contact support at contact@solhealth.co with this ID.` :
+                  "We couldn't process your submission. Please try again or contact support at contact@solhealth.co."
+                }
+              </p>
+            </div>
+
+            <div className="flex justify-center space-x-4">
+              <Button
+                onClick={() => setModalState(initialState === "cash-pay-form" ? "cash-pay-form" : "insurance-form")}
+                variant="outline"
+                className="px-6 py-3 font-inter rounded-full border-2 border-yellow-500 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                style={{ fontSize: '16px', fontWeight: '500' }}
+              >
+                Try Again
+              </Button>
+              <Button
+                onClick={onClose}
+                className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
+                style={{ fontSize: '16px' }}
+              >
+                Close
+              </Button>
+            </div>
           </div>
         )}
 
