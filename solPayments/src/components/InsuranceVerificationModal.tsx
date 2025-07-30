@@ -31,10 +31,25 @@ interface VerificationResponse {
   [key: string]: unknown;
 }
 
+interface FormData {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  memberId: string;
+  email: string;
+  provider?: string;
+  paymentType?: string;
+}
+
+interface ModalContinueData {
+  type: string;
+  formData: FormData;
+}
+
 interface InsuranceVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onContinueToQuestionnaire: (data: { type: string; formData: any }) => void;
+  onContinueToQuestionnaire: (data: ModalContinueData) => void;
   initialState?: ModalState;
   paymentType: "insurance" | "cash_pay";
 }
@@ -50,7 +65,7 @@ export default function InsuranceVerificationModal({
     initialState ?? (paymentType === "insurance" ? "insurance-form" : "cash-pay-form")
   );
   const [selectedProvider, setSelectedProvider] = useState<InsuranceProvider | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
     dateOfBirth: "",
@@ -165,7 +180,7 @@ export default function InsuranceVerificationModal({
     });
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

@@ -15,6 +15,21 @@ import Image from "next/image";
 
 type PaymentType = "insurance" | "cash_pay";
 
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  dateOfBirth?: string;
+  memberId?: string;
+  provider?: string;
+  paymentType?: string;
+}
+
+interface ModalContinueData {
+  type: string;
+  formData: FormData;
+}
+
 export default function Home() {
   // Modal states
   const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
@@ -26,7 +41,7 @@ export default function Home() {
   const [clientResponseId, setClientResponseId] = useState<string | null>(null);
   const [bookingData, setBookingData] = useState<BookAppointmentResponse | null>(null);
   const [isSearchingAnotherTherapist, setIsSearchingAnotherTherapist] = useState(false);
-  const [formData, setFormData] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   // Card expansion states
   const [insuranceExpanded, setInsuranceExpanded] = useState(false);
@@ -70,7 +85,7 @@ export default function Home() {
     setIsInsuranceModalOpen(true);
   };
 
-  const handleModalContinue = (data: { type: string; formData: any }) => {
+  const handleModalContinue = (data: ModalContinueData) => {
     console.log('Modal continue with data:', data);
     setFormData(data.formData);
     setSelectedPaymentType(data.type as PaymentType);
