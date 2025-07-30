@@ -4,11 +4,11 @@
 
 interface WebhookResponse {
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
 }
 
-export async function sendWebhookToSolHealth(webhookData: any): Promise<WebhookResponse> {
+export async function sendWebhookToSolHealth(webhookData: unknown): Promise<WebhookResponse> {
   try {
     const WEBHOOK_URL = 'https://api.stg.solhealth.co/hook';
     
