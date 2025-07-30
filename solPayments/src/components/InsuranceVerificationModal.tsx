@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { checkEligibility } from "../app/api/eligibility.js";
-import { generateTypeformResponseId, sendTypeformWebhook } from "../lib/typeform-webhook";
+// No longer need server-side webhook call; we’ll redirect directly to Typeform
 
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
 
@@ -165,35 +165,32 @@ export default function InsuranceVerificationModal({
     try {
       setModalState("submitting");
 
-      const responseId = generateTypeformResponseId();
+      // Build Typeform URL with hidden params
+      const baseUrl = "https://solhealth.typeform.com/to/Dgi2e9lw";
+      const params = new URLSearchParams();
 
-      const result = await sendTypeformWebhook({
-        responseId,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone || undefined,
-        age: formData.age || undefined,
-        gender: formData.gender || undefined,
-        insuranceProvider: selectedProvider || undefined,
-        paymentType: "insurance",
-        phqScore: 9,
-        gadScore: 6,
-        suicidalIdeation: 2,
-        alcoholUse: 1,
-        drugUse: 0
-      });
+      params.set("hidden_email", formData.email);
+      params.set("hidden_first_name", formData.firstName);
+      params.set("hidden_last_name", formData.lastName);
+      params.set("hidden_utm_source", "sol_payments");
+      params.set("hidden_utm_medium", "insurance");
+      params.set("hidden_utm_campaign", "onboarding");
 
-      if (result.success) {
-        await new Promise((res) => setTimeout(res, 2000));
-        const solHealthUrl = process.env.NEXT_PUBLIC_SOL_HEALTH_URL || "https://stg.solhealth.co";
-        window.location.href = `${solHealthUrl}/${responseId}`;
-      } else {
-        console.error("Webhook failed:", result.error);
-        setModalState("submission-failed");
+      if (selectedProvider) {
+        params.set("hidden_insurance_provider", getSelectedProviderName());
       }
-    } catch (error: unknown) {
-      console.error("Failed to submit:", error);
+
+      // Optional pre-fill
+      params.set("email", formData.email);
+      if (formData.phone) params.set("phone", formData.phone);
+      if (formData.age) params.set("age", formData.age);
+
+      const fullUrl = `${baseUrl}?${params.toString()}`;
+
+      await new Promise((r) => setTimeout(r, 1500));
+      window.location.href = fullUrl;
+    } catch (error) {
+      console.error("Failed to redirect to Typeform:", error);
       setModalState("submission-failed");
     }
   };
@@ -203,34 +200,26 @@ export default function InsuranceVerificationModal({
     try {
       setModalState("submitting");
 
-      const responseId = generateTypeformResponseId();
+      const baseUrl = "https://solhealth.typeform.com/to/Dgi2e9lw";
+      const params = new URLSearchParams();
 
-      const result = await sendTypeformWebhook({
-        responseId,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone || undefined,
-        age: formData.age || undefined,
-        gender: formData.gender || undefined,
-        paymentType: "cash",
-        phqScore: 9,
-        gadScore: 6,
-        suicidalIdeation: 2,
-        alcoholUse: 0,
-        drugUse: 0
-      });
+      params.set("hidden_email", formData.email);
+      params.set("hidden_first_name", formData.firstName);
+      params.set("hidden_last_name", formData.lastName);
+      params.set("hidden_utm_source", "sol_payments");
+      params.set("hidden_utm_medium", "cash_pay");
+      params.set("hidden_utm_campaign", "onboarding");
 
-      if (result.success) {
-        await new Promise((res) => setTimeout(res, 2000));
-        const solHealthUrl = process.env.NEXT_PUBLIC_SOL_HEALTH_URL || "https://stg.solhealth.co";
-        window.location.href = `${solHealthUrl}/${responseId}`;
-      } else {
-        console.error("Cash pay webhook failed:", result.error);
-        setModalState("submission-failed");
-      }
-    } catch (error: unknown) {
-      console.error("Failed to submit cash pay:", error);
+      params.set("email", formData.email);
+      if (formData.phone) params.set("phone", formData.phone);
+      if (formData.age) params.set("age", formData.age);
+
+      const fullUrl = `${baseUrl}?${params.toString()}`;
+
+      await new Promise((r) => setTimeout(r, 1500));
+      window.location.href = fullUrl;
+    } catch (error) {
+      console.error("Failed to redirect to cash-pay Typeform:", error);
       setModalState("submission-failed");
     }
   };
@@ -453,6 +442,34 @@ export default function InsuranceVerificationModal({
               <p className="font-inter text-gray-600" style={{ fontSize: '16px' }}>
                 This usually takes just a few seconds...
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Redirecting / Submitting State */}
+        {modalState === "submitting" && (
+          <div className="space-y-8 text-center py-16 animate-in fade-in-0 zoom-in-95 duration-500">
+            <div className="space-y-6">
+              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center animate-pulse mx-auto">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+              <h2 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.2' }}>
+                Redirecting to Questionnaire...
+              </h2>
+              <p className="font-inter text-gray-600" style={{ fontSize: '16px' }}>
+                You'll now complete a brief questionnaire to help us match you with your ideal therapist
+              </p>
+              <div className="text-sm text-gray-500 font-inter">
+                If you're not redirected automatically,
+                <button
+                  onClick={() => window.location.reload()}
+                  className="text-blue-600 hover:text-blue-700 underline ml-1"
+                >
+                  click here
+                </button>
+              </div>
             </div>
           </div>
         )}
