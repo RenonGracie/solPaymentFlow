@@ -37,7 +37,7 @@ interface VerificationResponse {
 interface InsuranceVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onContinueToQuestionnaire: (responseId: string) => void; // Now expects just the response_id
+  onContinueToQuestionnaire: (responseId: string) => void;
   initialState?: ModalState;
 }
 
@@ -74,14 +74,7 @@ export default function InsuranceVerificationModal({
       });
       setVerificationResponse(null);
     }
-  }, [isOpen]);
-
-  // Update state if prop changes while modal open
-  useEffect(() => {
-    if (isOpen && initialState) {
-      setModalState(initialState);
-    }
-  }, [isOpen, initialState]);
+  }, [isOpen, initialState]); // Fixed: Added initialState to dependencies
 
   const insuranceProviders = [
     { id: "aetna" as const, name: "Aetna" },
@@ -136,7 +129,6 @@ export default function InsuranceVerificationModal({
     };
 
     try {
-      // This calls Lambda A which creates Insurance IntakeQ profile
       const responseData = await checkEligibility(payload);
       console.log("Response data:", responseData);
 
@@ -148,12 +140,10 @@ export default function InsuranceVerificationModal({
     }
   };
 
-  // After insurance verification, proceed to Typeform
   const handleContinueToTypeform = () => {
     setModalState("typeform");
   };
 
-  // After cash pay form, proceed to Typeform
   const handleCashPayContinue = () => {
     if (!formData.firstName || !formData.lastName || !formData.email) {
       return;
@@ -161,10 +151,8 @@ export default function InsuranceVerificationModal({
     setModalState("typeform");
   };
 
-  // Handle Typeform submission - this gets the REAL response_id
   const handleTypeformSubmit = ({ responseId }: { responseId: string }) => {
     console.log('Received response_id from Typeform:', responseId);
-    // Pass the real response_id to the parent
     onContinueToQuestionnaire(responseId);
   };
 
@@ -176,8 +164,19 @@ export default function InsuranceVerificationModal({
     return insuranceProviders.find(p => p.id === selectedProvider)?.name || "";
   };
 
-  // Generate hidden fields for Typeform
+  // SSR-safe UTM parameter getter
   const getUtmParams = () => {
+    // Only access window on client side
+    if (typeof window === 'undefined') {
+      return {
+        utm_source: 'sol_payments',
+        utm_medium: 'payments_modal',
+        utm_campaign: 'onboarding',
+        utm_term: '',
+        utm_content: '',
+      };
+    }
+
     const params = new URLSearchParams(window.location.search);
     return {
       utm_source: params.get('utm_source') || 'sol_payments',
@@ -209,7 +208,7 @@ export default function InsuranceVerificationModal({
       >
         <div className="transition-all duration-500 ease-in-out">
 
-        {/* Typeform Embed - This gets the real response_id */}
+        {/* Typeform Embed */}
         {modalState === "typeform" && (
           <div className="h-[80vh] w-full">
             <Widget
@@ -241,7 +240,6 @@ export default function InsuranceVerificationModal({
 
             <div className="mx-auto max-w-md">
               <div className="border border-gray-300 rounded-xl p-6 bg-white space-y-6">
-                {/* Insurance Provider Dropdown */}
                 <div>
                   <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Insurance Provider*
