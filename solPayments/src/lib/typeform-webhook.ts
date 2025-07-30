@@ -684,9 +684,8 @@ interface TypeformField {
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Typeform/1.0',
-          'Typeform-Signature': 'test_signature' // May not be validated in staging
+          'Content-Type': 'application/json'
+          // Removed Typeform-Signature and User-Agent headers to avoid CORS issues
         },
         body: JSON.stringify(webhookPayload)
       });
@@ -705,10 +704,10 @@ interface TypeformField {
         return { success: true, data: responseText };
       }
     } catch (error: unknown) {
-      console.error('Webhook error:', error);
-      const errMsg = error instanceof Error ? error.message : String(error);
-      return { success: false, error: errMsg };
-    }
+        console.error('Webhook error:', error);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        return { success: false, error: errMsg };
+      }
   }
   
   // Helper to generate response ID in Typeform format
