@@ -1,9 +1,8 @@
+// src/api/axios.ts
 import axios, { AxiosInstance } from 'axios';
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL:
-    (process.env.NEXT_PUBLIC_API_URL as string) ||
-    `${typeof window !== 'undefined' ? window.location.protocol : 'https:'}//${typeof window !== 'undefined' ? `api.${window.location.hostname}` : 'api.solhealth.co'}`,
+  baseURL: 'https://api.stg.solhealth.co', // Fixed to use the correct Sol Health API
   headers: {
     'Content-Type': 'application/json',
   },
