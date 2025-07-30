@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { AxiosError, AxiosRequestConfig, Method } from 'axios';
+import type { AxiosError, AxiosRequestConfig, Method } from 'axios';
 
 import { formatApiError } from '@/lib/errorUtils';
 import axiosInstance from '../axios';
