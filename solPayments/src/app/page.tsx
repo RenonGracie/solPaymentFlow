@@ -16,17 +16,17 @@ import Image from "next/image";
 type PaymentType = "insurance" | "cash_pay";
 
 export default function Home() {
-  // Legacy modal states (keep for demo)
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Modal states
+  const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [modalInitialState, setModalInitialState] = useState<"cash-pay-form" | undefined>(undefined);
+  const [selectedPaymentType, setSelectedPaymentType] = useState<PaymentType | null>(null);
   
   // New state for integrated flow
   const [currentStep, setCurrentStep] = useState<STEPS | null>(null);
-  const [selectedPaymentType, setSelectedPaymentType] = useState<PaymentType | null>(null);
   const [clientResponseId, setClientResponseId] = useState<string | null>(null);
   const [bookingData, setBookingData] = useState<BookAppointmentResponse | null>(null);
   const [isSearchingAnotherTherapist, setIsSearchingAnotherTherapist] = useState(false);
+  const [formData, setFormData] = useState<any>(null);
 
   // Card expansion states
   const [insuranceExpanded, setInsuranceExpanded] = useState(false);
@@ -44,16 +44,7 @@ export default function Home() {
     setCashExpanded(prev => !prev);
   };
 
-  // Legacy modal handlers (keep for demo payment button)
-  const handleOpenModal = () => {
-    setModalInitialState(undefined);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
+  // Modal handlers
   const handleOpenPaymentModal = () => {
     setIsPaymentModalOpen(true);
   };
@@ -71,11 +62,19 @@ export default function Home() {
   // New handlers for integrated flow
   const handleInsuranceFlow = () => {
     setSelectedPaymentType("insurance");
-    setCurrentStep(STEPS.TYPEFORM);
+    setIsInsuranceModalOpen(true);
   };
 
   const handleCashPayFlow = () => {
     setSelectedPaymentType("cash_pay");
+    setIsInsuranceModalOpen(true);
+  };
+
+  const handleModalContinue = (data: { type: string; formData: any }) => {
+    console.log('Modal continue with data:', data);
+    setFormData(data.formData);
+    setSelectedPaymentType(data.type as PaymentType);
+    setIsInsuranceModalOpen(false);
     setCurrentStep(STEPS.TYPEFORM);
   };
 
@@ -94,6 +93,7 @@ export default function Home() {
   const handleBackFromTypeform = () => {
     setCurrentStep(null);
     setSelectedPaymentType(null);
+    setFormData(null);
   };
 
   const handleBookSession = useCallback((bookedSessionData: BookAppointmentResponse) => {
@@ -159,7 +159,7 @@ export default function Home() {
     );
   }
 
-  // If showing Typeform, render it
+  // If showing Typeform, render it without header to avoid duplication
   if (currentStep === STEPS.TYPEFORM) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3' }}>
@@ -228,12 +228,14 @@ export default function Home() {
           />
         </div>
 
+        {/* Typeform Container - Use showHeader={false} to avoid duplication */}
         <div className="w-full" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
           <TypeformEmbed
             paymentType={selectedPaymentType || "insurance"}
-            formData={{ firstName: "", lastName: "", email: "" }}
+            formData={formData || { firstName: "", lastName: "", email: "" }}
             onSubmit={handleTypeformSubmit}
             onBack={handleBackFromTypeform}
+            showHeader={false}
           />
         </div>
       </div>
@@ -501,14 +503,15 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Keep existing modals for demo purposes */}
+      {/* Insurance Verification Modal */}
       <InsuranceVerificationModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onContinueToQuestionnaire={() => window.location.href = "https://stg.solhealth.co/"}
-        initialState={modalInitialState}
+        isOpen={isInsuranceModalOpen}
+        onClose={() => setIsInsuranceModalOpen(false)}
+        onContinueToQuestionnaire={handleModalContinue}
+        paymentType={selectedPaymentType || "insurance"}
       />
 
+      {/* Demo Square Payment Modal */}
       <SquarePaymentModal
         isOpen={isPaymentModalOpen}
         onClose={handleClosePaymentModal}
