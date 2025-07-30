@@ -4,9 +4,9 @@ import { AxiosError } from 'axios';
 import {
   useClientsSignupFormsService,
   useTherapistsService,
-} from '../api/services';
-import { TApiError } from '../api/types/errors';
-import { formatApiError } from '../lib/errorUtils';
+} from '@/api/services';
+import { TApiError } from '@/api/types/errors';
+import { formatApiError } from '@/lib/errorUtils';
 
 const I_DO_NOT_SEE_MY_STATE = "I don't see my state";
 const LANDING_PAGE_URL = 'https://solhealth.co/';
