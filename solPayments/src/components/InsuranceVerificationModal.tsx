@@ -137,7 +137,7 @@ export default function InsuranceVerificationModal({
 
   const handleContinueToQuestionnaire = () => {
     // Redirect to Typeform with insurance flag and tracking params
-    const baseUrl = "https://muyhp7jd7hw.typeform.com/to/Dgi2e9lw";
+    const baseUrl = "https://stg.solhealth.co";
 
     // Query params (UTM)
     const utmParams = new URLSearchParams({
@@ -160,12 +160,12 @@ export default function InsuranceVerificationModal({
       client_type: "insurance"
     });
 
-    window.location.href = `${baseUrl}?${utmParams.toString()}#${hashParams.toString()}`;
+    window.location.href = `${baseUrl}?${utmParams.toString()}&${hashParams.toString()}`;
   };
 
   // New handler for cash-pay flow
   const handleOutOfPocketContinue = () => {
-    const baseUrl = "https://muyhp7jd7hw.typeform.com/to/Dgi2e9lw";
+    const baseUrl = "https://stg.solhealth.co/";
 
     const utmParams = new URLSearchParams({
       utm_source: "website",
@@ -186,7 +186,7 @@ export default function InsuranceVerificationModal({
       client_type: "cash_pay"
     });
 
-    window.location.href = `${baseUrl}?${utmParams.toString()}#${hashParams.toString()}`;
+    window.location.href = `${baseUrl}?${utmParams.toString()}&${hashParams.toString()}`;
   };
 
   const handleInputChange = (field: string, value: string) => {
