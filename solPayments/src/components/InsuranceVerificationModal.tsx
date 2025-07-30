@@ -158,7 +158,7 @@ export default function InsuranceVerificationModal({
       // Treat any 2xx response as success; API errors would have thrown above
       setVerificationResponse(responseData);
       setModalState("verification-success");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Verification error:", error);
       setModalState("verification-failed");
     }
@@ -195,7 +195,7 @@ export default function InsuranceVerificationModal({
         console.error("Webhook failed:", result.error);
         setModalState("submission-failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to submit:", error);
       setModalState("submission-failed");
     }
@@ -232,7 +232,7 @@ export default function InsuranceVerificationModal({
         console.error("Cash pay webhook failed:", result.error);
         setModalState("submission-failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to submit cash pay:", error);
       setModalState("submission-failed");
     }

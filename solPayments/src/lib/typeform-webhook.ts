@@ -704,9 +704,10 @@ interface TypeformField {
       } catch {
         return { success: true, data: responseText };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Webhook error:', error);
-      return { success: false, error: error.message };
+      const errMsg = error instanceof Error ? error.message : String(error);
+      return { success: false, error: errMsg };
     }
   }
   
