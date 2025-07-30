@@ -151,10 +151,31 @@ export default function InsuranceVerificationModal({
     setModalState("typeform");
   };
 
-  const handleTypeformSubmit = ({ responseId }: { responseId: string }) => {
-    console.log('Received response_id from Typeform:', responseId);
-    onContinueToQuestionnaire(responseId);
-  };
+// Add this enhanced debug version to InsuranceVerificationModal.tsx
+// Replace the handleTypeformSubmit function with this:
+
+const handleTypeformSubmit = ({ responseId }: { responseId: string }) => {
+  console.log('🎯 Typeform onSubmit called');
+  console.log('📄 Full event data:', { responseId });
+  console.log('📝 ResponseId type:', typeof responseId);
+  console.log('📏 ResponseId length:', responseId?.length);
+  console.log('🔍 ResponseId value:', JSON.stringify(responseId));
+  
+  if (!responseId) {
+    console.error('❌ ResponseId is falsy:', responseId);
+    alert('Error: No response ID received from Typeform');
+    return;
+  }
+  
+  if (responseId.trim() === '') {
+    console.error('❌ ResponseId is empty string');
+    alert('Error: Empty response ID received from Typeform');
+    return;
+  }
+  
+  console.log('✅ Valid responseId received, calling parent handler');
+  onContinueToQuestionnaire(responseId);
+};
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
