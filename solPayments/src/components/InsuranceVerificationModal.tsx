@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
+import { Widget } from "@typeform/embed-react";
 import { checkEligibility } from "../app/api/eligibility.js";
-import { sendTypeformWebhook, generateTypeformResponseId } from "../lib/typeform-webhook";
 
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
 
@@ -15,7 +15,7 @@ type ModalState =
   | "verification-success"
   | "verification-failed"
   | "cash-pay-form"
-  | "submitting"
+  | "typeform"
   | "submission-failed";
 
 interface EligibilityBenefits {
@@ -31,14 +31,13 @@ interface EligibilityBenefits {
 
 interface VerificationResponse {
   benefits?: EligibilityBenefits;
-  // Allow additional unknown fields without using `any`
   [key: string]: unknown;
 }
 
 interface InsuranceVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onContinueToQuestionnaire: (data: { type: string; [key: string]: string }) => void;
+  onContinueToQuestionnaire: (responseId: string) => void; // Now expects just the response_id
   initialState?: ModalState;
 }
 
@@ -56,17 +55,14 @@ export default function InsuranceVerificationModal({
     dateOfBirth: "",
     memberId: "",
     email: "",
-    phone: "",  // optional extras
-    age: "",
     gender: "",
-    responseId: generateTypeformResponseId()
   });
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
 
   // Reset modal state when it opens
   useEffect(() => {
     if (isOpen) {
-      setModalState("insurance-form");
+      setModalState(initialState ?? "insurance-form");
       setSelectedProvider(null);
       setFormData({
         firstName: "",
@@ -74,10 +70,7 @@ export default function InsuranceVerificationModal({
         dateOfBirth: "",
         memberId: "",
         email: "",
-        phone: "",
-        age: "",
         gender: "",
-        responseId: generateTypeformResponseId()
       });
       setVerificationResponse(null);
     }
@@ -104,18 +97,15 @@ export default function InsuranceVerificationModal({
     cigna: "62308",
     meritain: "64157",
     carelon: "47198",
-    bcbs: "22099", // not used for NJ; you could remove this or keep for structure
+    bcbs: "22099",
     amerihealth: "60061",
-    "cash-pay": "" // not needed, but prevents TS error
+    "cash-pay": ""
   };
 
   const handleVerifyInsurance = async () => {
     if (!selectedProvider) return;
 
     setModalState("verifying");
-
-    console.log("Raw dateOfBirth from form:", formData.dateOfBirth);
-    console.log("Type of dateOfBirth:", typeof formData.dateOfBirth);
 
     const formatDOB = (dobStr: string): string | null => {
       const [year, month, day] = dobStr.split("-");
@@ -124,8 +114,6 @@ export default function InsuranceVerificationModal({
     };
 
     const dobFormatted = formatDOB(formData.dateOfBirth);
-    console.log("Formatted DOB (YYYYMMDD):", dobFormatted);
-    console.log("Length of formatted DOB:", dobFormatted?.length);
     
     if (!dobFormatted) {
       setModalState("verification-failed");
@@ -147,14 +135,11 @@ export default function InsuranceVerificationModal({
       }
     };
 
-    console.log("Full payload being sent:", JSON.stringify(payload, null, 2));
-
     try {
       // This calls Lambda A which creates Insurance IntakeQ profile
       const responseData = await checkEligibility(payload);
       console.log("Response data:", responseData);
 
-      // Treat any 2xx response as success; API errors would have thrown above
       setVerificationResponse(responseData);
       setModalState("verification-success");
     } catch (error: unknown) {
@@ -163,143 +148,24 @@ export default function InsuranceVerificationModal({
     }
   };
 
-  const handleContinueToQuestionnaire = async () => {
-    try {
-      setModalState("submitting");
-
-      // 1. Send webhook first
-      const webhookResult = await sendTypeformWebhook({
-        responseId: formData.responseId,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone || undefined,
-        age: formData.age || undefined,
-        gender: formData.gender || undefined,
-        insuranceProvider: getSelectedProviderName(),
-        paymentType: "insurance",
-        phqScore: 9,
-        gadScore: 6,
-        suicidalIdeation: 2,
-        alcoholUse: 0,
-        drugUse: 0
-      });
-
-      if (!webhookResult.success) {
-        console.error("Webhook failed:", webhookResult.error);
-        setModalState("submission-failed");
-        return;
-      }
-
-      // 2. Poll backend until record exists
-      const maxAttempts = 20;
-      let attempts = 0;
-      let found = false;
-
-      while (attempts < maxAttempts && !found) {
-        attempts += 1;
-        try {
-          const resp = await fetch(`https://api.stg.solhealth.co/clients_signup?response_id=${formData.responseId}`);
-          if (resp.ok) {
-            found = true;
-            break;
-          }
-          if (resp.status !== 404) {
-            console.error("Unexpected status while polling:", resp.status);
-          }
-        } catch (err) {
-          console.error(`Polling attempt ${attempts} failed:`, err);
-        }
-
-        if (!found) {
-          await new Promise((res) => setTimeout(res, 3000));
-        }
-      }
-
-      if (!found) {
-        console.error("Record not found after polling");
-        setModalState("submission-failed");
-        return;
-      }
-
-      // 3. Redirect to staging site
-      window.location.href = `https://stg.solhealth.co/${formData.responseId}`;
-    } catch (error) {
-      console.error("Failed to process submission:", error);
-      setModalState("submission-failed");
-    }
+  // After insurance verification, proceed to Typeform
+  const handleContinueToTypeform = () => {
+    setModalState("typeform");
   };
 
-  // Updated handler for cash-pay flow with webhook + polling
-  const handleOutOfPocketContinue = async () => {
-    try {
-      setModalState("submitting");
-
-      // Ensure responseId exists
-      if (!formData.responseId) {
-        formData.responseId = generateTypeformResponseId();
-      }
-
-      const webhookResult = await sendTypeformWebhook({
-        responseId: formData.responseId,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone || undefined,
-        age: formData.age || undefined,
-        gender: formData.gender || undefined,
-        paymentType: "cash",
-        phqScore: 9,
-        gadScore: 6,
-        suicidalIdeation: 2,
-        alcoholUse: 0,
-        drugUse: 0
-      });
-
-      if (!webhookResult.success) {
-        console.error("Webhook failed:", webhookResult.error);
-        setModalState("submission-failed");
-        return;
-      }
-
-      const maxAttempts = 20;
-      let attempts = 0;
-      let found = false;
-
-      while (attempts < maxAttempts && !found) {
-        attempts += 1;
-        try {
-          const resp = await fetch(`/api/check-client?response_id=${formData.responseId}`);
-          if (resp.ok) {
-            found = true;
-            const data = await resp.json();
-            console.log("Client record found (cash):", data);
-            break;
-          }
-          if (resp.status !== 404) {
-            const data = await resp.json().catch(() => ({}));
-            console.error("Unexpected response while polling (cash):", resp.status, data);
-          }
-        } catch (err) {
-          console.error(`Polling attempt ${attempts} failed:`, err);
-        }
-
-        if (!found) {
-          await new Promise((r) => setTimeout(r, 3000));
-        }
-      }
-
-      if (!found) {
-        console.error("Record not found after polling (cash)");
-        setModalState("submission-failed");
-        return;
-      }
-
-      window.location.href = `https://stg.solhealth.co/${formData.responseId}`;
-    } catch (error) {
-      console.error("Failed to process cash-pay submission:", error);
-      setModalState("submission-failed");
+  // After cash pay form, proceed to Typeform
+  const handleCashPayContinue = () => {
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      return;
     }
+    setModalState("typeform");
+  };
+
+  // Handle Typeform submission - this gets the REAL response_id
+  const handleTypeformSubmit = ({ responseId }: { responseId: string }) => {
+    console.log('Received response_id from Typeform:', responseId);
+    // Pass the real response_id to the parent
+    onContinueToQuestionnaire(responseId);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -310,16 +176,56 @@ export default function InsuranceVerificationModal({
     return insuranceProviders.find(p => p.id === selectedProvider)?.name || "";
   };
 
+  // Generate hidden fields for Typeform
+  const getUtmParams = () => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      utm_source: params.get('utm_source') || 'sol_payments',
+      utm_medium: params.get('utm_medium') || 'payments_modal',
+      utm_campaign: params.get('utm_campaign') || 'onboarding',
+      utm_term: params.get('utm_term') || '',
+      utm_content: params.get('utm_content') || '',
+    };
+  };
+
+  const hiddenFields = {
+    ...getUtmParams(),
+    // Pre-fill form data from our modal
+    first_name: formData.firstName,
+    last_name: formData.lastName,
+    email: formData.email,
+    gender: formData.gender,
+    insurance_provider: getSelectedProviderName(),
+    payment_type: modalState === "typeform" && initialState === "cash-pay-form" ? "Cash Pay" : "Insurance",
+  };
+
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogHeader><DialogTitle className="sr-only">Insurance Eligibility Modal</DialogTitle></DialogHeader>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#FFFBF3' }}>
-
-        {/* Add transition container for smooth animations */}
+      <DialogContent 
+        className={modalState === "typeform" ? "sm:max-w-[90vw] max-h-[90vh] w-full" : "sm:max-w-[600px] max-h-[90vh] overflow-y-auto"} 
+        style={{ backgroundColor: '#FFFBF3' }}
+      >
         <div className="transition-all duration-500 ease-in-out">
 
-        {/* Provider selection step removed; modal starts directly at insurance-form */}
+        {/* Typeform Embed - This gets the real response_id */}
+        {modalState === "typeform" && (
+          <div className="h-[80vh] w-full">
+            <Widget
+              id={process.env.NEXT_PUBLIC_TYPEFORM_ID || "Dgi2e9lw"}
+              className="w-full h-full"
+              onSubmit={handleTypeformSubmit}
+              hidden={hiddenFields}
+            />
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Insurance Information Form */}
         {modalState === "insurance-form" && (
@@ -408,7 +314,6 @@ export default function InsuranceVerificationModal({
                   />
                 </div>
 
-                {/* Email */}
                 <div>
                   <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Email*
@@ -423,39 +328,6 @@ export default function InsuranceVerificationModal({
                   />
                 </div>
 
-                {/* Phone Number (optional) */}
-                <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
-                    placeholder="(555) 123-4567"
-                    style={{ fontSize: '16px' }}
-                  />
-                </div>
-
-                {/* Age (optional) */}
-                <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
-                    Age
-                  </label>
-                  <input
-                    type="number"
-                    min="18"
-                    max="100"
-                    value={formData.age}
-                    onChange={(e) => handleInputChange("age", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
-                    placeholder="25"
-                    style={{ fontSize: '16px' }}
-                  />
-                </div>
-
-                {/* Gender (optional) */}
                 <div>
                   <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Gender
@@ -524,34 +396,6 @@ export default function InsuranceVerificationModal({
           </div>
         )}
 
-        {/* Redirecting / Submitting State */}
-        {modalState === "submitting" && (
-          <div className="space-y-8 text-center py-16 animate-in fade-in-0 zoom-in-95 duration-500">
-            <div className="space-y-6">
-              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center animate-pulse mx-auto">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </div>
-              <h2 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.2' }}>
-                Redirecting to Questionnaire...
-              </h2>
-              <p className="font-inter text-gray-600" style={{ fontSize: '16px' }}>
-                You'll now complete a brief questionnaire to help us match you with your ideal therapist
-              </p>
-              <div className="text-sm text-gray-500 font-inter">
-                If you're not redirected automatically,
-                <button
-                  onClick={() => window.location.reload()}
-                  className="text-blue-600 hover:text-blue-700 underline ml-1"
-                >
-                  click here
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Verification Success State */}
         {modalState === "verification-success" && (
           <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
@@ -612,7 +456,7 @@ export default function InsuranceVerificationModal({
 
             <div className="flex justify-center">
               <Button
-                onClick={handleContinueToQuestionnaire}
+                onClick={handleContinueToTypeform}
                 className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px' }}
               >
@@ -731,7 +575,7 @@ export default function InsuranceVerificationModal({
                 Back
               </Button>
               <Button
-                onClick={handleOutOfPocketContinue}
+                onClick={handleCashPayContinue}
                 disabled={!formData.firstName || !formData.lastName || !formData.email}
                 className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
                 style={{ fontSize: '16px' }}
@@ -742,46 +586,9 @@ export default function InsuranceVerificationModal({
           </div>
         )}
 
-        {/* Submission Failed State */}
-        {modalState === "submission-failed" && (
-          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-700 delay-300">
-                <X className="w-8 h-8 text-red-600" />
-              </div>
-              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.1' }}>
-                Submission Failed
-              </h1>
-              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
-                We were unable to submit your information. Please try again later or contact support.
-              </p>
-            </div>
-
-            <div className="flex justify-center space-x-4">
-              <Button
-                onClick={() => setModalState("insurance-form")}
-                variant="outline"
-                className="px-6 py-3 font-inter rounded-full border-2 border-yellow-500 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
-                style={{ fontSize: '16px', fontWeight: '500' }}
-              >
-                Re-Enter Insurance
-              </Button>
-              <Button
-                onClick={() => setModalState("cash-pay-form")}
-                className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
-                style={{ fontSize: '16px' }}
-              >
-                Pay Out-of-Pocket for $30/Session
-              </Button>
-            </div>
-          </div>
-        )}
-
         </div>
       </DialogContent>
     </Dialog>
-
-    {/* No embedded Typeform – submission handled via webhook */}
     </>
   );
 }
