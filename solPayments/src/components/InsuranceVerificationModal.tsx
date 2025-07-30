@@ -230,31 +230,74 @@ export default function InsuranceVerificationModal({
     }
   };
 
-  // New handler for cash-pay flow
+  // Updated handler for cash-pay flow with webhook + polling
   const handleOutOfPocketContinue = async () => {
     try {
       setModalState("submitting");
 
-      const baseUrl = "https://solhealth.typeform.com/to/Dgi2e9lw";
-      const params = new URLSearchParams();
+      // Ensure responseId exists
+      if (!formData.responseId) {
+        formData.responseId = generateTypeformResponseId();
+      }
 
-      params.set("hidden_email", formData.email);
-      params.set("hidden_first_name", formData.firstName);
-      params.set("hidden_last_name", formData.lastName);
-      params.set("hidden_utm_source", "sol_payments");
-      params.set("hidden_utm_medium", "cash_pay");
-      params.set("hidden_utm_campaign", "onboarding");
+      const webhookResult = await sendTypeformWebhook({
+        responseId: formData.responseId,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        age: formData.age || undefined,
+        gender: formData.gender || undefined,
+        paymentType: "cash",
+        phqScore: 9,
+        gadScore: 6,
+        suicidalIdeation: 2,
+        alcoholUse: 0,
+        drugUse: 0
+      });
 
-      params.set("email", formData.email);
-      if (formData.phone) params.set("phone", formData.phone);
-      if (formData.age) params.set("age", formData.age);
+      if (!webhookResult.success) {
+        console.error("Webhook failed:", webhookResult.error);
+        setModalState("submission-failed");
+        return;
+      }
 
-      const fullUrl = `${baseUrl}?${params.toString()}`;
+      const maxAttempts = 20;
+      let attempts = 0;
+      let found = false;
 
-      await new Promise((r) => setTimeout(r, 1500));
-      window.location.href = fullUrl;
+      while (attempts < maxAttempts && !found) {
+        attempts += 1;
+        try {
+          const resp = await fetch(`/api/check-client?response_id=${formData.responseId}`);
+          if (resp.ok) {
+            found = true;
+            const data = await resp.json();
+            console.log("Client record found (cash):", data);
+            break;
+          }
+          if (resp.status !== 404) {
+            const data = await resp.json().catch(() => ({}));
+            console.error("Unexpected response while polling (cash):", resp.status, data);
+          }
+        } catch (err) {
+          console.error(`Polling attempt ${attempts} failed:`, err);
+        }
+
+        if (!found) {
+          await new Promise((r) => setTimeout(r, 3000));
+        }
+      }
+
+      if (!found) {
+        console.error("Record not found after polling (cash)");
+        setModalState("submission-failed");
+        return;
+      }
+
+      window.location.href = `https://stg.solhealth.co/${formData.responseId}`;
     } catch (error) {
-      console.error("Failed to redirect to cash-pay Typeform:", error);
+      console.error("Failed to process cash-pay submission:", error);
       setModalState("submission-failed");
     }
   };
