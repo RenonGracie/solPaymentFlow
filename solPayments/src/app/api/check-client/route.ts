@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log(`🔍 Checking client status for response_id: ${responseId}`);
     
+    // Use the correct Sol Health API endpoint
     const response = await fetch(
       `https://api.stg.solhealth.co/clients_signup?response_id=${responseId}`,
       {
