@@ -15,6 +15,23 @@ type ModalState =
   | "verification-failed"
   | "cash-pay-form";
 
+interface EligibilityBenefits {
+  copay: string;
+  coinsurance: string;
+  memberObligation: string;
+  deductible: string;
+  remainingDeductible: string;
+  oopMax: string;
+  remainingOopMax: string;
+  benefitStructure: string;
+}
+
+interface VerificationResponse {
+  benefits?: EligibilityBenefits;
+  // Allow additional unknown fields without using `any`
+  [key: string]: unknown;
+}
+
 interface InsuranceVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -37,7 +54,7 @@ export default function InsuranceVerificationModal({
     memberId: "",
     email: ""
   });
-  const [verificationResponse, setVerificationResponse] = useState<any>(null);
+  const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
 
   // Reset modal state when it opens
   useEffect(() => {
