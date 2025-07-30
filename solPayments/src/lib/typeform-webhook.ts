@@ -1,4 +1,3 @@
-// solPayments/src/lib/typeform-webhook.ts
 
 interface TypeformField {
     id: string;
