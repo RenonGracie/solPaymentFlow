@@ -1,11 +1,9 @@
-// src/components/InsuranceVerificationModal.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
-import { Widget } from "@typeform/embed-react";
 import { checkEligibility } from "../app/api/eligibility.js";
 
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
@@ -15,9 +13,7 @@ type ModalState =
   | "verifying"
   | "verification-success"
   | "verification-failed"
-  | "cash-pay-form"
-  | "typeform"
-  | "submission-failed";
+  | "cash-pay-form";
 
 interface EligibilityBenefits {
   copay: string;
@@ -38,46 +34,47 @@ interface VerificationResponse {
 interface InsuranceVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onContinueToQuestionnaire: (responseId: string) => void;
+  onContinueToQuestionnaire: (data: { type: string; formData: any }) => void;
   initialState?: ModalState;
+  paymentType: "insurance" | "cash_pay";
 }
 
 export default function InsuranceVerificationModal({
   isOpen,
   onClose,
   onContinueToQuestionnaire,
-  initialState
+  initialState,
+  paymentType
 }: InsuranceVerificationModalProps) {
-  const [modalState, setModalState] = useState<ModalState>(initialState ?? "insurance-form");
+  const [modalState, setModalState] = useState<ModalState>(
+    initialState ?? (paymentType === "insurance" ? "insurance-form" : "cash-pay-form")
+  );
   const [selectedProvider, setSelectedProvider] = useState<InsuranceProvider | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     dateOfBirth: "",
     memberId: "",
-    email: "",
-    gender: "",
+    email: ""
   });
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
-  const [typeformResponseId, setTypeformResponseId] = useState<string | null>(null);
 
   // Reset modal state when it opens
   useEffect(() => {
     if (isOpen) {
-      setModalState(initialState ?? "insurance-form");
+      const defaultState = paymentType === "insurance" ? "insurance-form" : "cash-pay-form";
+      setModalState(initialState ?? defaultState);
       setSelectedProvider(null);
       setFormData({
         firstName: "",
         lastName: "",
         dateOfBirth: "",
         memberId: "",
-        email: "",
-        gender: "",
+        email: ""
       });
       setVerificationResponse(null);
-      setTypeformResponseId(null);
     }
-  }, [isOpen, initialState]);
+  }, [isOpen, initialState, paymentType]);
 
   const insuranceProviders = [
     { id: "aetna" as const, name: "Aetna" },
@@ -133,80 +130,39 @@ export default function InsuranceVerificationModal({
 
     try {
       const responseData = await checkEligibility(payload);
-      console.log("Response data:", responseData);
-
       setVerificationResponse(responseData);
       setModalState("verification-success");
-    } catch (error: unknown) {
+    } catch (error) {
       console.error("Verification error:", error);
       setModalState("verification-failed");
     }
   };
 
-  const handleContinueToTypeform = () => {
-    setModalState("typeform");
+  const handleContinueToQuestionnaire = () => {
+    // Pass the form data and type to the parent
+    onContinueToQuestionnaire({
+      type: paymentType,
+      formData: {
+        ...formData,
+        provider: getSelectedProviderName(),
+        paymentType: paymentType
+      }
+    });
   };
 
   const handleCashPayContinue = () => {
     if (!formData.firstName || !formData.lastName || !formData.email) {
       return;
     }
-    setModalState("typeform");
-  };
-
-  const handleTypeformSubmit = async ({ responseId }: { responseId: string }) => {
-    console.log('🎯 Typeform onSubmit called');
-    console.log('📄 Full event data:', { responseId });
-    console.log('📝 ResponseId type:', typeof responseId);
-    console.log('📏 ResponseId length:', responseId?.length);
-    console.log('🔍 ResponseId value:', JSON.stringify(responseId));
     
-    if (!responseId) {
-      console.error('❌ ResponseId is falsy:', responseId);
-      alert('Error: No response ID received from Typeform');
-      return;
-    }
-    
-    if (responseId.trim() === '') {
-      console.error('❌ ResponseId is empty string');
-      alert('Error: Empty response ID received from Typeform');
-      return;
-    }
-    
-    console.log('✅ Valid responseId received, storing it');
-    setTypeformResponseId(responseId);
-    
-    // Poll the backend to check if the client signup has been processed
-    console.log('🔄 Starting to poll backend for client status');
-    const pollInterval = setInterval(async () => {
-      try {
-        console.log(`🔍 Checking client status for response_id: ${responseId}`);
-        const response = await fetch(`/api/check-client?response_id=${responseId}`);
-        const data = await response.json();
-        
-        console.log('📡 Backend response:', data);
-        
-        if (response.ok && data.response_id) {
-          console.log('✅ Client found in backend!');
-          clearInterval(pollInterval);
-          // Call parent handler to continue to the main questionnaire flow
-          onContinueToQuestionnaire(responseId);
-        } else if (!response.ok && response.status !== 404) {
-          console.error('❌ Backend error:', data);
-          clearInterval(pollInterval);
-          setModalState("submission-failed");
-        }
-      } catch (error) {
-        console.error('❌ Polling error:', error);
+    // For cash pay, go directly to questionnaire
+    onContinueToQuestionnaire({
+      type: "cash_pay",
+      formData: {
+        ...formData,
+        paymentType: "cash_pay"
       }
-    }, 2000); // Poll every 2 seconds
-    
-    // Stop polling after 40 seconds (20 attempts)
-    setTimeout(() => {
-      clearInterval(pollInterval);
-      console.log('⏱️ Polling timeout reached');
-      setModalState("submission-failed");
-    }, 40000);
+    });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -217,105 +173,11 @@ export default function InsuranceVerificationModal({
     return insuranceProviders.find(p => p.id === selectedProvider)?.name || "";
   };
 
-  // SSR-safe UTM parameter getter
-  const getUtmParams = () => {
-    // Only access window on client side
-    if (typeof window === 'undefined') {
-      return {
-        utm_source: 'sol_payments',
-        utm_medium: 'payments_modal',
-        utm_campaign: 'onboarding',
-        utm_term: '',
-        utm_content: '',
-      };
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    return {
-      utm_source: params.get('utm_source') || 'sol_payments',
-      utm_medium: params.get('utm_medium') || 'payments_modal',
-      utm_campaign: params.get('utm_campaign') || 'onboarding',
-      utm_term: params.get('utm_term') || '',
-      utm_content: params.get('utm_content') || '',
-    };
-  };
-
-  const hiddenFields = {
-    ...getUtmParams(),
-    // Pre-fill form data from our modal
-    first_name: formData.firstName,
-    last_name: formData.lastName,
-    email: formData.email,
-    gender: formData.gender,
-    insurance_provider: getSelectedProviderName(),
-    payment_type: modalState === "typeform" && initialState === "cash-pay-form" ? "Cash Pay" : "Insurance",
-  };
-
   return (
-    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogHeader><DialogTitle className="sr-only">Insurance Eligibility Modal</DialogTitle></DialogHeader>
-      <DialogContent 
-        className={modalState === "typeform" ? "sm:max-w-[90vw] max-h-[90vh] w-full" : "sm:max-w-[600px] max-h-[90vh] overflow-y-auto"} 
-        style={{ backgroundColor: '#FFFBF3' }}
-      >
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#FFFBF3' }}>
         <div className="transition-all duration-500 ease-in-out">
-
-        {/* Typeform Embed */}
-        {modalState === "typeform" && (
-          <div className="h-[80vh] w-full">
-            <Widget
-              id={process.env.NEXT_PUBLIC_TYPEFORM_ID || "Dgi2e9lw"}
-              className="w-full h-full"
-              onSubmit={handleTypeformSubmit}
-              hidden={hiddenFields}
-            />
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
-        {/* Submission Failed State */}
-        {modalState === "submission-failed" && (
-          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-700 delay-300">
-                <X className="w-8 h-8 text-red-600" />
-              </div>
-              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.1' }}>
-                Sorry, there was an issue processing your submission.
-              </h1>
-              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
-                {typeformResponseId ? 
-                  `We received your form (ID: ${typeformResponseId}) but couldn't process it. Please contact support at contact@solhealth.co with this ID.` :
-                  "We couldn't process your submission. Please try again or contact support at contact@solhealth.co."
-                }
-              </p>
-            </div>
-
-            <div className="flex justify-center space-x-4">
-              <Button
-                onClick={() => setModalState(initialState === "cash-pay-form" ? "cash-pay-form" : "insurance-form")}
-                variant="outline"
-                className="px-6 py-3 font-inter rounded-full border-2 border-yellow-500 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
-                style={{ fontSize: '16px', fontWeight: '500' }}
-              >
-                Try Again
-              </Button>
-              <Button
-                onClick={onClose}
-                className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
-                style={{ fontSize: '16px' }}
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* Insurance Information Form */}
         {modalState === "insurance-form" && (
@@ -331,6 +193,7 @@ export default function InsuranceVerificationModal({
 
             <div className="mx-auto max-w-md">
               <div className="border border-gray-300 rounded-xl p-6 bg-white space-y-6">
+                {/* Insurance Provider Dropdown */}
                 <div>
                   <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Insurance Provider*
@@ -415,25 +278,6 @@ export default function InsuranceVerificationModal({
                     placeholder="Enter your email address"
                     style={{ fontSize: '16px' }}
                   />
-                </div>
-
-                <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
-                    Gender
-                  </label>
-                  <select
-                    value={formData.gender}
-                    onChange={(e) => handleInputChange("gender", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter bg-white"
-                    style={{ fontSize: '16px' }}
-                  >
-                    <option value="">Select gender (optional)</option>
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                    <option value="transgender">Transgender</option>
-                    <option value="non-binary">Non-binary</option>
-                    <option value="other">Other</option>
-                  </select>
                 </div>
               </div>
             </div>
@@ -545,7 +389,7 @@ export default function InsuranceVerificationModal({
 
             <div className="flex justify-center">
               <Button
-                onClick={handleContinueToTypeform}
+                onClick={handleContinueToQuestionnaire}
                 className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px' }}
               >
@@ -639,6 +483,19 @@ export default function InsuranceVerificationModal({
 
                 <div>
                   <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                    Date of Birth*
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 font-inter"
+                    style={{ fontSize: '16px' }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Email*
                   </label>
                   <input
@@ -665,7 +522,7 @@ export default function InsuranceVerificationModal({
               </Button>
               <Button
                 onClick={handleCashPayContinue}
-                disabled={!formData.firstName || !formData.lastName || !formData.email}
+                disabled={!formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.email}
                 className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
                 style={{ fontSize: '16px' }}
               >
@@ -678,6 +535,5 @@ export default function InsuranceVerificationModal({
         </div>
       </DialogContent>
     </Dialog>
-    </>
   );
 }

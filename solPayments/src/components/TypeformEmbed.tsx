@@ -1,8 +1,6 @@
 "use client";
 
 import { Widget } from "@typeform/embed-react";
-import { ArrowLeft } from "lucide-react";
-import Image from "next/image";
 
 type PaymentType = "insurance" | "cash_pay";
 
@@ -12,9 +10,12 @@ interface TypeformEmbedProps {
     firstName: string;
     lastName: string;
     email: string;
+    provider?: string;
+    paymentType?: string;
   };
   onSubmit: (responseId: string) => void;
   onBack: () => void;
+  showHeader?: boolean; // Add this prop to control header visibility
 }
 
 export default function TypeformEmbed({
@@ -22,6 +23,7 @@ export default function TypeformEmbed({
   formData,
   onSubmit,
   onBack,
+  showHeader = true, // Default to true for backward compatibility
 }: TypeformEmbedProps) {
   // Get UTM parameters from URL (similar to solHealthFE)
   const getUtmParams = (): Record<string, string> => {
@@ -67,9 +69,10 @@ export default function TypeformEmbed({
     payment_type: paymentType === "insurance" ? "Insurance" : "Cash Pay",
     
     // Pre-filled form data
-    first_name: formData.firstName,
-    last_name: formData.lastName,
-    email: formData.email,
+    first_name: formData.firstName || '',
+    last_name: formData.lastName || '',
+    email: formData.email || '',
+    insurance_provider: formData.provider || '',
     
     // UTM parameters
     ...getUtmParams(),
@@ -91,17 +94,29 @@ export default function TypeformEmbed({
     onSubmit(responseId);
   };
 
+  // If showHeader is false, just return the Typeform widget without any wrapper
+  if (!showHeader) {
+    return (
+      <div className="w-full h-full">
+        <Widget
+          id={process.env.NEXT_PUBLIC_TYPEFORM_ID || "Dgi2e9lw"}
+          className="w-full h-full"
+          onSubmit={handleTypeformSubmit}
+          hidden={hiddenFields}
+        />
+      </div>
+    );
+  }
+
+  // Original component with header (for standalone use)
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3' }}>
       {/* Header with back button */}
       <div className="relative overflow-hidden h-[120px] sm:h-[180px] md:h-[180px] lg:h-[180px]">
         {/* Banner Image */}
-        <Image
+        <img
           src="/onboarding-banner.jpg"
           alt="Onboarding Banner"
-          width={1440}
-          height={180}
-          priority
           className="w-full h-full select-none object-cover"
         />
 
@@ -113,13 +128,11 @@ export default function TypeformEmbed({
               className="mr-4 p-2 rounded-full hover:bg-white/20 transition-colors"
               aria-label="Go back"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-800" />
+              ← {/* ArrowLeft icon */}
             </button>
-            <Image
+            <img
               src="/sol-health-logo.svg"
               alt="Sol Health"
-              width={186}
-              height={32}
               className="h-8 w-auto"
             />
           </div>
@@ -157,14 +170,12 @@ export default function TypeformEmbed({
           className="absolute left-6 p-1 rounded-full hover:bg-gray-100 transition-colors"
           aria-label="Go back"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
+          ← {/* ArrowLeft icon */}
         </button>
         {/* Centered Logo */}
-        <Image
+        <img
           src="/sol-health-logo.svg"
           alt="Sol Health"
-          width={186}
-          height={32}
           className="h-8 w-auto"
         />
       </div>
