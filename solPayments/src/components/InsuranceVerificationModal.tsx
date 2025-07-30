@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { checkEligibility } from "../app/api/eligibility.js";
-// No longer need server-side webhook call; we’ll redirect directly to Typeform
+import { sendTypeformWebhook, generateTypeformResponseId } from "../lib/typeform-webhook";
 
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
 
@@ -58,7 +58,8 @@ export default function InsuranceVerificationModal({
     email: "",
     phone: "",  // optional extras
     age: "",
-    gender: ""
+    gender: "",
+    responseId: generateTypeformResponseId()
   });
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
 
@@ -75,7 +76,8 @@ export default function InsuranceVerificationModal({
         email: "",
         phone: "",
         age: "",
-        gender: ""
+        gender: "",
+        responseId: generateTypeformResponseId()
       });
       setVerificationResponse(null);
     }
@@ -165,32 +167,65 @@ export default function InsuranceVerificationModal({
     try {
       setModalState("submitting");
 
-      // Build Typeform URL with hidden params
-      const baseUrl = "https://stg.solhealth.co/";
-      const params = new URLSearchParams();
+      // 1. Send webhook first
+      const webhookResult = await sendTypeformWebhook({
+        responseId: formData.responseId,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        age: formData.age || undefined,
+        gender: formData.gender || undefined,
+        insuranceProvider: getSelectedProviderName(),
+        paymentType: "insurance",
+        phqScore: 9,
+        gadScore: 6,
+        suicidalIdeation: 2,
+        alcoholUse: 0,
+        drugUse: 0
+      });
 
-      params.set("hidden_email", formData.email);
-      params.set("hidden_first_name", formData.firstName);
-      params.set("hidden_last_name", formData.lastName);
-      params.set("hidden_utm_source", "sol_payments");
-      params.set("hidden_utm_medium", "insurance");
-      params.set("hidden_utm_campaign", "onboarding");
-
-      if (selectedProvider) {
-        params.set("hidden_insurance_provider", getSelectedProviderName());
+      if (!webhookResult.success) {
+        console.error("Webhook failed:", webhookResult.error);
+        setModalState("submission-failed");
+        return;
       }
 
-      // Optional pre-fill
-      params.set("email", formData.email);
-      if (formData.phone) params.set("phone", formData.phone);
-      if (formData.age) params.set("age", formData.age);
+      // 2. Poll backend until record exists
+      const maxAttempts = 20;
+      let attempts = 0;
+      let found = false;
 
-      const fullUrl = `${baseUrl}?${params.toString()}`;
+      while (attempts < maxAttempts && !found) {
+        attempts += 1;
+        try {
+          const resp = await fetch(`https://api.stg.solhealth.co/clients_signup?response_id=${formData.responseId}`);
+          if (resp.ok) {
+            found = true;
+            break;
+          }
+          if (resp.status !== 404) {
+            console.error("Unexpected status while polling:", resp.status);
+          }
+        } catch (err) {
+          console.error(`Polling attempt ${attempts} failed:`, err);
+        }
 
-      await new Promise((r) => setTimeout(r, 1500));
-      window.location.href = fullUrl;
+        if (!found) {
+          await new Promise((res) => setTimeout(res, 3000));
+        }
+      }
+
+      if (!found) {
+        console.error("Record not found after polling");
+        setModalState("submission-failed");
+        return;
+      }
+
+      // 3. Redirect to staging site
+      window.location.href = `https://stg.solhealth.co/${formData.responseId}`;
     } catch (error) {
-      console.error("Failed to redirect to Typeform:", error);
+      console.error("Failed to process submission:", error);
       setModalState("submission-failed");
     }
   };

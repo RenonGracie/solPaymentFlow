@@ -700,12 +700,20 @@ export async function sendTypeformWebhook(data: {
   }
 }
 
-// Helper to generate response ID in Typeform format
+
 export function generateTypeformResponseId(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+    // Typeform uses 32 character lowercase alphanumeric IDs
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    
+    // First character is often a letter
+    result += chars.charAt(Math.floor(Math.random() * 26)); // letters only
+    
+    // Rest can be any alphanumeric
+    for (let i = 1; i < 32; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    return result;
   }
-  return result;
-}
+  
