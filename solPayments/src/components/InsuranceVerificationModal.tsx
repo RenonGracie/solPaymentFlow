@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { checkEligibility } from "../app/api/eligibility.js";
+import EmbeddedTypeform from "./EmbeddedTypeform";
 
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
 
@@ -55,6 +56,8 @@ export default function InsuranceVerificationModal({
     email: ""
   });
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
+  // Toggle for showing the embedded Typeform overlay
+  const [showTypeform, setShowTypeform] = useState(false);
 
   // Reset modal state when it opens
   useEffect(() => {
@@ -153,57 +156,12 @@ export default function InsuranceVerificationModal({
   };
 
   const handleContinueToQuestionnaire = () => {
-    // Redirect to Typeform with insurance flag and tracking params
-    const baseUrl = "https://stg.solhealth.co";
-
-    // Query params (UTM)
-    const utmParams = new URLSearchParams({
-      utm_source: "website",
-      utm_medium: "modal",
-      utm_content: selectedProvider || "",
-      utm_term: "", // optional – fill as needed
-      utm_campaign: "", // optional – fill as needed
-      utm_adid: "", // optional – fill as needed
-      utm_adgroup: "" // optional – fill as needed
-    });
-
-    // Hash params (customer data)
-    const hashParams = new URLSearchParams({
-      session_id: crypto?.randomUUID?.() ?? Date.now().toString(),
-      client_id: formData.memberId || "", // using memberId as a stand-in client_id
-      first_name: formData.firstName,
-      last_name: formData.lastName,
-      email: formData.email,
-      client_type: "insurance"
-    });
-
-    window.location.href = `${baseUrl}?${utmParams.toString()}&${hashParams.toString()}`;
+    setShowTypeform(true);
   };
 
   // New handler for cash-pay flow
   const handleOutOfPocketContinue = () => {
-    const baseUrl = "https://stg.solhealth.co/";
-
-    const utmParams = new URLSearchParams({
-      utm_source: "website",
-      utm_medium: "modal",
-      utm_content: "cash_pay",
-      utm_term: "",
-      utm_campaign: "",
-      utm_adid: "",
-      utm_adgroup: ""
-    });
-
-    const hashParams = new URLSearchParams({
-      session_id: crypto?.randomUUID?.() ?? Date.now().toString(),
-      client_id: "", // no memberId for cash-pay
-      first_name: formData.firstName,
-      last_name: formData.lastName,
-      email: formData.email,
-      client_type: "cash_pay"
-    });
-
-    window.location.href = `${baseUrl}?${utmParams.toString()}&${hashParams.toString()}`;
+    setShowTypeform(true);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -215,6 +173,7 @@ export default function InsuranceVerificationModal({
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogHeader><DialogTitle className="sr-only">Insurance Eligibility Modal</DialogTitle></DialogHeader>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#FFFBF3' }}>
@@ -568,5 +527,17 @@ export default function InsuranceVerificationModal({
         </div>
       </DialogContent>
     </Dialog>
+
+    {showTypeform && (
+      <EmbeddedTypeform
+        firstName={formData.firstName}
+        lastName={formData.lastName}
+        email={formData.email}
+        insuranceProvider={selectedProvider || undefined}
+        paymentType={modalState === "cash-pay-form" ? "cash_pay" : "insurance"}
+        onClose={() => setShowTypeform(false)}
+      />
+    )}
+    </>
   );
 }
