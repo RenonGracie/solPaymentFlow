@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { checkEligibility } from "../app/api/eligibility.js";
-import EmbeddedTypeform from "./EmbeddedTypeform";
 import { generateTypeformResponseId, sendTypeformWebhook } from "../lib/typeform-webhook";
 
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
@@ -62,8 +61,6 @@ export default function InsuranceVerificationModal({
     gender: ""
   });
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
-  // Toggle for showing the embedded Typeform overlay
-  const [showTypeform, setShowTypeform] = useState(false);
 
   // Reset modal state when it opens
   useEffect(() => {
