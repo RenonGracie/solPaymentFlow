@@ -133,7 +133,7 @@ export default function InsuranceVerificationModal({
       tradingPartnerServiceId: tradingPartnerServiceIdMap[selectedProvider],
       provider: {
         organizationName: "Sol Health",
-        npi: "1234567890"
+        npi: "1669282885"
       },
       subscriber: {
         firstName: formData.firstName,
