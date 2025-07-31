@@ -66,7 +66,7 @@ export default function TypeformEmbed({
 
   const hiddenFields: Record<string, string> = {
     // Payment type information
-    payment_type: paymentType === "insurance" ? "Insurance" : "Cash Pay",
+    payment_type: paymentType === "insurance" ? "insurance" : "cash_pay",
     
     // Pre-filled form data
     first_name: formData.firstName || '',
