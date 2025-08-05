@@ -1,9 +1,19 @@
+// solPayments/src/api/axios.ts
 import axios, { AxiosInstance } from 'axios';
 
+// Debug: Log the environment and URL being used
+const baseURL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:8080'  // Correct backend port
+  : 'https://api.stg.solhealth.co';
+
+console.log('🔧 Axios Configuration:', {
+  NODE_ENV: process.env.NODE_ENV,
+  baseURL: baseURL,
+  NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL
+});
+
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:8000'  // Match backend port
-    : 'https://api.stg.solhealth.co',
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -36,6 +46,7 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     console.error(`❌ API Error: ${error.response?.status} ${error.config?.url}`);
+    console.error('🔧 Failed URL:', error.config?.baseURL + error.config?.url);
     if (error.response?.data) {
       console.error('📥 Error data:', error.response.data);
     }

@@ -8,6 +8,8 @@ type MatchParams = {
   response_id: string;
 };
 
+// In src/api/services/therapistsService.ts, update the therapist type to include specialities:
+
 export type MatchResponse = {
   client?: {
     id?: string;
@@ -31,6 +33,9 @@ export type MatchResponse = {
       caseload_tracker?: string;
       has_children?: boolean;
       cohort?: string;
+      current_caseload?: number;
+      diagnoses?: string[];  // Add this
+      specialities?: string[];  // Add this
       diagnoses_specialities?: string[];
       ethnicity?: string[];
       gender?: string;
@@ -41,7 +46,7 @@ export type MatchResponse = {
       culture?: string;
       places?: string;
       married?: boolean;
-      max_caseload?: string;
+      max_caseload?: string | number;
       neurodivergence?: string;
       performing?: boolean;
       program?: string;
@@ -54,8 +59,12 @@ export type MatchResponse = {
       family_household?: string;
       welcome_video_link?: string;
       greetings_video_link?: string;
-      image_link?: string;
+      image_link?: string | null;  // Update to allow null
       accepting_new_clients?: boolean;
+      // Add any other missing properties from the CSV
+      risk_experience?: string;
+      lgbtq_experience?: string;
+      neurodivergence_experience?: string;
     };
     score: number;
     matched_diagnoses_specialities: string[];
