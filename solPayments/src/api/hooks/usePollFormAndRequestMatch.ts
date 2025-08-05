@@ -77,9 +77,12 @@ export const usePollFormAndRequestMatch = () => {
           }
 
           try {
-            await getMatch({
+            const matchResponse = await getMatch({
               params: { limit: 10, response_id: responseId },
             });
+            
+            console.log('Match API Response:', matchResponse);
+            console.log('Therapists data:', matchData?.therapists);
           } catch (error) {
             handleError(error as AxiosError<TApiError>);
             throw error;

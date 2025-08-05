@@ -163,7 +163,8 @@ export default function Home() {
       const response = await axiosInstance.post('/clients_signup', completeClientData);
       console.log('✅ Client data stored:', response.data);
 
-      // Now request therapist matching
+      // 👉 Both insurance and cash_pay flows use the SAME therapist-matching API call
+      //    This ensures a single entry-point to retrieve matched therapists regardless of payment type
       await pollFormAndRequestMatch(responseId);
       
     } catch (error) {
@@ -202,8 +203,15 @@ export default function Home() {
       } else {
         setCurrentStep(STEPS.NO_MATCH);
       }
+
+      // Debug: log when we receive therapist matches along with the selected payment type
+      console.log('📦 Match data received:', {
+        paymentType: selectedPaymentType,
+        therapistsReturned: matchData.therapists.length,
+        therapists: matchData.therapists,
+      });
     }
-  }, [matchData?.therapists]);
+  }, [matchData?.therapists, selectedPaymentType]);
 
   // If we're in loading state, show loading
   if (loading || isProcessingResponse) {

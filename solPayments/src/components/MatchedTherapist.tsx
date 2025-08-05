@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Calendar, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { TMatchedTherapistData } from "@/api/types/therapist.types";
 
@@ -28,6 +28,10 @@ export default function MatchedTherapist({
   const [selectedDate, setSelectedDate] = useState<number | null>(11);
   const [viewedTherapistIds, setViewedTherapistIds] = useState<Set<string>>(new Set());
   const [showVideo, setShowVideo] = useState(false);
+  // New state to handle greetings video modal
+  const [showGreetingsVideo, setShowGreetingsVideo] = useState(false);
+  // Carousel index for previously viewed therapists
+  const [carouselIndex, setCarouselIndex] = useState(0);
   
   const currentTherapistData = therapistsList[currentIndex];
   const therapist = currentTherapistData?.therapist;
@@ -35,6 +39,14 @@ export default function MatchedTherapist({
   
   // Get client's needs from their responses
   const clientNeeds = clientData?.therapist_specializes_in || [];
+
+  // Debug: Check data structure we're receiving
+  useEffect(() => {
+    console.log('Current therapist data structure:', JSON.stringify(currentTherapistData, null, 2));
+    console.log('Therapist object:', JSON.stringify(therapist, null, 2));
+    console.log('Image link value:', therapist?.image_link);
+    console.log('Email value:', therapist?.email);
+  }, [currentTherapistData, therapist]);
   
   // Track viewed therapists
   useEffect(() => {
@@ -77,49 +89,28 @@ export default function MatchedTherapist({
     return `${h.padStart(2, '0')}:${m || '00'}`;
   };
 
-  // Helper to get image URL (handles S3 URLs and CloudFront)
-  const getImageUrl = (imageLink: string | null | undefined): string => {
-    if (!imageLink) return '';
+  // Helper to get image URL, handling actual backend response
+  const getImageUrl = (
+    imageLink: string | null | undefined,
+    email?: string
+  ): string => {
+    // Debug what we're receiving
+    console.log('getImageUrl called with:', { imageLink, email });
     
-    // If it's already a full URL, use it directly
-    if (imageLink.startsWith('http')) {
+    // If imageLink is provided and is a full URL (presigned or direct)
+    if (imageLink && typeof imageLink === 'string' && imageLink.length > 0) {
+      console.log('Using provided image link:', imageLink);
       return imageLink;
     }
     
-    // Extract the filename/email from various formats
-    let filename = '';
-    
-    if (imageLink.includes('@')) {
-      // It's already an email-based filename
-      filename = imageLink;
-    } else if (imageLink.includes('therapists-personal-data')) {
-      // Extract from S3 path format: s3://therapists-personal-data/images/email@domain.com
-      const matches = imageLink.match(/images\/(.+)$/);
-      if (matches && matches[1]) {
-        filename = matches[1];
-      } else {
-        // Fallback: get the last part after the last slash
-        const parts = imageLink.split('/');
-        filename = parts[parts.length - 1];
-      }
-    } else {
-      // Use as-is
-      filename = imageLink;
+    // If we have an email but no image link, the backend didn't provide one
+    // Don't try to construct S3 URLs client-side as the bucket is private
+    if (email) {
+      console.log('No image link provided by backend for email:', email);
     }
     
-    // Ensure the filename has an image extension
-    if (filename && !filename.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-      filename = `${filename}.jpg`; // Default to .jpg if no extension
-    }
-    
-    // Use CloudFront URL if available, otherwise fall back to S3
-    const cloudfrontUrl = process.env.NEXT_PUBLIC_CLOUDFRONT_URL;
-    if (cloudfrontUrl) {
-      return `${cloudfrontUrl}/${filename}`;
-    } else {
-      // Fallback to direct S3 URL
-      return `https://therapists-personal-data.s3.us-east-2.amazonaws.com/images/${filename}`;
-    }
+    // Return empty string to trigger fallback
+    return '';
   };
 
   if (!therapist) return null;
@@ -188,37 +179,45 @@ export default function MatchedTherapist({
               <Card className="flex-1 overflow-hidden border-0 shadow-lg">
                 <CardContent className="h-full p-6 overflow-y-auto">
                   {/* Therapist Header */}
-                  <div className="flex items-start gap-4 mb-6">
+                  <div className="flex items-start gap-6 mb-6">
                     <div className="flex-shrink-0">
-                      {therapist.image_link && (
-                        <img
-                          src={getImageUrl(therapist.image_link)}
-                          alt={therapist.intern_name}
-                          className="w-24 h-24 rounded-full object-cover"
-                          onError={(e) => {
-                            // Fallback if image fails to load
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                          }}
-                        />
-                      )}
-                      <div className={`w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center ${therapist.image_link ? 'hidden' : ''}`}>
-                        <span className="text-2xl text-gray-500">
-                          {therapist.intern_name?.charAt(0)}
-                        </span>
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                        {(therapist.image_link || therapist.email) ? (
+                          <img
+                            src={getImageUrl(therapist.image_link, therapist.email)}
+                            alt={therapist.intern_name || ''}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              console.error('Image load failed:', e.currentTarget.src);
+                              // Hide the broken image
+                              (e.currentTarget as HTMLImageElement).style.display = 'none';
+                              // Show the fallback
+                              const parent = e.currentTarget.parentElement;
+                              const fallback = parent?.querySelector('.fallback-initial') as HTMLElement;
+                              if (fallback) {
+                                fallback.style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div className={`fallback-initial w-full h-full rounded-full bg-gray-200 flex items-center justify-center ${(therapist.image_link || therapist.email) ? 'hidden' : ''}`}>
+                          <span className="text-4xl text-gray-500">
+                            {therapist.intern_name?.charAt(0) || 'T'}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex-1">
-                      <h2 className="text-2xl font-bold text-gray-800">
+                      <h2 className="text-3xl font-bold text-gray-800 mb-1">
                         {therapist.intern_name}
                       </h2>
-                      <p className="text-gray-600">{therapist.program}</p>
-                      
+                      <p className="text-gray-600 text-lg mb-4">{therapist.program || 'MHC'}</p>
+
                       {/* Top matched specialties as tags */}
-                      <div className="flex flex-wrap gap-2 mt-3">
+                      <div className="flex flex-wrap gap-2">
                         {matchedSpecialties.slice(0, 3).map((specialty, i) => (
-                          <span key={i} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                          <span key={i} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
                             {specialty}
                           </span>
                         ))}
@@ -234,16 +233,16 @@ export default function MatchedTherapist({
                     {therapist.welcome_video_link && (
                       <button
                         onClick={() => setShowVideo(!showVideo)}
-                        className="flex-shrink-0 w-32 h-20 bg-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors relative overflow-hidden"
+                        className="flex-shrink-0 w-32 h-24 bg-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors relative overflow-hidden group"
                       >
                         {therapist.image_link && (
                           <img
-                            src={getImageUrl(therapist.image_link)}
+                            src={getImageUrl(therapist.image_link, therapist.email)}
                             alt=""
-                            className="absolute inset-0 w-full h-full object-cover opacity-50"
+                            className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity"
                           />
                         )}
-                        <Play className="w-8 h-8 text-white relative z-10" />
+                        <Play className="w-10 h-10 text-white relative z-10" />
                       </button>
                     )}
                   </div>
@@ -390,14 +389,15 @@ export default function MatchedTherapist({
                   </Button>
 
                   {/* Find Another Therapist */}
-                  <div className="text-center mt-auto">
-                    <p className="text-sm text-gray-500 mb-2">It's Okay to Keep Looking</p>
+                  <div className="text-center mt-auto pt-6 border-t">
+                    <p className="text-gray-600 mb-3 text-lg">It's Okay to Keep Looking</p>
                     <Button
-                      variant="outline"
-                      className="w-full"
+                      variant="ghost"
+                      className="w-full text-gray-700 hover:bg-gray-50 font-medium py-3"
                       onClick={handleFindAnother}
                     >
-                      Find Another Therapist →
+                      Find Another Therapist
+                      <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </div>
                 </CardContent>
@@ -405,37 +405,78 @@ export default function MatchedTherapist({
             </div>
           </div>
 
-          {/* Bottom Section - Previously Viewed Therapists (only show if we have some) */}
+          {/* Bottom Section - Previously Viewed Therapists Carousel */}
           {previouslyViewed.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-4">Previously Viewed Therapists</h3>
-              <div className="grid grid-cols-4 gap-4">
-                {previouslyViewed.slice(0, 4).map((therapistData) => (
-                  <button
-                    key={`prev-${therapistData.therapist.id}`}
-                    onClick={() => handleSelectPreviousTherapist(therapistData.therapist.id)}
-                    className="p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-center"
+            <div className="mt-6 bg-white rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-6">Previously Viewed Therapists</h3>
+
+              <div className="relative">
+                {/* Carousel Container */}
+                <div className="relative overflow-hidden">
+                  <div
+                    className="flex gap-4 transition-transform duration-300 ease-in-out"
+                    style={{ transform: `translateX(-${carouselIndex * 292}px)` }}
                   >
-                    {therapistData.therapist.image_link && (
-                      <img
-                        src={getImageUrl(therapistData.therapist.image_link)}
-                        alt={therapistData.therapist.intern_name}
-                        className="w-20 h-20 rounded-full object-cover mx-auto mb-2"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                    )}
-                    <div className={`w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-2 ${therapistData.therapist.image_link ? 'hidden' : ''}`}>
-                      <span className="text-xl text-gray-500">
-                        {therapistData.therapist.intern_name?.charAt(0)}
-                      </span>
-                    </div>
-                    <p className="font-medium text-sm">{therapistData.therapist.intern_name}</p>
-                    <p className="text-xs text-gray-500">{therapistData.therapist.program}</p>
-                  </button>
-                ))}
+                    {previouslyViewed.map((therapistData) => (
+                      <div
+                        key={`prev-${therapistData.therapist.id}`}
+                        className="flex-shrink-0 w-[268px]"
+                      >
+                        <button
+                          onClick={() => handleSelectPreviousTherapist(therapistData.therapist.id)}
+                          className="w-full p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-center hover:shadow-md"
+                        >
+                          <div className="w-24 h-24 mx-auto mb-3 relative rounded-full overflow-hidden bg-gray-200">
+                            {(therapistData.therapist.image_link || therapistData.therapist.email) ? (
+                              <img
+                                src={getImageUrl(therapistData.therapist.image_link, therapistData.therapist.email)}
+                                alt={therapistData.therapist.intern_name || ''}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                  if (fallback) fallback.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div className={`w-full h-full flex items-center justify-center ${(therapistData.therapist.image_link || therapistData.therapist.email) ? 'hidden' : ''}`}>
+                              <span className="text-2xl text-gray-500">
+                                {therapistData.therapist.intern_name?.charAt(0) || '?'}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="font-medium text-base mb-1">{therapistData.therapist.intern_name}</p>
+                          <p className="text-sm text-gray-500">{therapistData.therapist.program || 'Therapist'}</p>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Navigation Arrows */}
+                {previouslyViewed.length > 4 && (
+                  <>
+                    <button
+                      onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 1))}
+                      disabled={carouselIndex === 0}
+                      className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all ${
+                        carouselIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'
+                      }`}
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+
+                    <button
+                      onClick={() => setCarouselIndex(Math.min(previouslyViewed.length - 4, carouselIndex + 1))}
+                      disabled={carouselIndex >= previouslyViewed.length - 4}
+                      className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all ${
+                        carouselIndex >= previouslyViewed.length - 4 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'
+                      }`}
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -452,6 +493,22 @@ export default function MatchedTherapist({
               allowFullScreen
             />
             <Button onClick={() => setShowVideo(false)} className="mt-4 w-full">
+              Close Video
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Greetings Video Modal */}
+      {showGreetingsVideo && therapist.greetings_video_link && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowGreetingsVideo(false)}>
+          <div className="bg-white rounded-lg p-4 max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
+            <iframe
+              src={therapist.greetings_video_link}
+              className="w-full h-[500px] rounded"
+              allowFullScreen
+            />
+            <Button onClick={() => setShowGreetingsVideo(false)} className="mt-4 w-full">
               Close Video
             </Button>
           </div>
