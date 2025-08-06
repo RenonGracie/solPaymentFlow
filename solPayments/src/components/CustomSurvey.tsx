@@ -11,10 +11,11 @@ interface SurveyData {
   first_name: string;
   last_name: string;
   email: string;
+  preferred_name?: string; // Add this field
   phone?: string;
   age: string;
   gender: string;
-  state: string;
+  state: string; // This is US state, not status!
   
   // Preferences
   therapist_specializes_in: string[];
@@ -48,12 +49,15 @@ interface SurveyData {
   referred_by?: string;
 }
 
+
 interface CustomSurveyProps {
   paymentType: "insurance" | "cash_pay";
   formData: {
     firstName: string;
     lastName: string;
     email: string;
+    preferredName?: string;
+    state?: string;
     provider?: string;
     paymentType?: string;
   };
@@ -78,10 +82,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
     first_name: formData.firstName,
     last_name: formData.lastName,
     email: formData.email,
+    preferred_name: formData.preferredName || formData.firstName, // Add preferred name with fallback
     phone: '',
     age: '',
     gender: '',
-    state: '',
+    state: formData.state || '', // Pre-fill state if passed from onboarding
     therapist_specializes_in: [],
     therapist_identifies_as: 'No preference',
     pleasure_doing_things: '',
@@ -180,20 +185,69 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
             <div>
               <label className="block text-sm font-medium mb-2">State*</label>
-              <select
-                value={surveyData.state}
-                onChange={(e) => updateSurveyData('state', e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select your state</option>
-                <option value="NY">New York</option>
-                <option value="NJ">New Jersey</option>
-                <option value="CA">California</option>
-                <option value="TX">Texas</option>
-                <option value="FL">Florida</option>
-                {/* Add more states as needed */}
-              </select>
+              {/* Show state if pre-filled from onboarding, otherwise show dropdown */}
+              {surveyData.state && formData.state ? (
+                <div className="w-full p-3 border rounded-lg bg-gray-50">
+                  <span className="text-gray-700">{surveyData.state}</span>
+                  <span className="text-sm text-gray-500 ml-2">(selected during signup)</span>
+                </div>
+              ) : (
+                <select
+                  value={surveyData.state}
+                  onChange={(e) => updateSurveyData('state', e.target.value)}
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select your state</option>
+                  <option value="NY">New York</option>
+                  <option value="NJ">New Jersey</option>
+                  <option value="CA">California</option>
+                  <option value="TX">Texas</option>
+                  <option value="FL">Florida</option>
+                  <option value="PA">Pennsylvania</option>
+                  <option value="IL">Illinois</option>
+                  <option value="OH">Ohio</option>
+                  <option value="GA">Georgia</option>
+                  <option value="NC">North Carolina</option>
+                  <option value="MI">Michigan</option>
+                  <option value="MA">Massachusetts</option>
+                  <option value="VA">Virginia</option>
+                  <option value="WA">Washington</option>
+                  <option value="AZ">Arizona</option>
+                  <option value="TN">Tennessee</option>
+                  <option value="IN">Indiana</option>
+                  <option value="MO">Missouri</option>
+                  <option value="MD">Maryland</option>
+                  <option value="WI">Wisconsin</option>
+                  <option value="CO">Colorado</option>
+                  <option value="MN">Minnesota</option>
+                  <option value="SC">South Carolina</option>
+                  <option value="AL">Alabama</option>
+                  <option value="LA">Louisiana</option>
+                  <option value="KY">Kentucky</option>
+                  <option value="OR">Oregon</option>
+                  <option value="OK">Oklahoma</option>
+                  <option value="CT">Connecticut</option>
+                  <option value="UT">Utah</option>
+                  <option value="NV">Nevada</option>
+                  <option value="NM">New Mexico</option>
+                  <option value="WV">West Virginia</option>
+                  <option value="NE">Nebraska</option>
+                  <option value="ID">Idaho</option>
+                  <option value="HI">Hawaii</option>
+                  <option value="ME">Maine</option>
+                  <option value="NH">New Hampshire</option>
+                  <option value="RI">Rhode Island</option>
+                  <option value="MT">Montana</option>
+                  <option value="DE">Delaware</option>
+                  <option value="SD">South Dakota</option>
+                  <option value="ND">North Dakota</option>
+                  <option value="AK">Alaska</option>
+                  <option value="VT">Vermont</option>
+                  <option value="WY">Wyoming</option>
+                  <option value="DC">District of Columbia</option>
+                </select>
+              )}
             </div>
 
             <div>
@@ -206,6 +260,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 placeholder="(555) 123-4567"
               />
             </div>
+
+            {/* Display preferred name if different from first name */}
+            {surveyData.preferred_name && surveyData.preferred_name !== surveyData.first_name && (
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> Your therapist will address you as "{surveyData.preferred_name}"
+                </p>
+              </div>
+            )}
           </div>
         );
 

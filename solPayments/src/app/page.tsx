@@ -20,6 +20,8 @@ interface FormData {
   firstName: string;
   lastName: string;
   email: string;
+  preferredName?: string;
+  state?: string;
   dateOfBirth?: string;
   memberId?: string;
   provider?: string;
@@ -72,6 +74,8 @@ export default function Home() {
     firstName: string;
     lastName: string;
     email: string;
+    preferredName?: string;
+    state?: string;
   } | null>(null);
   
   // Modal states
@@ -97,6 +101,8 @@ export default function Home() {
     firstName: string;
     lastName: string;
     email: string;
+    preferredName?: string;
+    state?: string;
   }) => {
     setOnboardingData(data);
     setFormData({
@@ -143,19 +149,21 @@ export default function Home() {
       const responseId = `response_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setClientResponseId(responseId);
 
-      // Add payment type to survey data
+      // Add payment type to survey data WITHOUT overwriting state
       const completeClientData = {
         ...surveyData,
         id: `client_${responseId}`,
         response_id: responseId,
         payment_type: selectedPaymentType,
-        state: 'completed',
+        // REMOVED: state: 'completed' - keep the actual US state from survey
         utm: {
           utm_source: 'sol_payments',
           utm_medium: 'direct',
           utm_campaign: 'onboarding'
         }
       };
+
+      console.log('📦 Complete client data being sent:', completeClientData);
 
       // Store the client response directly in our backend
       const response = await axiosInstance.post('/clients_signup', completeClientData);
@@ -255,7 +263,13 @@ export default function Home() {
     return (
       <CustomSurvey
         paymentType={selectedPaymentType || "insurance"}
-        formData={formData || { firstName: "", lastName: "", email: "" }}
+        formData={{
+          firstName: formData?.firstName || onboardingData?.firstName || "",
+          lastName: formData?.lastName || onboardingData?.lastName || "",
+          email: formData?.email || onboardingData?.email || "",
+          preferredName: formData?.preferredName || onboardingData?.preferredName || "",
+          state: formData?.state || onboardingData?.state || "" // Pass the state from onboarding
+        }}
         onSubmit={handleSurveySubmit}
         onBack={handleBackFromSurvey}
       />
