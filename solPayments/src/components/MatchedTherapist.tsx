@@ -1,10 +1,8 @@
 // solPayments/src/components/MatchedTherapist.tsx
-"use client";
-
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Calendar, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Calendar, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { TMatchedTherapistData } from "@/api/types/therapist.types";
 
@@ -28,25 +26,11 @@ export default function MatchedTherapist({
   const [selectedDate, setSelectedDate] = useState<number | null>(11);
   const [viewedTherapistIds, setViewedTherapistIds] = useState<Set<string>>(new Set());
   const [showVideo, setShowVideo] = useState(false);
-  // New state to handle greetings video modal
-  const [showGreetingsVideo, setShowGreetingsVideo] = useState(false);
-  // Carousel index for previously viewed therapists
-  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [imageError, setImageError] = useState<Record<string, boolean>>({});
   
   const currentTherapistData = therapistsList[currentIndex];
   const therapist = currentTherapistData?.therapist;
   const matchedSpecialties = currentTherapistData?.matched_diagnoses_specialities || [];
-  
-  // Get client's needs from their responses
-  const clientNeeds = clientData?.therapist_specializes_in || [];
-
-  // Debug: Check data structure we're receiving
-  useEffect(() => {
-    console.log('Current therapist data structure:', JSON.stringify(currentTherapistData, null, 2));
-    console.log('Therapist object:', JSON.stringify(therapist, null, 2));
-    console.log('Image link value:', therapist?.image_link);
-    console.log('Email value:', therapist?.email);
-  }, [currentTherapistData, therapist]);
   
   // Track viewed therapists
   useEffect(() => {
@@ -64,6 +48,7 @@ export default function MatchedTherapist({
     const nextIndex = (currentIndex + 1) % therapistsList.length;
     setCurrentIndex(nextIndex);
     setSelectedTimeSlot(null);
+    setImageError({}); // Reset image errors for new therapist
   };
   
   const handleSelectPreviousTherapist = (therapistId: string) => {
@@ -71,6 +56,7 @@ export default function MatchedTherapist({
     if (therapistIndex !== -1) {
       setCurrentIndex(therapistIndex);
       setSelectedTimeSlot(null);
+      setImageError({});
     }
   };
   
@@ -89,28 +75,31 @@ export default function MatchedTherapist({
     return `${h.padStart(2, '0')}:${m || '00'}`;
   };
 
-  // Helper to get image URL, handling actual backend response
-  const getImageUrl = (
-    imageLink: string | null | undefined,
-    email?: string
-  ): string => {
-    // Debug what we're receiving
-    console.log('getImageUrl called with:', { imageLink, email });
+  // Function to handle image URL - S3 presigned URLs should be used directly
+  const getImageUrl = (imageLink: string | null | undefined): string => {
+    if (!imageLink) return '';
     
-    // If imageLink is provided and is a full URL (presigned or direct)
-    if (imageLink && typeof imageLink === 'string' && imageLink.length > 0) {
-      console.log('Using provided image link:', imageLink);
+    // If it's already a full URL (S3 presigned URL), use it directly
+    if (imageLink.startsWith('http://') || imageLink.startsWith('https://')) {
       return imageLink;
     }
     
-    // If we have an email but no image link, the backend didn't provide one
-    // Don't try to construct S3 URLs client-side as the bucket is private
-    if (email) {
-      console.log('No image link provided by backend for email:', email);
-    }
-    
-    // Return empty string to trigger fallback
+    // This shouldn't happen with proper S3 presigned URLs, but as a fallback
+    console.warn('Image link is not a full URL:', imageLink);
     return '';
+  };
+
+  // Function to extract YouTube video ID from URL
+  const extractYouTubeId = (url: string): string => {
+    const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
+    const match = url.match(regex);
+    return match ? match[1] : '';
+  };
+
+  // Handle image loading error
+  const handleImageError = (therapistId: string) => {
+    console.error(`Failed to load image for therapist ${therapistId}`);
+    setImageError(prev => ({ ...prev, [therapistId]: true }));
   };
 
   if (!therapist) return null;
@@ -120,7 +109,7 @@ export default function MatchedTherapist({
     ...(therapist.specialities || []),
     ...(therapist.diagnoses || []),
     ...(therapist.diagnoses_specialities || [])
-  ].filter(Boolean); // Remove any null/undefined values
+  ].filter(Boolean);
   
   // Remove duplicates and sort by match
   const uniqueSpecialties = Array.from(new Set(allSpecialties));
@@ -128,6 +117,11 @@ export default function MatchedTherapist({
     ...uniqueSpecialties.filter(s => matchedSpecialties.includes(s)),
     ...uniqueSpecialties.filter(s => !matchedSpecialties.includes(s))
   ];
+
+  // Check if video URL is valid
+  const hasValidVideo = therapist.welcome_video_link && 
+    (therapist.welcome_video_link.startsWith('http://') || 
+     therapist.welcome_video_link.startsWith('https://'));
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#FFFBF3' }}>
@@ -169,55 +163,43 @@ export default function MatchedTherapist({
         </div>
       </div>
 
-      {/* Main Content - Flex grow to fill remaining space */}
+      {/* Main Content */}
       <div className="flex-1 overflow-hidden px-6 py-4">
         <div className="h-full flex flex-col max-w-7xl mx-auto">
-          {/* Top Section - Therapist Info */}
           <div className="flex-1 grid grid-cols-12 gap-6 min-h-0">
-            {/* Left Column - Therapist Details (7 cols) */}
+            {/* Left Column - Therapist Details */}
             <div className="col-span-7 flex flex-col min-h-0">
               <Card className="flex-1 overflow-hidden border-0 shadow-lg">
                 <CardContent className="h-full p-6 overflow-y-auto">
                   {/* Therapist Header */}
-                  <div className="flex items-start gap-6 mb-6">
+                  <div className="flex items-start gap-4 mb-6">
                     <div className="flex-shrink-0">
-                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                        {(therapist.image_link || therapist.email) ? (
-                          <img
-                            src={getImageUrl(therapist.image_link, therapist.email)}
-                            alt={therapist.intern_name || ''}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              console.error('Image load failed:', e.currentTarget.src);
-                              // Hide the broken image
-                              (e.currentTarget as HTMLImageElement).style.display = 'none';
-                              // Show the fallback
-                              const parent = e.currentTarget.parentElement;
-                              const fallback = parent?.querySelector('.fallback-initial') as HTMLElement;
-                              if (fallback) {
-                                fallback.style.display = 'flex';
-                              }
-                            }}
-                          />
-                        ) : null}
-                        <div className={`fallback-initial w-full h-full rounded-full bg-gray-200 flex items-center justify-center ${(therapist.image_link || therapist.email) ? 'hidden' : ''}`}>
-                          <span className="text-4xl text-gray-500">
-                            {therapist.intern_name?.charAt(0) || 'T'}
+                      {therapist.image_link && !imageError[therapist.id] ? (
+                        <img
+                          src={getImageUrl(therapist.image_link)}
+                          alt={therapist.intern_name}
+                          className="w-24 h-24 rounded-full object-cover"
+                          onError={() => handleImageError(therapist.id)}
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-2xl text-gray-500">
+                            {therapist.intern_name?.charAt(0)}
                           </span>
                         </div>
-                      </div>
+                      )}
                     </div>
-
+                    
                     <div className="flex-1">
-                      <h2 className="text-3xl font-bold text-gray-800 mb-1">
+                      <h2 className="text-2xl font-bold text-gray-800">
                         {therapist.intern_name}
                       </h2>
-                      <p className="text-gray-600 text-lg mb-4">{therapist.program || 'MHC'}</p>
-
-                      {/* Top matched specialties as tags */}
-                      <div className="flex flex-wrap gap-2">
+                      <p className="text-gray-600">{therapist.program}</p>
+                      
+                      {/* Matched specialties */}
+                      <div className="flex flex-wrap gap-2 mt-3">
                         {matchedSpecialties.slice(0, 3).map((specialty, i) => (
-                          <span key={i} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                          <span key={i} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
                             {specialty}
                           </span>
                         ))}
@@ -229,20 +211,21 @@ export default function MatchedTherapist({
                       </div>
                     </div>
 
-                    {/* Video button if available */}
-                    {therapist.welcome_video_link && (
+                    {/* Video button */}
+                    {hasValidVideo && (
                       <button
                         onClick={() => setShowVideo(!showVideo)}
-                        className="flex-shrink-0 w-32 h-24 bg-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors relative overflow-hidden group"
+                        className="flex-shrink-0 w-32 h-20 bg-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors relative overflow-hidden"
                       >
-                        {therapist.image_link && (
+                        {therapist.image_link && !imageError[therapist.id] && (
                           <img
-                            src={getImageUrl(therapist.image_link, therapist.email)}
+                            src={getImageUrl(therapist.image_link)}
                             alt=""
-                            className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity"
+                            className="absolute inset-0 w-full h-full object-cover opacity-50"
+                            onError={() => {}}
                           />
                         )}
-                        <Play className="w-10 h-10 text-white relative z-10" />
+                        <Play className="w-8 h-8 text-white relative z-10" />
                       </button>
                     )}
                   </div>
@@ -251,15 +234,15 @@ export default function MatchedTherapist({
                   <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
                     <div>
                       <p className="text-gray-500">Identifies as</p>
-                      <p className="font-medium">{therapist.identities_as || therapist.gender || 'Female'}</p>
+                      <p className="font-medium">{therapist.identities_as || therapist.gender || 'Not specified'}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Age</p>
-                      <p className="font-medium">{therapist.age || 'Early/Mid 20s'}</p>
+                      <p className="font-medium">{therapist.age || 'Not specified'}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Works in States</p>
-                      <p className="font-medium">{therapist.states?.join(', ') || 'NJ'}</p>
+                      <p className="font-medium">{therapist.states?.join(', ') || 'Not specified'}</p>
                     </div>
                   </div>
 
@@ -272,11 +255,11 @@ export default function MatchedTherapist({
                     </div>
                   )}
 
-                  {/* Skills and Experience Section */}
+                  {/* Skills and Experience */}
                   <div className="space-y-4">
                     <h3 className="font-bold text-lg">Skills and Experience</h3>
                     
-                    {/* Combined Specializes in section */}
+                    {/* Specialties */}
                     <div>
                       <p className="text-sm text-gray-600 mb-2">Specializes in</p>
                       <div className="flex flex-wrap gap-2">
@@ -296,34 +279,24 @@ export default function MatchedTherapist({
                     </div>
 
                     {/* Therapeutic orientation */}
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Therapeutic orientation</p>
-                      <div className="flex flex-wrap gap-2">
-                        {(therapist.therapeutic_orientation || []).map((orientation, i) => (
-                          <span key={`orientation-${i}`} className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm">
-                            {orientation}
-                          </span>
-                        ))}
+                    {therapist.therapeutic_orientation && therapist.therapeutic_orientation.length > 0 && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-2">Therapeutic orientation</p>
+                        <div className="flex flex-wrap gap-2">
+                          {therapist.therapeutic_orientation.map((orientation, i) => (
+                            <span key={`orientation-${i}`} className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm">
+                              {orientation}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Has experience with religions */}
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Has experience working with religions</p>
-                      <div className="flex flex-wrap gap-2">
-                        {(therapist.religion || []).map((religion, i) => (
-                          <span key={`religion-${i}`} className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm">
-                            {religion}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Right Column - Booking (5 cols) */}
+            {/* Right Column - Booking */}
             <div className="col-span-5 flex flex-col min-h-0">
               <Card className="flex-1 border-0 shadow-lg">
                 <CardContent className="h-full p-6 flex flex-col">
@@ -348,7 +321,6 @@ export default function MatchedTherapist({
                       {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
                         <div key={`day-${i}`} className="p-2 text-gray-500 text-xs">{day}</div>
                       ))}
-                      {/* Calendar days */}
                       {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
                         <button
                           key={`date-${day}`}
@@ -389,15 +361,14 @@ export default function MatchedTherapist({
                   </Button>
 
                   {/* Find Another Therapist */}
-                  <div className="text-center mt-auto pt-6 border-t">
-                    <p className="text-gray-600 mb-3 text-lg">It's Okay to Keep Looking</p>
+                  <div className="text-center mt-auto">
+                    <p className="text-sm text-gray-500 mb-2">It's Okay to Keep Looking</p>
                     <Button
-                      variant="ghost"
-                      className="w-full text-gray-700 hover:bg-gray-50 font-medium py-3"
+                      variant="outline"
+                      className="w-full"
                       onClick={handleFindAnother}
                     >
-                      Find Another Therapist
-                      <ArrowRight className="w-4 h-4 ml-2" />
+                      Find Another Therapist →
                     </Button>
                   </div>
                 </CardContent>
@@ -405,78 +376,35 @@ export default function MatchedTherapist({
             </div>
           </div>
 
-          {/* Bottom Section - Previously Viewed Therapists Carousel */}
+          {/* Previously Viewed Therapists */}
           {previouslyViewed.length > 0 && (
-            <div className="mt-6 bg-white rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-6">Previously Viewed Therapists</h3>
-
-              <div className="relative">
-                {/* Carousel Container */}
-                <div className="relative overflow-hidden">
-                  <div
-                    className="flex gap-4 transition-transform duration-300 ease-in-out"
-                    style={{ transform: `translateX(-${carouselIndex * 292}px)` }}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-4">Previously Viewed Therapists</h3>
+              <div className="grid grid-cols-4 gap-4">
+                {previouslyViewed.slice(0, 4).map((therapistData) => (
+                  <button
+                    key={`prev-${therapistData.therapist.id}`}
+                    onClick={() => handleSelectPreviousTherapist(therapistData.therapist.id)}
+                    className="p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-center"
                   >
-                    {previouslyViewed.map((therapistData) => (
-                      <div
-                        key={`prev-${therapistData.therapist.id}`}
-                        className="flex-shrink-0 w-[268px]"
-                      >
-                        <button
-                          onClick={() => handleSelectPreviousTherapist(therapistData.therapist.id)}
-                          className="w-full p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-center hover:shadow-md"
-                        >
-                          <div className="w-24 h-24 mx-auto mb-3 relative rounded-full overflow-hidden bg-gray-200">
-                            {(therapistData.therapist.image_link || therapistData.therapist.email) ? (
-                              <img
-                                src={getImageUrl(therapistData.therapist.image_link, therapistData.therapist.email)}
-                                alt={therapistData.therapist.intern_name || ''}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                            ) : null}
-                            <div className={`w-full h-full flex items-center justify-center ${(therapistData.therapist.image_link || therapistData.therapist.email) ? 'hidden' : ''}`}>
-                              <span className="text-2xl text-gray-500">
-                                {therapistData.therapist.intern_name?.charAt(0) || '?'}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="font-medium text-base mb-1">{therapistData.therapist.intern_name}</p>
-                          <p className="text-sm text-gray-500">{therapistData.therapist.program || 'Therapist'}</p>
-                        </button>
+                    {therapistData.therapist.image_link && !imageError[therapistData.therapist.id] ? (
+                      <img
+                        src={getImageUrl(therapistData.therapist.image_link)}
+                        alt={therapistData.therapist.intern_name}
+                        className="w-20 h-20 rounded-full object-cover mx-auto mb-2"
+                        onError={() => handleImageError(therapistData.therapist.id)}
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-2">
+                        <span className="text-xl text-gray-500">
+                          {therapistData.therapist.intern_name?.charAt(0)}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Navigation Arrows */}
-                {previouslyViewed.length > 4 && (
-                  <>
-                    <button
-                      onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 1))}
-                      disabled={carouselIndex === 0}
-                      className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all ${
-                        carouselIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'
-                      }`}
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-
-                    <button
-                      onClick={() => setCarouselIndex(Math.min(previouslyViewed.length - 4, carouselIndex + 1))}
-                      disabled={carouselIndex >= previouslyViewed.length - 4}
-                      className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all ${
-                        carouselIndex >= previouslyViewed.length - 4 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl'
-                      }`}
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
+                    )}
+                    <p className="font-medium text-sm">{therapistData.therapist.intern_name}</p>
+                    <p className="text-xs text-gray-500">{therapistData.therapist.program}</p>
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -484,31 +412,31 @@ export default function MatchedTherapist({
       </div>
 
       {/* Video Modal */}
-      {showVideo && therapist.welcome_video_link && (
+      {showVideo && hasValidVideo && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowVideo(false)}>
           <div className="bg-white rounded-lg p-4 max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
-            <iframe
-              src={therapist.welcome_video_link}
-              className="w-full h-[500px] rounded"
-              allowFullScreen
-            />
+            {therapist.welcome_video_link?.includes('youtube.com') || therapist.welcome_video_link?.includes('youtu.be') ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${extractYouTubeId(therapist.welcome_video_link)}`}
+                className="w-full h-[500px] rounded"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
+            ) : therapist.welcome_video_link?.includes('vimeo.com') ? (
+              <iframe
+                src={therapist.welcome_video_link.replace('vimeo.com', 'player.vimeo.com/video')}
+                className="w-full h-[500px] rounded"
+                allowFullScreen
+              />
+            ) : (
+              <video
+                src={therapist.welcome_video_link}
+                className="w-full h-[500px] rounded"
+                controls
+                autoPlay
+              />
+            )}
             <Button onClick={() => setShowVideo(false)} className="mt-4 w-full">
-              Close Video
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Greetings Video Modal */}
-      {showGreetingsVideo && therapist.greetings_video_link && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowGreetingsVideo(false)}>
-          <div className="bg-white rounded-lg p-4 max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
-            <iframe
-              src={therapist.greetings_video_link}
-              className="w-full h-[500px] rounded"
-              allowFullScreen
-            />
-            <Button onClick={() => setShowGreetingsVideo(false)} className="mt-4 w-full">
               Close Video
             </Button>
           </div>
