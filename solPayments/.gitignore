@@ -1,0 +1,5 @@
+solPayments/.env.local
+*.env*
+.env.local
+.env.local
+*.env*
