@@ -822,11 +822,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                           { name: 'Been in a caretaker role', emoji: '👤' },
                           { name: 'Have children', emoji: '🧡' }
                         ].map((experience) => {
-                          const isSelected = surveyData.therapist_lived_experiences.includes(experience);
+                          const isSelected = surveyData.therapist_lived_experiences.includes(experience.name);
                           return (
                             <button
-                              key={experience}
-                              onClick={() => toggleLivedExperience(experience)}
+                              key={experience.name}
+                              onClick={() => toggleLivedExperience(experience.name)}
                               className={`py-3 px-4 rounded-2xl text-sm transition-all flex items-center justify-between ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
@@ -834,7 +834,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <span>{experience}</span>
+                              <span className="flex items-center">
+                                <span className="mr-2">{experience.emoji}</span>
+                                {experience.name}
+                              </span>
                               <Plus 
                                 className={`w-4 h-4 transition-transform duration-200 ${
                                   isSelected ? 'rotate-45' : ''
@@ -858,11 +861,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                           { name: 'Lived in many places', emoji: '📍' },
                           { name: 'First/second generation immigrant', emoji: '🌎' }
                         ].map((experience) => {
-                          const isSelected = surveyData.therapist_lived_experiences.includes(experience);
+                          const isSelected = surveyData.therapist_lived_experiences.includes(experience.name);
                           return (
                             <button
-                              key={experience}
-                              onClick={() => toggleLivedExperience(experience)}
+                              key={experience.name}
+                              onClick={() => toggleLivedExperience(experience.name)}
                               className={`py-3 px-4 rounded-2xl text-sm transition-all flex items-center justify-between ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
@@ -870,7 +873,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <span>{experience}</span>
+                              <span className="flex items-center">
+                                <span className="mr-2">{experience.emoji}</span>
+                                {experience.name}
+                              </span>
                               <Plus 
                                 className={`w-4 h-4 transition-transform duration-200 ${
                                   isSelected ? 'rotate-45' : ''
@@ -892,11 +898,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                           { name: 'Identifying as LGBTQ+', emoji: '🏳️‍🌈' },
                           { name: 'Negatively affected by social media', emoji: '📱' }
                         ].map((experience) => {
-                          const isSelected = surveyData.therapist_lived_experiences.includes(experience);
+                          const isSelected = surveyData.therapist_lived_experiences.includes(experience.name);
                           return (
                             <button
-                              key={experience}
-                              onClick={() => toggleLivedExperience(experience)}
+                              key={experience.name}
+                              onClick={() => toggleLivedExperience(experience.name)}
                               className={`py-3 px-4 rounded-2xl text-sm transition-all flex items-center justify-between ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
@@ -904,7 +910,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <span>{experience}</span>
+                              <span className="flex items-center">
+                                <span className="mr-2">{experience.emoji}</span>
+                                {experience.name}
+                              </span>
                               <Plus 
                                 className={`w-4 h-4 transition-transform duration-200 ${
                                   isSelected ? 'rotate-45' : ''
