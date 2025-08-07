@@ -60,6 +60,9 @@ interface CustomSurveyProps {
     state?: string;
     provider?: string;
     paymentType?: string;
+    dateOfBirth?: string;
+    memberId?: string;
+    verificationData?: any; // Insurance verification response
   };
   onSubmit: (surveyData: SurveyData) => void;
   onBack: () => void;
@@ -266,6 +269,18 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               <div className="bg-blue-50 p-3 rounded-lg">
                 <p className="text-sm text-blue-800">
                   <strong>Note:</strong> Your therapist will address you as "{surveyData.preferred_name}"
+                </p>
+              </div>
+            )}
+
+            {/* Display insurance verification info if available */}
+            {formData.verificationData?.benefits && (
+              <div className="bg-green-50 p-3 rounded-lg">
+                <p className="text-sm text-green-800">
+                  <strong>Insurance Verified:</strong> Your estimated costs are{' '}
+                  {formData.verificationData.benefits.copay && `Copay: ${formData.verificationData.benefits.copay}`}
+                  {formData.verificationData.benefits.memberObligation !== "$0.00" && 
+                    `, Session cost: ${formData.verificationData.benefits.memberObligation}`}
                 </p>
               </div>
             )}

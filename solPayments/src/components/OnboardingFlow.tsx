@@ -1,9 +1,31 @@
 // OnboardingFlow.tsx
-"use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { checkEligibility } from "../app/api/eligibility.js";
+
+interface EligibilityBenefits {
+  copay: string;
+  coinsurance: string;
+  memberObligation: string;
+  deductible: string;
+  remainingDeductible: string;
+  oopMax: string;
+  remainingOopMax: string;
+  benefitStructure: string;
+}
+
+interface VerificationResponse {
+  benefits?: EligibilityBenefits;
+  subscriber?: {
+    firstName?: string;
+    lastName?: string;
+    dateOfBirth?: string;
+    memberId?: string;
+  };
+  [key: string]: unknown;
+}
 
 interface OnboardingFlowProps {
   onComplete: (data: {
@@ -12,6 +34,11 @@ interface OnboardingFlowProps {
     email: string;
     preferredName?: string;
     state?: string;
+    provider?: string;
+    memberId?: string;
+    dateOfBirth?: string;
+    paymentType?: string;
+    verificationData?: VerificationResponse;
   }) => void;
   onSelectPaymentType: (type: "insurance" | "cash_pay") => void;
   initialStep?: number;
@@ -25,9 +52,13 @@ export default function OnboardingFlow({
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [formData, setFormData] = useState({
     firstName: '',
+    lastName: '',
     preferredName: '',
     email: '',
-    state: ''
+    state: '',
+    provider: '',
+    memberId: '',
+    dateOfBirth: ''
   });
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
@@ -42,8 +73,37 @@ export default function OnboardingFlow({
   const [waitlistState, setWaitlistState] = useState('');
   const [isOtherInputFocused, setIsOtherInputFocused] = useState(false);
 
+  // Insurance verification variables
+  const [selectedProvider, setSelectedProvider] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
+  const [verificationStep, setVerificationStep] = useState<'form' | 'verifying' | 'success' | 'failed'>('form');
+  
+  // NJ insurance plan verification
+  const [njInsurancePlan, setNjInsurancePlan] = useState<'yes' | 'no' | null>(null);
+
   // Define featured states (supported states)
   const featuredStates = ['NY', 'NJ', 'CA', 'TX', 'FL'];
+
+  // Insurance providers
+  const insuranceProviders = [
+    { id: "aetna", name: "Aetna" },
+    { id: "cigna", name: "Cigna/Evernorth" },
+    { id: "meritain", name: "Meritain" },
+    { id: "carelon", name: "Carelon" },
+    { id: "bcbs", name: "BCBS" },
+    { id: "amerihealth", name: "AmeriHealth" }
+  ];
+
+  // Trading partner service ID mapping
+  const tradingPartnerServiceIdMap: Record<string, string> = {
+    "Aetna": "60054",
+    "Cigna/Evernorth": "62308",
+    "Meritain": "64157",
+    "Carelon": "47198",
+    "BCBS": "22099",
+    "AmeriHealth": "60061"
+  };
 
   // All US states
   const allStates = [
@@ -137,10 +197,12 @@ export default function OnboardingFlow({
     if (currentStep === 0) {
       setCurrentStep(1);
     } else if (currentStep === 1 && formData.preferredName) {
-      // Use preferred name as firstName for backend
+      // Auto-populate firstName with capitalized preferred name for legal name fields
+      const capitalizedPreferredName = formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase();
       setFormData(prev => ({
         ...prev,
-        firstName: prev.preferredName
+        firstName: capitalizedPreferredName,
+        preferredName: capitalizedPreferredName
       }));
       setCurrentStep(2);
     } else if (currentStep === 2 && formData.email) {
@@ -154,7 +216,7 @@ export default function OnboardingFlow({
     }
   };
 
-  const handleInputChange = (field: 'firstName' | 'preferredName' | 'email', value: string) => {
+  const handleInputChange = (field: 'firstName' | 'lastName' | 'preferredName' | 'email' | 'provider' | 'memberId' | 'dateOfBirth', value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -163,20 +225,9 @@ export default function OnboardingFlow({
 
   const handlePaymentSelection = (type: "insurance" | "cash_pay") => {
     if (type === "cash_pay") {
-      setCurrentStep(4);
+      setCurrentStep(4); // Go to state selection
     } else {
-      const nameParts = formData.firstName.trim().split(' ');
-      const firstName = nameParts[0] || formData.firstName;
-      const lastName = nameParts.slice(1).join(' ') || '';
-      
-      onComplete({
-        firstName,
-        lastName,
-        email: formData.email,
-        preferredName: formData.preferredName || firstName,
-        state: 'NJ'
-      });
-      onSelectPaymentType(type);
+      setCurrentStep(5); // Go to NJ insurance plan verification first
     }
   };
 
@@ -196,20 +247,107 @@ export default function OnboardingFlow({
         setShowWaitlistPopup(true);
       } else {
         // Proceed with supported state
-        const nameParts = formData.firstName.trim().split(' ');
-        const firstName = nameParts[0] || formData.firstName;
-        const lastName = nameParts.slice(1).join(' ') || '';
-        
+        // Ensure preferred name is capitalized
+        const capitalizedPreferredName = formData.preferredName 
+          ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase()
+          : formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1).toLowerCase();
+
         onComplete({
-          firstName,
-          lastName,
+          firstName: formData.firstName,
+          lastName: formData.lastName || '', // Add default empty string if no last name
           email: formData.email,
-          preferredName: formData.preferredName || firstName,
-          state: selectedState
+          preferredName: capitalizedPreferredName,
+          state: selectedState,
+          paymentType: 'cash_pay'
         });
         onSelectPaymentType("cash_pay");
       }
     }
+  };
+
+  const handleInsuranceVerification = async () => {
+    // Validate required fields
+    if (!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId || !formData.email) {
+      return;
+    }
+
+    setVerificationStep('verifying');
+    setIsVerifying(true);
+
+    // Format date of birth for API (YYYYMMDD)
+    const formatDOB = (dobStr: string): string | null => {
+      const [year, month, day] = dobStr.split("-");
+      if (!year || !month || !day) return null;
+      return `${year}${month}${day}`;
+    };
+
+    const dobFormatted = formatDOB(formData.dateOfBirth);
+    
+    if (!dobFormatted) {
+      setVerificationStep('failed');
+      setIsVerifying(false);
+      return;
+    }
+
+    // Prepare API payload
+    const payload = {
+      controlNumber: "987654321",
+      tradingPartnerServiceId: tradingPartnerServiceIdMap[selectedProvider],
+      provider: {
+        organizationName: "Sol Health",
+        npi: "1669282885"
+      },
+      subscriber: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: dobFormatted,
+        memberId: formData.memberId
+      }
+    };
+
+    try {
+      const responseData = await checkEligibility(payload);
+      setVerificationResponse(responseData);
+      setVerificationStep('success');
+      
+      // Update form data with verified information from response
+      if (responseData.subscriber) {
+        setFormData(prev => ({
+          ...prev,
+          firstName: responseData.subscriber?.firstName || prev.firstName,
+          lastName: responseData.subscriber?.lastName || prev.lastName,
+          dateOfBirth: responseData.subscriber?.dateOfBirth || prev.dateOfBirth,
+          memberId: responseData.subscriber?.memberId || prev.memberId
+        }));
+      }
+    } catch (error) {
+      console.error("Verification error:", error);
+      setVerificationStep('failed');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleInsuranceComplete = () => {
+    // Ensure preferred name is capitalized
+    const capitalizedPreferredName = formData.preferredName 
+      ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase()
+      : formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1).toLowerCase();
+
+    // Complete the onboarding with verified insurance data
+    onComplete({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      preferredName: capitalizedPreferredName,
+      state: 'NJ', // Default to NJ for insurance
+      provider: selectedProvider,
+      memberId: formData.memberId,
+      dateOfBirth: formData.dateOfBirth,
+      paymentType: 'insurance',
+      verificationData: verificationResponse || undefined // Include verification response
+    });
+    onSelectPaymentType("insurance");
   };
 
   // Splash Screen with Video
@@ -1022,6 +1160,448 @@ export default function OnboardingFlow({
             }
           }
         `}</style>
+      </div>
+    );
+  }
+
+  // NJ Insurance Plan Verification Screen (Step 5)
+  if (currentStep === 5) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+        {/* Header with image */}
+        <div className="relative h-24 md:h-28 overflow-hidden flex-shrink-0">
+          <img 
+            src="/onboarding-banner.jpg" 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                style={{ 
+                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontWeight: 400,
+                  letterSpacing: '0.02em',
+                  lineHeight: '1.1'
+                }}>
+              CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+            </p>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+          <button onClick={() => setCurrentStep(3)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ChevronLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <div className="flex items-center">
+            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+              Sol Health
+            </h2>
+            <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+          </div>
+          <div className="w-10"></div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
+          <div className="max-w-sm md:max-w-md w-full -mt-12">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl md:text-3xl mb-3 text-gray-800" 
+                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                Is Your Health Plan From New Jersey?
+              </h1>
+            </div>
+
+            {/* State Options */}
+            <div className="space-y-3 mb-6">
+              {/* Yes, NJ Plan */}
+              <button
+                onClick={() => setNjInsurancePlan('yes')}
+                className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
+                  njInsurancePlan === 'yes'
+                    ? 'border-[#5C3106] text-white shadow-lg' 
+                    : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                }`}
+                style={{
+                  backgroundColor: njInsurancePlan === 'yes' ? '#5C3106' : 'white'
+                }}
+              >
+                <div className={`w-8 h-8 flex items-center justify-center ${njInsurancePlan === 'yes' ? '' : 'opacity-60'}`}>
+                  <img 
+                    src="/state-icons/nj.svg"
+                    alt="New Jersey"
+                    className="w-6 h-6"
+                    style={{
+                      filter: njInsurancePlan === 'yes' ? 'brightness(0) invert(1)' : 'brightness(0) sepia(1) saturate(1) hue-rotate(25deg) brightness(0.8)'
+                    }}
+                  />
+                </div>
+                
+                <span className={`text-base font-medium flex-1 text-center ${njInsurancePlan === 'yes' ? 'text-white' : 'text-gray-800'}`}>
+                  Yes, I have a New Jersey plan
+                </span>
+                
+                <div className="w-8 h-8 flex items-center justify-center">
+                  {njInsurancePlan === 'yes' && (
+                    <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
+                      <Check className="w-4 h-4" style={{ color: '#5C3106' }} />
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {/* No, Different State */}
+              <button
+                onClick={() => setNjInsurancePlan('no')}
+                className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
+                  njInsurancePlan === 'no'
+                    ? 'border-[#5C3106] text-white shadow-lg' 
+                    : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                }`}
+                style={{
+                  backgroundColor: njInsurancePlan === 'no' ? '#5C3106' : 'white'
+                }}
+              >
+                <div className="w-8 h-8"></div>
+                
+                <span className={`text-base font-medium flex-1 text-center ${njInsurancePlan === 'no' ? 'text-white' : 'text-gray-800'}`}>
+                  No, my plan is in a different state
+                </span>
+                
+                <div className="w-8 h-8 flex items-center justify-center">
+                  {njInsurancePlan === 'no' && (
+                    <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
+                      <Check className="w-4 h-4" style={{ color: '#5C3106' }} />
+                    </div>
+                  )}
+                </div>
+              </button>
+            </div>
+
+            {/* Show options based on selection */}
+            {njInsurancePlan === 'yes' && (
+              <Button
+                onClick={() => {
+                  // Set state to NJ and go to insurance form
+                  setFormData(prev => ({ ...prev, state: 'NJ' }));
+                  setCurrentStep(6);
+                }}
+                className="w-full py-3 px-6 rounded-full text-base font-medium transition-all duration-200 bg-blue-100 text-gray-800 hover:bg-blue-200 hover:scale-[1.02] active:scale-[0.98]"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Verify my insurance benefits
+                <ChevronRight className="inline w-4 h-4 ml-2" />
+              </Button>
+            )}
+
+            {njInsurancePlan === 'no' && (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-6 space-y-4">
+                <div className="text-center px-2">
+                  <p className="text-sm text-gray-600 mb-2 leading-relaxed">
+                    We're currently only accepting NJ insurance plans, but we're expanding quickly to other states.
+                  </p>
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                    We offer care for $30/session out-of-pocket where you'll be matched to an intern-therapist.
+                  </p>
+                </div>
+                
+                <Button
+                  onClick={() => {
+                    // Switch to cash pay flow
+                    setCurrentStep(4); // Go to state selection
+                  }}
+                  className="w-full py-3 px-4 md:px-6 rounded-full text-sm md:text-base font-medium transition-all duration-200 bg-yellow-100 text-gray-800 hover:bg-yellow-200 hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  <span className="block md:hidden">Choose $30/Session Out-Of-Pocket</span>
+                  <span className="hidden md:block">Choose $30 Per Session Out-Of-Pocket</span>
+                  <ChevronRight className="inline w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Insurance Form Screen (Step 6)
+  if (currentStep === 6) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+        {/* Header with image */}
+        <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+          <img 
+            src="/onboarding-banner.jpg" 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                style={{ 
+                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontWeight: 400,
+                  letterSpacing: '0.02em',
+                  lineHeight: '1.1'
+                }}>
+              CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+            </p>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+          <button onClick={() => setCurrentStep(5)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ChevronLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <div className="w-10"></div>
+          <div className="w-10"></div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex items-center justify-center px-6 pb-16">
+          <div className="max-w-md w-full -mt-16">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl md:text-4xl mb-4 text-gray-800" 
+                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                Great, We're In Network!
+              </h1>
+              <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                Next, to verify your eligibility and estimate your co-pay, please enter your insurance information below.
+              </p>
+            </div>
+
+            {/* Form - Only show when in form or verifying state */}
+            {(verificationStep === 'form' || verificationStep === 'verifying') && (
+              <div className="space-y-6 mb-8">
+                {/* Insurance Provider */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Insurance Provider*
+                  </label>
+                  <select
+                    value={selectedProvider}
+                    onChange={(e) => setSelectedProvider(e.target.value)}
+                    disabled={verificationStep === 'verifying'}
+                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  >
+                    <option value="">Select provider</option>
+                    {insuranceProviders.map((provider) => (
+                      <option key={provider.id} value={provider.name}>
+                        {provider.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Legal First Name - Pre-filled from earlier */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Legal First Name*
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    disabled={verificationStep === 'verifying'}
+                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                    placeholder="John"
+                  />
+                </div>
+
+                {/* Legal Last Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Legal Last Name*
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    disabled={verificationStep === 'verifying'}
+                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                    placeholder="Smith"
+                  />
+                </div>
+
+                {/* Date of Birth */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date of Birth*
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                    disabled={verificationStep === 'verifying'}
+                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  />
+                </div>
+
+                {/* Member ID */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Member ID*
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.memberId}
+                    onChange={(e) => handleInputChange('memberId', e.target.value)}
+                    disabled={verificationStep === 'verifying'}
+                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                    placeholder="Enter your member ID"
+                  />
+                </div>
+
+                {/* Email - Pre-filled from earlier */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email*
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    disabled={verificationStep === 'verifying'}
+                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                    placeholder="melinda@gmail.com"
+                  />
+                </div>
+
+                {/* Display preferred name info */}
+                {formData.preferredName && formData.preferredName !== formData.firstName && (
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <p className="text-sm text-blue-800 text-center">
+                      <strong>Note:</strong> Your therapist will address you as "{formData.preferredName}"
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Compact form summary when verification is successful or failed */}
+            {(verificationStep === 'success' || verificationStep === 'failed') && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Provider:</span>
+                    <p className="font-medium">{selectedProvider}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Name:</span>
+                    <p className="font-medium">{formData.firstName} {formData.lastName}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Member ID:</span>
+                    <p className="font-medium">{formData.memberId}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">DOB:</span>
+                    <p className="font-medium">{formData.dateOfBirth}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Verification States */}
+            {verificationStep === 'form' && (
+              <Button
+                onClick={handleInsuranceVerification}
+                disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId || !formData.email}
+                className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-all ${
+                  selectedProvider && formData.firstName && formData.lastName && formData.dateOfBirth && formData.memberId && formData.email
+                    ? 'bg-amber-700 text-white hover:bg-amber-800 hover:scale-[1.02] active:scale-[0.98]' 
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Verify Insurance
+                <ChevronRight className="inline w-5 h-5 ml-2" />
+              </Button>
+            )}
+
+            {verificationStep === 'verifying' && (
+              <div className="text-center py-8">
+                <div className="flex items-center justify-center space-x-3 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center animate-pulse">
+                    <Loader2 className="w-5 h-5 animate-spin text-amber-600" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-medium text-gray-800 mb-2">Verifying Your Insurance...</h3>
+                <p className="text-sm text-gray-600">This usually takes just a few seconds...</p>
+              </div>
+            )}
+
+            {verificationStep === 'success' && (
+              <div className="space-y-4">
+                <div className="text-center py-4">
+                  <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <Check className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-2">You're Covered!</h3>
+                  {verificationResponse?.benefits && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
+                      <p className="text-green-800">
+                        <strong>Estimated costs:</strong><br />
+                        Copay: {verificationResponse.benefits.copay}<br />
+                        {verificationResponse.benefits.memberObligation !== "$0.00" && (
+                          <>Your cost per session: {verificationResponse.benefits.memberObligation}</>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                <Button
+                  onClick={handleInsuranceComplete}
+                  className="w-full py-5 px-8 rounded-full text-lg font-medium bg-green-600 text-white hover:bg-green-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  Continue to Questionnaire
+                  <ChevronRight className="inline w-5 h-5 ml-2" />
+                </Button>
+              </div>
+            )}
+
+            {verificationStep === 'failed' && (
+              <div className="space-y-4">
+                <div className="text-center py-4">
+                  <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                    <X className="w-6 h-6 text-red-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-2">Verification Failed</h3>
+                  <p className="text-sm text-gray-600">Please check your information and try again.</p>
+                </div>
+                
+                <div className="flex space-x-3">
+                  <Button
+                    onClick={() => setVerificationStep('form')}
+                    variant="outline"
+                    className="flex-1 py-3 px-4 rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  >
+                    Try Again
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentStep(4)} // Go to cash pay flow
+                    className="flex-1 py-3 px-4 rounded-full bg-yellow-100 text-gray-800 hover:bg-yellow-200"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  >
+                    Pay $30/Session
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
