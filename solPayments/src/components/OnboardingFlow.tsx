@@ -44,6 +44,95 @@ interface OnboardingFlowProps {
   initialStep?: number;
 }
 
+// Benefits display logic function
+function getBenefitsDisplay(benefits: EligibilityBenefits) {
+  // Parse numeric values from string amounts
+  const parseAmount = (amount: string): number => {
+    return parseFloat(amount.replace(/[$,]/g, '')) || 0;
+  };
+
+  const memberObligation = parseAmount(benefits.memberObligation);
+  const remainingDeductible = parseAmount(benefits.remainingDeductible);
+  const deductible = parseAmount(benefits.deductible);
+  const copay = parseAmount(benefits.copay);
+  const coinsurance = parseFloat(benefits.coinsurance.replace('%', '')) || 0;
+  const benefitStructure = benefits.benefitStructure || '';
+  
+  // Assume session rate for 90791 - this should come from the API response
+  const sessionRate90791 = 200; // Default value, should be from API
+
+  // Determine if this is a range display (has coinsurance component)
+  const hasCoinsurance = benefitStructure.toLowerCase().includes('coinsurance') || 
+                         benefitStructure.toLowerCase().includes('co-insurance') ||
+                         coinsurance > 0;
+
+  // Calculate display amount
+  let displayAmount: string;
+  if (hasCoinsurance && memberObligation > 0) {
+    const lower = memberObligation;
+    const higher = Math.min(memberObligation + (sessionRate90791 - memberObligation), sessionRate90791);
+    displayAmount = `$${lower.toFixed(0)}-$${higher.toFixed(0)}`;
+  } else {
+    displayAmount = `$${memberObligation.toFixed(0)}`;
+  }
+
+  // Main display text
+  const largeText = hasCoinsurance && memberObligation > 0
+    ? `Based on your benefits, you can expect to pay ${displayAmount} for your sessions.`
+    : `Based on your benefits, you can expect to pay ${displayAmount} for your sessions.`;
+
+  const smallText = hasCoinsurance
+    ? "This is just an estimation based on the insurance information we received, including any remaining deductible or out-of-pocket maximum."
+    : "This is just an estimation based on the insurance information we received.";
+
+  // Additional details logic
+  let additionalDetails: string | null = null;
+
+  // Check for specific benefit structures requiring additional details
+  const isFullyCovered = benefitStructure.toLowerCase().includes('fully covered') || memberObligation === 0;
+  const hasAfterDeductible = benefitStructure.toLowerCase().includes('after deductible') || 
+                             benefitStructure.toLowerCase().includes('deductible');
+
+  if (isFullyCovered && !hasAfterDeductible) {
+    // Path 6: Fully covered
+    additionalDetails = "Great news—your sessions are fully covered by insurance. You won't owe anything.";
+  } else if (isFullyCovered && hasAfterDeductible) {
+    // Path 7: Fully covered after deductible
+    if (remainingDeductible > 0) {
+      additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your sessions will be $0.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+    } else {
+      additionalDetails = "Great news—you've already hit your deductible, so your sessions are fully covered by insurance. You won't owe anything.";
+    }
+  } else if (hasAfterDeductible && copay > 0 && !hasCoinsurance) {
+    // Path 8 & 9: Copay after deductible
+    if (remainingDeductible > 0) {
+      additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your cost drops to just your copay ($${copay.toFixed(0)}) per session.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+    } else {
+      additionalDetails = `You've already hit your deductible, so you'll pay your copay of $${copay.toFixed(0)} per session.`;
+    }
+  } else if (hasAfterDeductible && hasCoinsurance && copay === 0) {
+    // Path 10 & 11: Coinsurance after deductible
+    if (remainingDeductible > 0) {
+      additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll only pay ${coinsurance}% of each session cost.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+    } else {
+      additionalDetails = "You've already hit your deductible, so you'll just pay your estimated coinsurance (your share of the session cost).";
+    }
+  } else if (hasAfterDeductible && hasCoinsurance && copay > 0) {
+    // Path 12: Copay and coinsurance after deductible
+    if (remainingDeductible > 0) {
+      additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll pay your estimated copay and coinsurance.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+    } else {
+      additionalDetails = "You've already hit your deductible, so you'll pay your estimated copay and coinsurance (your share of the session cost).";
+    }
+  }
+
+  return {
+    largeText,
+    smallText,
+    additionalDetails
+  };
+}
+
 export default function OnboardingFlow({ 
   onComplete, 
   onSelectPaymentType,
@@ -1548,15 +1637,30 @@ export default function OnboardingFlow({
                   </div>
                   <h3 className="text-lg font-medium text-gray-800 mb-2">You're Covered!</h3>
                   {verificationResponse?.benefits && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
-                      <p className="text-green-800">
-                        <strong>Estimated costs:</strong><br />
-                        Copay: {verificationResponse.benefits.copay}<br />
-                        {verificationResponse.benefits.memberObligation !== "$0.00" && (
-                          <>Your cost per session: {verificationResponse.benefits.memberObligation}</>
-                        )}
-                      </p>
-                    </div>
+                    <>
+                      {/* Green Box - Main Benefits Display */}
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <div className="text-green-800">
+                          <p className="font-medium text-base mb-2">
+                            {getBenefitsDisplay(verificationResponse.benefits).largeText}
+                          </p>
+                          <p className="text-sm text-green-700">
+                            {getBenefitsDisplay(verificationResponse.benefits).smallText}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Yellow Box - Additional Details (if applicable) */}
+                      {getBenefitsDisplay(verificationResponse.benefits).additionalDetails && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <div className="text-yellow-800">
+                            <p className="text-sm leading-relaxed whitespace-pre-line">
+                              {getBenefitsDisplay(verificationResponse.benefits).additionalDetails}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
                 
