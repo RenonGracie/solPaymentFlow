@@ -27,4 +27,4 @@ export interface VerificationBenefits {
     email?: string;
     response_id?: string;
     [key: string]: unknown;
-  } 
+  }  
