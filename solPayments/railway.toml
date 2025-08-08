@@ -1,11 +1,11 @@
 [build]
-  builder = "nixpacks"
-  buildCommand = "npm run build"
+builder = "nixpacks"
+buildCommand = "npm run build"
 
 [deploy]
-  startCommand = "npm run start"
-  healthcheckPath = "/"
-  healthcheckTimeout = 120
+startCommand = "npm start -- -H 0.0.0.0 -p $PORT"
+healthcheckPath = "/"
+healthcheckTimeout = 120
 
 [ports]
-  http = "3000"
+http = "3000"
