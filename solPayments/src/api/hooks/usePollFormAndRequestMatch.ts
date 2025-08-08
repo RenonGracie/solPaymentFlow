@@ -95,7 +95,7 @@ export const usePollFormAndRequestMatch = () => {
 
       return pollStatus();
     },
-    [getForm, getMatch],
+    [getForm, getMatch, matchData?.therapists],
   );
 
   return {

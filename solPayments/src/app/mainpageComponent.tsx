@@ -25,8 +25,19 @@ interface FormData {
   memberId?: string;
   provider?: string;
   paymentType?: string;
-  verificationData?: any; // Insurance verification response
-}
+  verificationData?: {
+    benefits?: {
+      copay: string;
+      coinsurance: string;
+      memberObligation: string;
+      deductible: string;
+      remainingDeductible: string;
+      oopMax: string;
+      remainingOopMax: string;
+      benefitStructure: string;
+    };
+    [key: string]: unknown;
+  };}
 
 interface SurveyData {
   first_name: string;
@@ -108,7 +119,19 @@ export default function MainPageComponent() {
     memberId?: string;
     dateOfBirth?: string;
     paymentType?: string;
-    verificationData?: any;
+    verificationData?: {
+      benefits?: {
+        copay: string;
+        coinsurance: string;
+        memberObligation: string;
+        deductible: string;
+        remainingDeductible: string;
+        oopMax: string;
+        remainingOopMax: string;
+        benefitStructure: string;
+      };
+      [key: string]: unknown;
+    }; // Insurance verification response
   }) => {
     setOnboardingData(data);
     setFormData({
@@ -274,7 +297,7 @@ export default function MainPageComponent() {
           paymentType: formData?.paymentType || selectedPaymentType || "",
           dateOfBirth: formData?.dateOfBirth || "", // Insurance date of birth
           memberId: formData?.memberId || "", // Insurance member ID
-          verificationData: formData?.verificationData || null // Insurance verification response
+          verificationData: formData?.verificationData || undefined // Insurance verification response
         }}
         onSubmit={handleSurveySubmit}
         onBack={handleBackFromSurvey}

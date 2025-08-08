@@ -8,8 +8,14 @@ import { TMatchedTherapistData } from "@/api/types/therapist.types";
 
 interface MatchedTherapistProps {
   therapistsList: TMatchedTherapistData[];
-  clientData?: any;
-  initialIndex?: number;
+  clientData?: {
+    id?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    response_id?: string;
+    [key: string]: unknown;
+  },  initialIndex?: number;
   onBack?: () => void;
   onBookSession?: (therapist: TMatchedTherapistData, slot: string) => void;
 }

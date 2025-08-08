@@ -79,7 +79,19 @@ interface CustomSurveyProps {
     paymentType?: string;
     dateOfBirth?: string;
     memberId?: string;
-    verificationData?: any; // Insurance verification response
+    verificationData?: {
+      benefits?: {
+        copay: string;
+        coinsurance: string;
+        memberObligation: string;
+        deductible: string;
+        remainingDeductible: string;
+        oopMax: string;
+        remainingOopMax: string;
+        benefitStructure: string;
+      };
+      [key: string]: unknown;
+    };
   };
   onSubmit: (surveyData: SurveyData) => void;
   onBack: () => void;
@@ -194,7 +206,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
     return () => window.removeEventListener('resize', checkOrientation);
   }, []);
 
-  const updateSurveyData = (field: keyof SurveyData, value: any) => {
+  const updateSurveyData = (field: keyof SurveyData, value: string | string[]) => {
     setSurveyData(prev => ({ ...prev, [field]: value }));
   };
 
