@@ -75,12 +75,14 @@ export default function MatchedTherapist({
   
   const convertTo24Hour = (time: string) => {
     const [hour, period] = time.split(/(?=[ap]m)/i);
-    let [h, m = '00'] = hour.split(':');
+    const parts = hour.split(':');
+    let h = parts[0];
+    const m = parts[1] || '00';
+    
     if (period.toLowerCase() === 'pm' && h !== '12') h = String(Number(h) + 12);
     if (period.toLowerCase() === 'am' && h === '12') h = '00';
-    return `${h.padStart(2, '0')}:${m || '00'}`;
+    return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
   };
-
   // Function to handle image URL - S3 presigned URLs should be used directly
   const getImageUrl = (imageLink: string | null | undefined): string => {
     if (!imageLink) return '';
