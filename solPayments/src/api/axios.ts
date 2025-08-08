@@ -1,15 +1,15 @@
 // solPayments/src/api/axios.ts
 import axios, { AxiosInstance } from 'axios';
 
-// Correct backend URL configuration
+// IMPORTANT: Use the PUBLIC Railway URL with HTTPS, not the internal URL
 const getBaseURL = () => {
-  // Use environment variable if available
+  // Check for environment variable first
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
     return process.env.NEXT_PUBLIC_API_BASE_URL;
   }
   
-  // Default to your Railway backend URL
-  // IMPORTANT: Use https:// protocol and no port number for Railway production
+  // Use your Railway backend's PUBLIC URL
+  // This should be the URL you see in Railway's dashboard for your backend
   return 'https://solhealthbe-production.up.railway.app';
 };
 
@@ -32,7 +32,12 @@ const axiosInstance: AxiosInstance = axios.create({
 // Request interceptor for debugging
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Make sure we're not double-concatenating URLs
+    // Make sure we're using HTTPS
+    if (config.baseURL && config.baseURL.includes('railway.internal')) {
+      console.error('❌ CRITICAL: Using internal Railway URL - this will not work from browser!');
+      console.error('   Change to: https://solhealthbe-production.up.railway.app');
+    }
+    
     const fullUrl = config.url?.startsWith('http') 
       ? config.url 
       : `${config.baseURL}${config.url}`;
@@ -64,18 +69,18 @@ axiosInstance.interceptors.response.use(
       ? error.config.url 
       : `${error.config?.baseURL}${error.config?.url}`;
     
-    console.error(`❌ API Error: ${error.response?.status} ${error.config?.method?.toUpperCase()} ${fullUrl}`);
+    console.error(`❌ API Error: ${error.response?.status || error.code} ${error.config?.method?.toUpperCase()} ${fullUrl}`);
+    
+    if (error.code === 'ERR_NETWORK') {
+      console.error('🔒 Network Error - Common causes:');
+      console.error('   1. Mixed Content: HTTPS page trying to reach HTTP endpoint');
+      console.error('   2. CORS issue: Backend not allowing your frontend origin');
+      console.error('   3. Backend is down or URL is incorrect');
+      console.error('   Current URL:', fullUrl);
+    }
     
     if (error.response?.data) {
       console.error('📥 Error data:', error.response.data);
-    }
-    
-    // Provide helpful error messages
-    if (error.response?.status === 404) {
-      console.error('🔍 404 Error - Check that:');
-      console.error('   1. Backend is deployed and running');
-      console.error('   2. The endpoint exists in your backend');
-      console.error('   3. The URL is correct:', fullUrl);
     }
     
     return Promise.reject(error);

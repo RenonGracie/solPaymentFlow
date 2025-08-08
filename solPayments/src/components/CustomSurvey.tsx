@@ -1143,48 +1143,39 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         const phq9Questions = [
           {
             question: "Little interest or pleasure in doing things",
-            field: 'pleasure_doing_things' as keyof SurveyData,
-            emoji: '😔'
+            field: 'pleasure_doing_things' as keyof SurveyData
           },
           {
             question: "Feeling down, depressed, or hopeless",
-            field: 'feeling_down' as keyof SurveyData,
-            emoji: '🌧️'
+            field: 'feeling_down' as keyof SurveyData
           },
           {
             question: "Trouble falling or staying asleep, or sleeping too much",
-            field: 'trouble_falling' as keyof SurveyData,
-            emoji: '😴'
+            field: 'trouble_falling' as keyof SurveyData
           },
           {
             question: "Feeling tired or having little energy",
-            field: 'feeling_tired' as keyof SurveyData,
-            emoji: '😞'
+            field: 'feeling_tired' as keyof SurveyData
           },
           {
             question: "Poor appetite or overeating",
-            field: 'poor_appetite' as keyof SurveyData,
-            emoji: '🍽️'
+            field: 'poor_appetite' as keyof SurveyData
           },
           {
             question: "Feeling bad about yourself — or that you are a failure or have let yourself or your family down",
-            field: 'feeling_bad_about_yourself' as keyof SurveyData,
-            emoji: '😓'
+            field: 'feeling_bad_about_yourself' as keyof SurveyData
           },
           {
             question: "Trouble concentrating on things, such as reading the newspaper or watching television",
-            field: 'trouble_concentrating' as keyof SurveyData,
-            emoji: '🧠'
+            field: 'trouble_concentrating' as keyof SurveyData
           },
           {
             question: "Moving or speaking so slowly that other people could have noticed. Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual",
-            field: 'moving_or_speaking_so_slowly' as keyof SurveyData,
-            emoji: '🔄'
+            field: 'moving_or_speaking_so_slowly' as keyof SurveyData
           },
           {
             question: "Thoughts that you would be better off dead, or of hurting yourself",
-            field: 'suicidal_thoughts' as keyof SurveyData,
-            emoji: '💭'
+            field: 'suicidal_thoughts' as keyof SurveyData
           }
         ];
  
@@ -1236,28 +1227,23 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             {/* Content */}
             <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-6 sm:pb-8">
               <div className="flex-1 flex items-center justify-center">
-                <div className="max-w-md w-full">
+                                <div className="max-w-md w-full">
                   <div className="text-center mb-4 sm:mb-6">
                     <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                      Measuring Your Emotional Well-Being
+                      {phq9CarouselIndex === 0 ? 'Measuring Your Emotional Well-Being' : 'Over the last 2 weeks, how often have you been bothered by any of the following?'}
                     </h1>
-                    <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
-                      This may feel like a lot, but this snapshot will help us give you the best care.
-                    </p>
+                    {phq9CarouselIndex === 0 && (
+                      <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                        This may feel like a lot, but this snapshot will help us give you the best care.
+                      </p>
+                    )}
                   </div>
- 
+
                   <div className="bg-white border-2 border-gray-300 rounded-3xl p-5 sm:p-6 shadow-sm">
                     <div className="text-center mb-5 sm:mb-6">
-                      <h2 className="text-sm sm:text-base mb-4 text-gray-800 leading-relaxed" 
-                          style={{ fontFamily: 'var(--font-inter)' }}>
-                        Over the last 2 weeks, how often have you been bothered by any of the following?
-                      </h2>
-                      {/* Emoji and Question */}
+                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
-                       <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                         <span className="text-xl sm:text-2xl">{currentPhq9Question.emoji}</span>
-                       </div>
                        <p className="text-sm sm:text-base text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
                          {currentPhq9Question.question}
                        </p>
@@ -1360,38 +1346,31 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        const gad7Questions = [
          {
            question: "Feeling nervous, anxious, or on edge",
-           field: 'feeling_nervous' as keyof SurveyData,
-           emoji: '😰'
+           field: 'feeling_nervous' as keyof SurveyData
          },
          {
            question: "Not being able to stop or control worrying",
-           field: 'not_control_worrying' as keyof SurveyData,
-           emoji: '🌀'
+           field: 'not_control_worrying' as keyof SurveyData
          },
          {
            question: "Worrying too much about different things",
-           field: 'worrying_too_much' as keyof SurveyData,
-           emoji: '😟'
+           field: 'worrying_too_much' as keyof SurveyData
          },
          {
            question: "Trouble relaxing",
-           field: 'trouble_relaxing' as keyof SurveyData,
-           emoji: '😤'
+           field: 'trouble_relaxing' as keyof SurveyData
          },
          {
            question: "Being so restless that it is hard to sit still",
-           field: 'being_so_restless' as keyof SurveyData,
-           emoji: '🚶'
+           field: 'being_so_restless' as keyof SurveyData
          },
          {
            question: "Becoming easily annoyed or irritable",
-           field: 'easily_annoyed' as keyof SurveyData,
-           emoji: '😠'
+           field: 'easily_annoyed' as keyof SurveyData
          },
          {
            question: "Feeling afraid, as if something awful might happen",
-           field: 'feeling_afraid' as keyof SurveyData,
-           emoji: '😨'
+           field: 'feeling_afraid' as keyof SurveyData
          }
        ];
 
@@ -1447,25 +1426,19 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                  <div className="text-center mb-4 sm:mb-6">
                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                     Measuring Anxiety
+                     {gad7CarouselIndex === 0 ? 'Measuring Anxiety' : 'Over the last 2 weeks, how often have you been bothered by any of the following?'}
                    </h1>
-                   <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
-                     This may feel like a lot, but this snapshot will help us give you the best care.
-                   </p>
+                   {gad7CarouselIndex === 0 && (
+                     <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                       This may feel like a lot, but this snapshot will help us give you the best care.
+                     </p>
+                   )}
                  </div>
 
                  <div className="bg-white border-2 border-gray-300 rounded-3xl p-5 sm:p-6 shadow-sm">
                    <div className="text-center mb-5 sm:mb-6">
-                     <h2 className="text-sm sm:text-base mb-4 text-gray-800 leading-relaxed" 
-                         style={{ fontFamily: 'var(--font-inter)' }}>
-                       Over the last 2 weeks, how often have you been bothered by any of the following?
-                     </h2>
-                     
-                     {/* Emoji and Question */}
+                     {/* Question */}
                      <div className="mb-4 sm:mb-5">
-                       <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                         <span className="text-xl sm:text-2xl">{currentGad7Question.emoji}</span>
-                       </div>
                        <p className="text-sm sm:text-base text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
                          {currentGad7Question.question}
                        </p>
