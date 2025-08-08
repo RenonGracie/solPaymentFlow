@@ -3,7 +3,7 @@ import axios, { AxiosInstance } from 'axios';
 
 // Debug: Log the environment and URL being used
 const baseURL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:8080'  // Correct backend port
+  ? 'http://solhealthbe-production-railway-up.app'  // Correct backend port
   : 'https://api.stg.solhealth.co';
 
 console.log('🔧 Axios Configuration:', {

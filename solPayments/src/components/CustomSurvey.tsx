@@ -33,10 +33,7 @@ interface SurveyData {
   age: string;
   gender: string;
   state: string; // This is US state, not status!
-  
-  // Preferences
-  therapist_specializes_in: string[];
-  therapist_identifies_as: string;
+  race_ethnicity: string[]; // Multi-select race/ethnicity
   
   // Mental Health Screening (PHQ-9)
   pleasure_doing_things: string;
@@ -59,13 +56,10 @@ interface SurveyData {
   feeling_afraid: string;
   
   // Additional
-  what_brings_you: string;
   lived_experiences: string[];
   university?: string;
-  promo_code?: string;
   referred_by?: string;
 }
-
 
 interface CustomSurveyProps {
   paymentType: "insurance" | "cash_pay";
@@ -104,11 +98,9 @@ const SURVEY_STEPS = [
   'therapist_search', // New: search for specific therapist (conditional)
   'therapist_preferences', // New: matching algorithm preferences (conditional)
   'alcohol_drugs', // New: alcohol and recreational drugs screening
-  'demographics',
-  'preferences', 
-  'mental_health',
-  'anxiety',
-  'additional'
+  'phq9', // PHQ-9 depression screening
+  'gad7', // GAD-7 anxiety screening
+  'matching_complete' // We're about to match you screen
 ] as const;
 
 type SurveyStep = typeof SURVEY_STEPS[number];
@@ -128,6 +120,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
   
   // Alcohol and drugs carousel state
   const [alcoholDrugsCarouselIndex, setAlcoholDrugsCarouselIndex] = useState(0);
+  
+  // PHQ-9 carousel state  
+  const [phq9CarouselIndex, setPhq9CarouselIndex] = useState(0);
+  
+  // GAD-7 carousel state
+  const [gad7CarouselIndex, setGad7CarouselIndex] = useState(0);
   
   const [surveyData, setSurveyData] = useState<SurveyData>({
     // Safety Screening
@@ -155,8 +153,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
     age: '',
     gender: '',
     state: formData.state || '', // Pre-fill state if passed from onboarding
-    therapist_specializes_in: [],
-    therapist_identifies_as: 'No preference',
+    race_ethnicity: [],
     pleasure_doing_things: '',
     feeling_down: '',
     trouble_falling: '',
@@ -173,10 +170,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
     being_so_restless: '',
     easily_annoyed: '',
     feeling_afraid: '',
-    what_brings_you: '',
     lived_experiences: [],
     university: '',
-    promo_code: '',
     referred_by: ''
   });
 
@@ -253,6 +248,13 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
   const currentStepIndex = SURVEY_STEPS.indexOf(currentStep);
   const totalSteps = SURVEY_STEPS.length;
   const progress = ((currentStepIndex + 1) / totalSteps) * 100;
+
+  const scaleOptions = [
+    'Not at all',
+    'Several days',
+    'More than half the days',
+    'Nearly every day'
+  ];
 
   const goToNextStep = () => {
     const nextIndex = currentStepIndex + 1;
@@ -1097,7 +1099,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     <div className="flex-1 flex justify-end">
                       {isLastQuestion ? (
                         <Button
-                          onClick={() => setCurrentStep('demographics')}
+                          onClick={() => setCurrentStep('phq9')}
                           disabled={!canContinue}
                           className={`py-3 px-6 rounded-full ${
                             canContinue
@@ -1132,535 +1134,881 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
           </div>
         );
 
-      case 'demographics':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center mb-6">Tell us about yourself</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Age Range*</label>
-                <select
-                  value={surveyData.age}
-                  onChange={(e) => updateSurveyData('age', e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select age range</option>
-                  <option value="18-24">18-24</option>
-                  <option value="25-34">25-34</option>
-                  <option value="35-44">35-44</option>
-                  <option value="45-54">45-54</option>
-                  <option value="55-64">55-64</option>
-                  <option value="65+">65+</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Gender*</label>
-                <select
-                  value={surveyData.gender}
-                  onChange={(e) => updateSurveyData('gender', e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select gender</option>
-                  <option value="Female">Female</option>
-                  <option value="Male">Male</option>
-                  <option value="Non-binary">Non-binary</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">State*</label>
-              {/* Show state if pre-filled from onboarding, otherwise show dropdown */}
-              {surveyData.state && formData.state ? (
-                <div className="w-full p-3 border rounded-lg bg-gray-50">
-                  <span className="text-gray-700">{surveyData.state}</span>
-                  <span className="text-sm text-gray-500 ml-2">(selected during signup)</span>
-                </div>
-              ) : (
-                <select
-                  value={surveyData.state}
-                  onChange={(e) => updateSurveyData('state', e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select your state</option>
-                  <option value="NY">New York</option>
-                  <option value="NJ">New Jersey</option>
-                  <option value="CA">California</option>
-                  <option value="TX">Texas</option>
-                  <option value="FL">Florida</option>
-                  <option value="PA">Pennsylvania</option>
-                  <option value="IL">Illinois</option>
-                  <option value="OH">Ohio</option>
-                  <option value="GA">Georgia</option>
-                  <option value="NC">North Carolina</option>
-                  <option value="MI">Michigan</option>
-                  <option value="MA">Massachusetts</option>
-                  <option value="VA">Virginia</option>
-                  <option value="WA">Washington</option>
-                  <option value="AZ">Arizona</option>
-                  <option value="TN">Tennessee</option>
-                  <option value="IN">Indiana</option>
-                  <option value="MO">Missouri</option>
-                  <option value="MD">Maryland</option>
-                  <option value="WI">Wisconsin</option>
-                  <option value="CO">Colorado</option>
-                  <option value="MN">Minnesota</option>
-                  <option value="SC">South Carolina</option>
-                  <option value="AL">Alabama</option>
-                  <option value="LA">Louisiana</option>
-                  <option value="KY">Kentucky</option>
-                  <option value="OR">Oregon</option>
-                  <option value="OK">Oklahoma</option>
-                  <option value="CT">Connecticut</option>
-                  <option value="UT">Utah</option>
-                  <option value="NV">Nevada</option>
-                  <option value="NM">New Mexico</option>
-                  <option value="WV">West Virginia</option>
-                  <option value="NE">Nebraska</option>
-                  <option value="ID">Idaho</option>
-                  <option value="HI">Hawaii</option>
-                  <option value="ME">Maine</option>
-                  <option value="NH">New Hampshire</option>
-                  <option value="RI">Rhode Island</option>
-                  <option value="MT">Montana</option>
-                  <option value="DE">Delaware</option>
-                  <option value="SD">South Dakota</option>
-                  <option value="ND">North Dakota</option>
-                  <option value="AK">Alaska</option>
-                  <option value="VT">Vermont</option>
-                  <option value="WY">Wyoming</option>
-                  <option value="DC">District of Columbia</option>
-                </select>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Phone (optional)</label>
-              <input
-                type="tel"
-                value={surveyData.phone}
-                onChange={(e) => updateSurveyData('phone', e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="(555) 123-4567"
-              />
-            </div>
-
-            {/* Display preferred name if different from first name */}
-            {surveyData.preferred_name && surveyData.preferred_name !== surveyData.first_name && (
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> Your therapist will address you as "{surveyData.preferred_name}"
-                </p>
-              </div>
-            )}
-
-            {/* Display insurance verification info if available */}
-            {formData.verificationData?.benefits && (
-              <div className="bg-green-50 p-3 rounded-lg">
-                <p className="text-sm text-green-800">
-                  <strong>Insurance Verified:</strong> Your estimated costs are{' '}
-                  {formData.verificationData.benefits.copay && `Copay: ${formData.verificationData.benefits.copay}`}
-                  {formData.verificationData.benefits.memberObligation !== "$0.00" && 
-                    `, Session cost: ${formData.verificationData.benefits.memberObligation}`}
-                </p>
-              </div>
-            )}
-          </div>
-        );
-
-      case 'preferences':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center mb-6">Therapist Preferences</h2>
-            
-            <div>
-              <label className="block text-sm font-medium mb-3">What areas would you like your therapist to specialize in?*</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {[
-                  'Anxiety', 'Depression', 'Trauma', 'Relationship challenges', 'Life transitions',
-                  'LGBTQ+ identity', 'Eating disorders', 'ADHD', 'OCD', 'Bipolar Disorder',
-                  'Substance use', 'Career stress', 'Family life', 'Building confidence',
-                  'Stress and burnout', 'Body image', 'Panic attacks', 'Phobias'
-                ].map((specialty) => (
-                  <label key={specialty} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={surveyData.therapist_specializes_in.includes(specialty)}
-                      onChange={(e) => {
-                        const current = surveyData.therapist_specializes_in;
-                        if (e.target.checked) {
-                          updateSurveyData('therapist_specializes_in', [...current, specialty]);
-                        } else {
-                          updateSurveyData('therapist_specializes_in', current.filter(s => s !== specialty));
-                        }
-                      }}
-                      className="rounded"
-                    />
-                    <span className="text-sm">{specialty}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Do you have a preference for your therapist's gender identity?</label>
-              <select
-                value={surveyData.therapist_identifies_as}
-                onChange={(e) => updateSurveyData('therapist_identifies_as', e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="No preference">No preference</option>
-                <option value="Female">Female</option>
-                <option value="Male">Male</option>
-                <option value="Non-binary">Non-binary</option>
-              </select>
-            </div>
-          </div>
-        );
-
-      case 'mental_health':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center mb-6">Mental Health Assessment</h2>
-            <p className="text-center text-gray-600 mb-6">
-              Over the last 2 weeks, how often have you been bothered by any of the following problems?
-            </p>
-            
-            {[
-              { key: 'pleasure_doing_things', label: 'Little interest or pleasure in doing things' },
-              { key: 'feeling_down', label: 'Feeling down, depressed, or hopeless' },
-              { key: 'trouble_falling', label: 'Trouble falling or staying asleep, or sleeping too much' },
-              { key: 'feeling_tired', label: 'Feeling tired or having little energy' },
-              { key: 'poor_appetite', label: 'Poor appetite or overeating' },
-              { key: 'feeling_bad_about_yourself', label: 'Feeling bad about yourself or that you are a failure' },
-              { key: 'trouble_concentrating', label: 'Trouble concentrating on things' },
-              { key: 'moving_or_speaking_so_slowly', label: 'Moving or speaking slowly, or being fidgety/restless' },
-              { key: 'suicidal_thoughts', label: 'Thoughts that you would be better off dead' }
-            ].map((item) => (
-              <div key={item.key} className="space-y-2">
-                <label className="block text-sm font-medium">{item.label}*</label>
-                <div className="flex space-x-4">
-                  {[
-                    { value: 'Not at all', label: 'Not at all' },
-                    { value: 'Several days', label: 'Several days' },
-                    { value: 'More than half the days', label: 'More than half the days' },
-                    { value: 'Nearly every day', label: 'Nearly every day' }
-                  ].map((option) => (
-                    <label key={option.value} className="flex items-center space-x-1">
-                      <input
-                        type="radio"
-                        name={item.key}
-                        value={option.value}
-                        checked={surveyData[item.key as keyof SurveyData] === option.value}
-                        onChange={(e) => updateSurveyData(item.key as keyof SurveyData, e.target.value)}
-                        required
-                      />
-                      <span className="text-sm">{option.label}</span>
-                    </label>
-                  ))}
+        case 'phq9':
+          const phq9Questions = [
+            {
+              question: "Little interest or pleasure in doing things",
+              field: 'pleasure_doing_things' as keyof SurveyData,
+              emoji: '😔'
+            },
+            {
+              question: "Feeling down, depressed, or hopeless",
+              field: 'feeling_down' as keyof SurveyData,
+              emoji: '🌧️'
+            },
+            {
+              question: "Trouble falling or staying asleep, or sleeping too much",
+              field: 'trouble_falling' as keyof SurveyData,
+              emoji: '😴'
+            },
+            {
+              question: "Feeling tired or having little energy",
+              field: 'feeling_tired' as keyof SurveyData,
+              emoji: '😞'
+            },
+            {
+              question: "Poor appetite or overeating",
+              field: 'poor_appetite' as keyof SurveyData,
+              emoji: '🍽️'
+            },
+            {
+              question: "Feeling bad about yourself — or that you are a failure or have let yourself or your family down",
+              field: 'feeling_bad_about_yourself' as keyof SurveyData,
+              emoji: '😓'
+            },
+            {
+              question: "Trouble concentrating on things, such as reading the newspaper or watching television",
+              field: 'trouble_concentrating' as keyof SurveyData,
+              emoji: '🧠'
+            },
+            {
+              question: "Moving or speaking so slowly that other people could have noticed. Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual",
+              field: 'moving_or_speaking_so_slowly' as keyof SurveyData,
+              emoji: '🔄'
+            },
+            {
+              question: "Thoughts that you would be better off dead, or of hurting yourself",
+              field: 'suicidal_thoughts' as keyof SurveyData,
+              emoji: '💭'
+            }
+          ];
+   
+          const currentPhq9Question = phq9Questions[phq9CarouselIndex];
+          const isLastPhq9Question = phq9CarouselIndex === phq9Questions.length - 1;
+          const canContinuePhq9 = phq9Questions.every(q => surveyData[q.field]);
+   
+          return (
+            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+              {/* Header with sunset image */}
+              <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+                <img 
+                  src="/onboarding-banner.jpg" 
+                  alt="" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                      style={{ 
+                        fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                        fontWeight: 400,
+                        letterSpacing: '0.02em',
+                        lineHeight: '1.1'
+                      }}>
+                    CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        );
-
-      case 'anxiety':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center mb-6">Anxiety Assessment</h2>
-            <p className="text-center text-gray-600 mb-6">
-              Over the last 2 weeks, how often have you been bothered by the following problems?
-            </p>
-            
-            {[
-              { key: 'feeling_nervous', label: 'Feeling nervous, anxious, or on edge' },
-              { key: 'not_control_worrying', label: 'Not being able to stop or control worrying' },
-              { key: 'worrying_too_much', label: 'Worrying too much about different things' },
-              { key: 'trouble_relaxing', label: 'Trouble relaxing' },
-              { key: 'being_so_restless', label: 'Being so restless that it is hard to sit still' },
-              { key: 'easily_annoyed', label: 'Becoming easily annoyed or irritable' },
-              { key: 'feeling_afraid', label: 'Feeling afraid, as if something awful might happen' }
-            ].map((item) => (
-              <div key={item.key} className="space-y-2">
-                <label className="block text-sm font-medium">{item.label}*</label>
-                <div className="flex space-x-4">
-                  {[
-                    { value: 'Not at all', label: 'Not at all' },
-                    { value: 'Several days', label: 'Several days' },
-                    { value: 'More than half the days', label: 'More than half the days' },
-                    { value: 'Nearly every day', label: 'Nearly every day' }
-                  ].map((option) => (
-                    <label key={option.value} className="flex items-center space-x-1">
-                      <input
-                        type="radio"
-                        name={item.key}
-                        value={option.value}
-                        checked={surveyData[item.key as keyof SurveyData] === option.value}
-                        onChange={(e) => updateSurveyData(item.key as keyof SurveyData, e.target.value)}
-                        required
-                      />
-                      <span className="text-sm">{option.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-
-      case 'additional':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center mb-6">Additional Information</h2>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">What brings you to therapy today?*</label>
-              <textarea
-                value={surveyData.what_brings_you}
-                onChange={(e) => updateSurveyData('what_brings_you', e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 h-32"
-                placeholder="Please share what's motivating you to seek therapy at this time..."
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-3">Do any of these lived experiences apply to you? (Optional)</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {[
-                  'LGBTQ+ community member',
-                  'First-generation college student', 
-                  'Immigration background',
-                  'Parent/caregiver',
-                  'Career professional',
-                  'Student',
-                  'Religious/spiritual',
-                  'Neurodivergent',
-                  'Chronic illness/disability',
-                  'Military/veteran'
-                ].map((experience) => (
-                  <label key={experience} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={surveyData.lived_experiences.includes(experience)}
-                      onChange={(e) => {
-                        const current = surveyData.lived_experiences;
-                        if (e.target.checked) {
-                          updateSurveyData('lived_experiences', [...current, experience]);
-                        } else {
-                          updateSurveyData('lived_experiences', current.filter(exp => exp !== experience));
-                        }
-                      }}
-                      className="rounded"
-                    />
-                    <span className="text-sm">{experience}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">University/School (Optional)</label>
-              <input
-                type="text"
-                value={surveyData.university}
-                onChange={(e) => updateSurveyData('university', e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your university or school"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Promo Code (Optional)</label>
-              <input
-                type="text"
-                value={surveyData.promo_code}
-                onChange={(e) => updateSurveyData('promo_code', e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter promo code if you have one"
-              />
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  const isStepValid = () => {
-    switch (currentStep) {
-      case 'video':
-        return true; // Video step is always valid
-      case 'safety_screening':
-        return surveyData.safety_screening !== ''; // Must have selected yes or no
-      case 'therapist_matching':
-        return surveyData.matching_preference !== ''; // Must have selected preference
-      case 'therapist_search':
-        return surveyData.selected_therapist !== ''; // Must have selected a therapist
-      case 'therapist_preferences':
-        return true; // Optional preferences, always valid
-      case 'alcohol_drugs':
-        return surveyData.alcohol_frequency !== '' && surveyData.recreational_drugs_frequency !== '';
-      case 'demographics':
-        return surveyData.age && surveyData.gender && surveyData.state;
-      case 'preferences':
-        return surveyData.therapist_specializes_in.length > 0;
-      case 'mental_health':
-        return surveyData.pleasure_doing_things && surveyData.feeling_down && 
-               surveyData.trouble_falling && surveyData.feeling_tired &&
-               surveyData.poor_appetite && surveyData.feeling_bad_about_yourself &&
-               surveyData.trouble_concentrating && surveyData.moving_or_speaking_so_slowly &&
-               surveyData.suicidal_thoughts;
-      case 'anxiety':
-        return surveyData.feeling_nervous && surveyData.not_control_worrying &&
-               surveyData.worrying_too_much && surveyData.trouble_relaxing &&
-               surveyData.being_so_restless && surveyData.easily_annoyed &&
-               surveyData.feeling_afraid;
-      case 'additional':
-        return surveyData.what_brings_you.trim().length > 0;
-      default:
-        return false;
-    }
-  };
-
-  // Special handling for video, safety screening, and therapist matching steps - no progress bar or card wrapper
-  if (currentStep === 'video' || currentStep === 'safety_screening' || currentStep === 'therapist_matching' || currentStep === 'therapist_search' || currentStep === 'therapist_preferences' || currentStep === 'alcohol_drugs') {
-    return (
-      <>
-        {renderStepContent()}
-        
-        {/* Why We Ask Modal */}
-        <Dialog open={showWhyWeAskModal} onOpenChange={setShowWhyWeAskModal}>
-          <DialogContent className="max-w-md mx-auto">
-            <DialogHeader className="relative">
-              <button
-                onClick={() => setShowWhyWeAskModal(false)}
-                className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <DialogTitle className="text-left text-2xl font-medium" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                Why we ask this question
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
-              <p>
-                At Sol Health, we want to make sure you're safe and matched to the right level of care. Our therapists are trained to work with those with mild to moderate symptoms. When someone is facing active suicidal or homicidal thoughts or hallucinations/delusions, a more intensive setting is the best and safest option.
-              </p>
-              
-              <div>
-                <h4 className="font-medium text-gray-800 mb-2">What we'll do if this applies to you</h4>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Share a referral list with affordable, in-network and community options</li>
-                </ul>
-              </div>
-
-              <p className="italic">
-                We ask this to protect your wellbeing. Your answers are confidential and used only to guide care. This form isn't monitored 24/7 and isn't suitable for urgent situations.
-              </p>
-
-              <p className="font-medium">
-                If you're in immediate danger or feel unsafe, call 988 (Suicide and Crisis Lifeline), 911, or go to the nearest emergency room.
-              </p>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Referral Modal for "Yes" Response */}
-        <Dialog open={showReferralModal} onOpenChange={setShowReferralModal}>
-          <DialogContent className="max-w-md mx-auto">
-            <DialogHeader className="relative">
-              <button
-                onClick={() => setShowReferralModal(false)}
-                className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <DialogTitle className="text-left text-3xl font-medium leading-tight" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                Let's get you to the right level of care
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
-              <p>
-                Because our therapists are trained to provide care for those with mild to moderate needs, we're not the right fit for your right now. Your safety comes first, and a higher level of care will serve you best.
-              </p>
-              
-              <p>
-                At Sol Health, we want to prioritize people's well-being above all else, and as such, we can refer you to other affordable options.
-              </p>
-
-              <p className="italic text-sm">
-                *If you're in crisis or need immediate support, call 988 (Suicide and Crisis Lifeline), 911, or go to your nearest emergency room.
-              </p>
-
-              <div className="pt-4">
-                <Button
+   
+              {/* Navigation */}
+              <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+                <button 
                   onClick={() => {
-                    window.open('https://solhealth.co/resources', '_blank');
-                  }}
-                  className="w-full py-4 px-6 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-lg font-medium transition-all border-2 border-gray-800"
-                  style={{ fontFamily: 'var(--font-inter)' }}
+                    if (phq9CarouselIndex > 0) {
+                      setPhq9CarouselIndex(phq9CarouselIndex - 1);
+                    } else {
+                      setCurrentStep('alcohol_drugs');
+                    }
+                  }} 
+                  className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  Referrals Resource List →
+                  <ArrowLeft className="w-6 h-6 text-gray-600" />
+                </button>
+                <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+                <div className="w-10"></div>
+              </div>
+   
+              {/* Content */}
+              <div className="flex-1 flex items-center justify-center px-6 pb-16">
+                <div className="max-w-md w-full -mt-16">
+                  <div className="text-center mb-8">
+                    <h1 className="text-2xl md:text-3xl mb-4 text-gray-800" 
+                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                      Measuring Your Emotional Well-Being
+                    </h1>
+                    <p className="text-gray-500 text-sm italic" style={{ fontFamily: 'var(--font-inter)' }}>
+                      This may feel like a lot, but this snapshot will help us give you the best care.
+                    </p>
+                  </div>
+   
+                  <div className="bg-white border-2 border-gray-300 rounded-3xl p-8 shadow-sm">
+                    <div className="text-center mb-8">
+                      <h2 className="text-lg mb-6 text-gray-800 leading-relaxed" 
+                          style={{ fontFamily: 'var(--font-inter)' }}>
+                        Over the last 2 weeks, how often have you been bothered by any of the following?
+                      </h2>
+                      
+                      {/* Emoji and Question */}
+                      <div className="mb-6">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <span className="text-2xl">{currentPhq9Question.emoji}</span>
+                        </div>
+                        <p className="text-base text-gray-800 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
+                          {currentPhq9Question.question}
+                        </p>
+                      </div>
+                    </div>
+   
+                    <div className="space-y-3 mb-8">
+                      {scaleOptions.map((option) => {
+                        const isSelected = surveyData[currentPhq9Question.field] === option;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => updateSurveyData(currentPhq9Question.field, option)}
+                            className={`w-full py-3 px-6 rounded-2xl text-lg font-medium transition-all ${
+                              isSelected
+                                ? 'bg-[#5C3106] text-white'
+                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
+   
+                    {/* Navigation Buttons */}
+                    <div className="flex justify-between items-center">
+                      {/* Previous Button */}
+                      <div className="flex-1">
+                        {phq9CarouselIndex > 0 && (
+                          <Button
+                            onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)}
+                            variant="outline"
+                            className="py-3 px-6 rounded-full"
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Previous
+                          </Button>
+                        )}
+                      </div>
+   
+                      {/* Progress Dots */}
+                      <div className="flex space-x-2">
+                        {phq9Questions.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`w-2 h-2 rounded-full ${
+                              index === phq9CarouselIndex ? 'bg-[#5C3106]' : 'bg-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+   
+                      {/* Next/Continue Button */}
+                      <div className="flex-1 flex justify-end">
+                        {isLastPhq9Question ? (
+                          <Button
+                            onClick={() => setCurrentStep('gad7')}
+                            disabled={!canContinuePhq9}
+                            className={`py-3 px-6 rounded-full ${
+                              canContinuePhq9
+                                ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            Continue
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => setPhq9CarouselIndex(phq9CarouselIndex + 1)}
+                            disabled={!surveyData[currentPhq9Question.field]}
+                            className={`py-3 px-6 rounded-full ${
+                              surveyData[currentPhq9Question.field]
+                                ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            Next
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+   
+        case 'gad7':
+          const gad7Questions = [
+            {
+              question: "Feeling nervous, anxious, or on edge",
+              field: 'feeling_nervous' as keyof SurveyData,
+              emoji: '😰'
+            },
+            {
+              question: "Not being able to stop or control worrying",
+              field: 'not_control_worrying' as keyof SurveyData,
+              emoji: '🌀'
+            },
+            {
+              question: "Worrying too much about different things",
+              field: 'worrying_too_much' as keyof SurveyData,
+              emoji: '😟'
+            },
+            {
+              question: "Trouble relaxing",
+              field: 'trouble_relaxing' as keyof SurveyData,
+              emoji: '😤'
+            },
+            {
+              question: "Being so restless that it is hard to sit still",
+              field: 'being_so_restless' as keyof SurveyData,
+              emoji: '🚶'
+            },
+            {
+              question: "Becoming easily annoyed or irritable",
+              field: 'easily_annoyed' as keyof SurveyData,
+              emoji: '😠'
+            },
+            {
+              question: "Feeling afraid, as if something awful might happen",
+              field: 'feeling_afraid' as keyof SurveyData,
+              emoji: '😨'
+            }
+          ];
+   
+          const currentGad7Question = gad7Questions[gad7CarouselIndex];
+          const isLastGad7Question = gad7CarouselIndex === gad7Questions.length - 1;
+          const canContinueGad7 = gad7Questions.every(q => surveyData[q.field]);
+   
+          return (
+            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+              {/* Header with sunset image */}
+              <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+                <img 
+                  src="/onboarding-banner.jpg" 
+                  alt="" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                      style={{ 
+                        fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                        fontWeight: 400,
+                        letterSpacing: '0.02em',
+                        lineHeight: '1.1'
+                      }}>
+                    CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+                  </p>
+                </div>
+              </div>
+   
+              {/* Navigation */}
+              <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+                <button 
+                  onClick={() => {
+                    if (gad7CarouselIndex > 0) {
+                      setGad7CarouselIndex(gad7CarouselIndex - 1);
+                    } else {
+                      setCurrentStep('phq9');
+                    }
+                  }} 
+                  className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <ArrowLeft className="w-6 h-6 text-gray-600" />
+                </button>
+                <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+                <div className="w-10"></div>
+              </div>
+   
+              {/* Content */}
+              <div className="flex-1 flex items-center justify-center px-6 pb-16">
+                <div className="max-w-md w-full -mt-16">
+                  <div className="text-center mb-8">
+                    <h1 className="text-2xl md:text-3xl mb-4 text-gray-800" 
+                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                      Measuring Anxiety
+                    </h1>
+                    <p className="text-gray-500 text-sm italic" style={{ fontFamily: 'var(--font-inter)' }}>
+                      This may feel like a lot, but this snapshot will help us give you the best care.
+                    </p>
+                  </div>
+   
+                  <div className="bg-white border-2 border-gray-300 rounded-3xl p-8 shadow-sm">
+                    <div className="text-center mb-8">
+                      <h2 className="text-lg mb-6 text-gray-800 leading-relaxed" 
+                          style={{ fontFamily: 'var(--font-inter)' }}>
+                        Over the last 2 weeks, how often have you been bothered by any of the following?
+                      </h2>
+                      
+                      {/* Emoji and Question */}
+                      <div className="mb-6">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <span className="text-2xl">{currentGad7Question.emoji}</span>
+                        </div>
+                        <p className="text-base text-gray-800 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
+                          {currentGad7Question.question}
+                        </p>
+                      </div>
+                    </div>
+   
+                    <div className="space-y-3 mb-8">
+                      {scaleOptions.map((option) => {
+                        const isSelected = surveyData[currentGad7Question.field] === option;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => updateSurveyData(currentGad7Question.field, option)}
+                            className={`w-full py-3 px-6 rounded-2xl text-lg font-medium transition-all ${
+                              isSelected
+                                ? 'bg-[#5C3106] text-white'
+                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
+   
+                    {/* Navigation Buttons */}
+                    <div className="flex justify-between items-center">
+                      {/* Previous Button */}
+                      <div className="flex-1">
+                        {gad7CarouselIndex > 0 && (
+                          <Button
+                            onClick={() => setGad7CarouselIndex(gad7CarouselIndex - 1)}
+                            variant="outline"
+                            className="py-3 px-6 rounded-full"
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Previous
+                          </Button>
+                        )}
+                      </div>
+   
+                      {/* Progress Dots */}
+                      <div className="flex space-x-2">
+                        {gad7Questions.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`w-2 h-2 rounded-full ${
+                              index === gad7CarouselIndex ? 'bg-[#5C3106]' : 'bg-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+   
+                      {/* Next/Continue Button */}
+                      <div className="flex-1 flex justify-end">
+                        {isLastGad7Question ? (
+                          <Button
+                            onClick={() => setCurrentStep('matching_complete')}
+                            disabled={!canContinueGad7}
+                            className={`py-3 px-6 rounded-full ${
+                              canContinueGad7
+                                ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            Continue
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => setGad7CarouselIndex(gad7CarouselIndex + 1)}
+                            disabled={!surveyData[currentGad7Question.field]}
+                            className={`py-3 px-6 rounded-full ${
+                              surveyData[currentGad7Question.field]
+                                ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            Next
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+   
+        case 'matching_complete':
+          return (
+            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+              {/* Header with sunset image */}
+              <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+                <img 
+                  src="/onboarding-banner.jpg" 
+                  alt="" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                      style={{ 
+                        fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                        fontWeight: 400,
+                        letterSpacing: '0.02em',
+                        lineHeight: '1.1'
+                      }}>
+                    CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+                  </p>
+                </div>
+              </div>
+   
+              {/* Navigation */}
+              <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+                <button onClick={() => setCurrentStep('gad7')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <ArrowLeft className="w-6 h-6 text-gray-600" />
+                </button>
+                <div className="flex items-center">
+                  <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                    Sol Health
+                  </h2>
+                  <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+                </div>
+                <div className="w-10"></div>
+              </div>
+   
+              {/* Content */}
+              <div className="flex-1 px-6 pb-16 overflow-y-auto">
+                <div className="max-w-lg mx-auto">
+                  <div className="text-center mb-8 mt-4">
+                    <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <span className="text-4xl">⚡</span>
+                    </div>
+                    
+                    <h1 className="text-3xl md:text-4xl mb-6 text-gray-800" 
+                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                      We're About To Match You!
+                    </h1>
+                    
+                    <p className="text-gray-600 text-base mb-8 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Please confirm your account details below.
+                    </p>
+                  </div>
+
+                  {/* Basic Information */}
+                  <div className="mb-8">
+                    <h2 className="text-xl font-medium mb-6 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Basic Information
+                    </h2>
+                    
+                    <div className="space-y-4">
+                      {/* First Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          First Name
+                        </label>
+                        <input
+                          type="text"
+                          value={surveyData.preferred_name || surveyData.first_name}
+                          onChange={(e) => updateSurveyData('preferred_name', e.target.value)}
+                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
+                          style={{ fontFamily: 'var(--font-inter)' }}
+                        />
+                        {/* Show preferred name note if different from original first name */}
+                        {surveyData.preferred_name && surveyData.preferred_name !== surveyData.first_name && (
+                          <p className="text-sm text-blue-600 mt-1">
+                            Your therapist will address you as "{surveyData.preferred_name}"
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Last Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          value={surveyData.last_name}
+                          onChange={(e) => updateSurveyData('last_name', e.target.value)}
+                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
+                          style={{ fontFamily: 'var(--font-inter)' }}
+                        />
+                      </div>
+
+                      {/* Phone Number */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          value={surveyData.phone || ''}
+                          onChange={(e) => updateSurveyData('phone', e.target.value)}
+                          placeholder="+11234567890"
+                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
+                          style={{ fontFamily: 'var(--font-inter)' }}
+                        />
+                      </div>
+
+                      {/* Gender and Age Row */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Gender
+                          </label>
+                          <select
+                            value={surveyData.gender}
+                            onChange={(e) => updateSurveyData('gender', e.target.value)}
+                            className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            <option value="">Select Gender</option>
+                            <option value="Female">Female</option>
+                            <option value="Male">Male</option>
+                            <option value="Non-binary">Non-binary</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Age
+                          </label>
+                          <input
+                            type="number"
+                            min="18"
+                            max="120"
+                            value={surveyData.age}
+                            onChange={(e) => updateSurveyData('age', e.target.value)}
+                            placeholder="Select your age"
+                            className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Race/Ethnicity */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                          Race/Ethnicity
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {[
+                            'Black / African',
+                            'Hispanic / Latinx', 
+                            'White',
+                            'Middle Eastern / North African (MENA)',
+                            'East Asian',
+                            'South Asian',
+                            'Southeast Asian',
+                            'Native Hawaiian / Other Pacific Islander',
+                            'Indigenous (Native American / Alaska Native / First Nations)',
+                            'Prefer not to say'
+                          ].map((ethnicity) => {
+                            const isSelected = surveyData.race_ethnicity.includes(ethnicity);
+                            return (
+                              <label key={ethnicity} className="flex items-center space-x-2 p-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    const current = surveyData.race_ethnicity;
+                                    if (e.target.checked) {
+                                      updateSurveyData('race_ethnicity', [...current, ethnicity]);
+                                    } else {
+                                      updateSurveyData('race_ethnicity', current.filter(item => item !== ethnicity));
+                                    }
+                                  }}
+                                  className="rounded"
+                                />
+                                <span className="text-sm">{ethnicity}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* School or University */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          School or University
+                        </label>
+                        <input
+                          type="text"
+                          value={surveyData.university || ''}
+                          onChange={(e) => updateSurveyData('university', e.target.value)}
+                          placeholder="Optional"
+                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
+                          style={{ fontFamily: 'var(--font-inter)' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* How did you hear about Sol Health */}
+                  <div className="mb-8">
+                    <h3 className="text-lg font-medium mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                      How did you hear about Sol Health?
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { name: 'Friend/Family', emoji: '👥' },
+                        { name: 'In-Person Event', emoji: '🎪' },
+                        { name: 'Instagram', emoji: '📷' },
+                        { name: 'TikTok', emoji: '🎵' },
+                        { name: 'Psychology Today', emoji: '🧠' },
+                        { name: 'ZocDoc', emoji: '🩺' },
+                        { name: 'Open Path Collective', emoji: '🛤️' },
+                        { name: 'MyAtlas', emoji: '🗺️' },
+                        { name: 'Referral from healthcare professional', emoji: '👩‍⚕️' },
+                        { name: 'Sad Girls Club - Remedy Winner', emoji: '🌙' },
+                        { name: 'Flyer', emoji: '📄' },
+                        { name: 'Email', emoji: '✉️' },
+                        { name: 'Google', emoji: '🔍' }
+                      ].map((source) => {
+                        const isSelected = surveyData.referred_by === source.name;
+                        return (
+                          <button
+                            key={source.name}
+                            onClick={() => updateSurveyData('referred_by', isSelected ? '' : source.name)}
+                            className={`py-2 px-3 rounded-full text-sm transition-all flex items-center ${
+                              isSelected
+                                ? 'bg-[#5C3106] text-white'
+                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            <span className="mr-2">{source.emoji}</span>
+                            {source.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Terms and Conditions */}
+                  <div className="mb-8">
+                    <label className="flex items-start space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="mt-1 rounded"
+                        required
+                      />
+                      <span className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
+                        I agree to Sol Health's{' '}
+                        <a href="https://solhealth.co/terms-of-service" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
+                          Terms of Service
+                        </a>
+                        ,{' '}
+                        <a href="https://solhealth.co/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
+                          Privacy Policy
+                        </a>
+                        , and{' '}
+                        <a href="https://solhealth.co/telehealth-consent" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
+                          Telehealth Consent
+                        </a>
+                        .
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Submit Button */}
+                  <Button
+                    onClick={() => onSubmit(surveyData)}
+                    className="w-full py-5 px-8 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-full text-lg font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  >
+                    ⚡ Match me to my therapist →
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+   
+        default:
+          return null;
+      }
+    };
+   
+    const isStepValid = () => {
+      switch (currentStep) {
+        case 'video':
+          return true; // Video step is always valid
+        case 'safety_screening':
+          return surveyData.safety_screening !== ''; // Must have selected yes or no
+        case 'therapist_matching':
+          return surveyData.matching_preference !== ''; // Must have selected preference
+        case 'therapist_search':
+          return surveyData.selected_therapist !== ''; // Must have selected a therapist
+        case 'therapist_preferences':
+          return true; // Optional preferences, always valid
+        case 'alcohol_drugs':
+          return surveyData.alcohol_frequency !== '' && surveyData.recreational_drugs_frequency !== '';
+        case 'phq9':
+          // Check if all PHQ-9 questions are answered
+          const phq9Fields = [
+            'pleasure_doing_things', 'feeling_down', 'trouble_falling', 'feeling_tired',
+            'poor_appetite', 'feeling_bad_about_yourself', 'trouble_concentrating', 
+            'moving_or_speaking_so_slowly', 'suicidal_thoughts'
+          ];
+          return phq9Fields.every(field => surveyData[field as keyof SurveyData]);
+        case 'gad7':
+          // Check if all GAD-7 questions are answered
+          const gad7Fields = [
+            'feeling_nervous', 'not_control_worrying', 'worrying_too_much', 
+            'trouble_relaxing', 'being_so_restless', 'easily_annoyed', 'feeling_afraid'
+          ];
+          return gad7Fields.every(field => surveyData[field as keyof SurveyData]);
+        case 'matching_complete':
+          return true; // Final step, always valid
+        default:
+          return false;
+      }
+    };
+   
+    // Special handling for all steps - no progress bar or card wrapper
+    if (currentStep === 'video' || currentStep === 'safety_screening' || currentStep === 'therapist_matching' || currentStep === 'therapist_search' || currentStep === 'therapist_preferences' || currentStep === 'alcohol_drugs' || currentStep === 'phq9' || currentStep === 'gad7' || currentStep === 'matching_complete') {
+      return (
+        <>
+          {renderStepContent()}
+          
+          {/* Why We Ask Modal */}
+          <Dialog open={showWhyWeAskModal} onOpenChange={setShowWhyWeAskModal}>
+            <DialogContent className="max-w-md mx-auto">
+              <DialogHeader className="relative">
+                <button
+                  onClick={() => setShowWhyWeAskModal(false)}
+                  className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <DialogTitle className="text-left text-2xl font-medium" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                  Why we ask this question
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                <p>
+                  At Sol Health, we want to make sure you're safe and matched to the right level of care. Our therapists are trained to work with those with mild to moderate symptoms. When someone is facing active suicidal or homicidal thoughts or hallucinations/delusions, a more intensive setting is the best and safest option.
+                </p>
+                
+                <div>
+                  <h4 className="font-medium text-gray-800 mb-2">What we'll do if this applies to you</h4>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Share a referral list with affordable, in-network and community options</li>
+                  </ul>
+                </div>
+   
+                <p className="italic">
+                  We ask this to protect your wellbeing. Your answers are confidential and used only to guide care. This form isn't monitored 24/7 and isn't suitable for urgent situations.
+                </p>
+   
+                <p className="font-medium">
+                  If you're in immediate danger or feel unsafe, call 988 (Suicide and Crisis Lifeline), 911, or go to the nearest emergency room.
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
+   
+          {/* Referral Modal for "Yes" Response */}
+          <Dialog open={showReferralModal} onOpenChange={setShowReferralModal}>
+            <DialogContent className="max-w-md mx-auto">
+              <DialogHeader className="relative">
+                <button
+                  onClick={() => setShowReferralModal(false)}
+                  className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <DialogTitle className="text-left text-3xl font-medium leading-tight" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                  Let's get you to the right level of care
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                <p>
+                  Because our therapists are trained to provide care for those with mild to moderate needs, we're not the right fit for your right now. Your safety comes first, and a higher level of care will serve you best.
+                </p>
+                
+                <p>
+                  At Sol Health, we want to prioritize people's well-being above all else, and as such, we can refer you to other affordable options.
+                </p>
+   
+                <p className="italic text-sm">
+                  *If you're in crisis or need immediate support, call 988 (Suicide and Crisis Lifeline), 911, or go to your nearest emergency room.
+                </p>
+   
+                <div className="pt-4">
+                  <Button
+                    onClick={() => {
+                      window.open('https://solhealth.co/resources', '_blank');
+                    }}
+                    className="w-full py-4 px-6 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-lg font-medium transition-all border-2 border-gray-800"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  >
+                    Referrals Resource List →
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
+      );
+    }
+   
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3' }}>
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-200 h-2">
+          <div 
+            className="bg-blue-500 h-2 transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+   
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-center">
+                Step {currentStepIndex} of {totalSteps - 1}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {renderStepContent()}
+              
+              <div className="flex justify-between mt-8">
+                <Button
+                  onClick={goToPrevStep}
+                  variant="outline"
+                  className="flex items-center"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  {currentStepIndex === 1 ? 'Back to Payment' : 'Previous'}
+                </Button>
+                
+                <Button
+                  onClick={goToNextStep}
+                  disabled={!isStepValid()}
+                  className="flex items-center"
+                >
+                  {currentStepIndex === totalSteps - 1 ? 'Find My Therapist' : 'Continue'}
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     );
-  }
-
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3' }}>
-      {/* Progress Bar */}
-      <div className="w-full bg-gray-200 h-2">
-        <div 
-          className="bg-blue-500 h-2 transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-center">
-              Step {currentStepIndex} of {totalSteps - 1}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderStepContent()}
-            
-            <div className="flex justify-between mt-8">
-              <Button
-                onClick={goToPrevStep}
-                variant="outline"
-                className="flex items-center"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {currentStepIndex === 1 ? 'Back to Payment' : 'Previous'}
-              </Button>
-              
-              <Button
-                onClick={goToNextStep}
-                disabled={!isStepValid()}
-                className="flex items-center"
-              >
-                {currentStepIndex === totalSteps - 1 ? 'Find My Therapist' : 'Continue'}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
+   }

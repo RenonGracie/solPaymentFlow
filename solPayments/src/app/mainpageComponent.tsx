@@ -40,15 +40,34 @@ interface FormData {
   };}
 
 interface SurveyData {
+  // Safety Screening
+  safety_screening: string;
+  
+  // Therapist Matching
+  matching_preference: string;
+  selected_therapist?: string;
+  
+  // Therapist Preferences (for matching algorithm)
+  therapist_gender_preference: string;
+  therapist_specialization: string[];
+  therapist_lived_experiences: string[];
+  
+  // Alcohol and Drugs Screening
+  alcohol_frequency: string;
+  recreational_drugs_frequency: string;
+  
+  // Demographics
   first_name: string;
   last_name: string;
   email: string;
+  preferred_name?: string;
   phone?: string;
   age: string;
   gender: string;
   state: string;
-  therapist_specializes_in: string[];
-  therapist_identifies_as: string;
+  race_ethnicity: string[];
+  
+  // Mental Health Screening (PHQ-9)
   pleasure_doing_things: string;
   feeling_down: string;
   trouble_falling: string;
@@ -58,6 +77,8 @@ interface SurveyData {
   trouble_concentrating: string;
   moving_or_speaking_so_slowly: string;
   suicidal_thoughts: string;
+  
+  // Anxiety Screening (GAD-7)
   feeling_nervous: string;
   not_control_worrying: string;
   worrying_too_much: string;
@@ -65,10 +86,10 @@ interface SurveyData {
   being_so_restless: string;
   easily_annoyed: string;
   feeling_afraid: string;
-  what_brings_you: string;
+  
+  // Additional
   lived_experiences: string[];
   university?: string;
-  promo_code?: string;
   referred_by?: string;
 }
 
