@@ -75,7 +75,7 @@ export default function MatchedTherapist({
   
   const convertTo24Hour = (time: string) => {
     const [hour, period] = time.split(/(?=[ap]m)/i);
-    let [h, m] = hour.split(':');
+    let [h, m = '00'] = hour.split(':');
     if (period.toLowerCase() === 'pm' && h !== '12') h = String(Number(h) + 12);
     if (period.toLowerCase() === 'am' && h === '12') h = '00';
     return `${h.padStart(2, '0')}:${m || '00'}`;
