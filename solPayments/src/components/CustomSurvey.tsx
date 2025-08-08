@@ -440,7 +440,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+            <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -448,7 +448,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                     style={{ 
                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                       fontWeight: 400,
@@ -461,12 +461,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
               <button onClick={onBack} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
+                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
               <div className="flex items-center">
-                <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                   Sol Health
                 </h2>
                 <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
@@ -475,28 +475,28 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-6 pb-16">
-              <div className="max-w-md w-full -mt-16">
-                <div className="bg-white border-2 border-gray-300 rounded-3xl p-8 shadow-sm">
-                  <div className="text-center mb-8">
-                    <h1 className="text-xl md:text-2xl mb-6 text-gray-800 leading-relaxed" 
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
+              <div className="max-w-md w-full -mt-8 sm:-mt-16">
+                <div className="bg-white border-2 border-gray-300 rounded-3xl p-6 sm:p-8 shadow-sm">
+                  <div className="text-center mb-6 sm:mb-8">
+                    <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-relaxed" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Over the past 2 weeks, have you been actively suicidal or homicidal OR have you been experiencing hallucinations or delusions?
                     </h1>
                     
                     <button
                       onClick={() => setShowWhyWeAskModal(true)}
-                      className="text-gray-500 text-sm underline hover:text-gray-700 transition-colors"
+                      className="text-gray-500 text-xs sm:text-sm underline hover:text-gray-700 transition-colors"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       Learn about why we ask this
                     </button>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <button
                       onClick={() => handleSafetyResponse('yes')}
-                      className="w-full py-4 px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       Yes
@@ -504,7 +504,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     <button
                       onClick={() => handleSafetyResponse('no')}
-                      className="w-full py-4 px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       No
@@ -520,7 +520,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+            <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -528,7 +528,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                     style={{ 
                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                       fontWeight: 400,
@@ -541,12 +541,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
               <button onClick={() => setCurrentStep('safety_screening')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
+                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
               <div className="flex items-center">
-                <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                   Sol Health
                 </h2>
                 <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
@@ -555,27 +555,27 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-6 pb-16">
-              <div className="max-w-md w-full -mt-16">
-                <div className="bg-white border-2 border-gray-300 rounded-3xl p-8 shadow-sm">
-                  <div className="text-center mb-8">
-                    <h1 className="text-xl md:text-2xl mb-4 text-gray-800 leading-relaxed" 
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
+              <div className="max-w-md w-full -mt-8 sm:-mt-16">
+                <div className="bg-white border-2 border-gray-300 rounded-3xl p-6 sm:p-8 shadow-sm">
+                  <div className="text-center mb-6 sm:mb-8">
+                    <h1 className="text-lg sm:text-xl md:text-2xl mb-3 sm:mb-4 text-gray-800 leading-relaxed" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Would you like to be matched with a therapist, or are you requesting someone specific?
                     </h1>
                     
                     <button
-                      className="text-gray-500 text-sm underline hover:text-gray-700 transition-colors"
+                      className="text-gray-500 text-xs sm:text-sm underline hover:text-gray-700 transition-colors"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       Browse our Clinical Team here.
                     </button>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <button
                       onClick={() => handleMatchingPreference('match_me')}
-                      className="w-full py-4 px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       <span className="mr-3">⚡</span>
@@ -584,7 +584,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     <button
                       onClick={() => handleMatchingPreference('requesting_specific')}
-                      className="w-full py-4 px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       <span className="mr-3">😊</span>
@@ -601,7 +601,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+            <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -609,7 +609,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                     style={{ 
                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                       fontWeight: 400,
@@ -622,12 +622,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
               <button onClick={() => setCurrentStep('therapist_matching')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
+                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
               <div className="flex items-center">
-                <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                   Sol Health
                 </h2>
                 <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
@@ -636,14 +636,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-6 pb-16">
-              <div className="max-w-md w-full -mt-16">
-                <div className="text-center mb-8">
-                  <h1 className="text-2xl md:text-3xl mb-4 text-gray-800" 
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
+              <div className="max-w-md w-full -mt-8 sm:-mt-16">
+                <div className="text-center mb-6 sm:mb-8">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                     Search for Your Therapist
                   </h1>
-                  <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <p className="text-gray-600 text-xs sm:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
                     {paymentType === 'cash_pay' 
                       ? 'Search our graduate therapists available for $30/session'
                       : 'Search our associate therapists available through insurance'
@@ -658,7 +658,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     value={therapistSearchQuery}
                     onChange={(e) => setTherapistSearchQuery(e.target.value)}
                     placeholder="Start typing therapist name..."
-                    className="w-full py-4 px-4 rounded-2xl border-2 border-gray-300 focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center"
+                    className="w-full py-3 sm:py-4 px-4 rounded-2xl border-2 border-gray-300 focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   />
                 </div>
@@ -696,7 +696,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+            <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -704,7 +704,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                     style={{ 
                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                       fontWeight: 400,
@@ -717,30 +717,30 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
               <button onClick={() => setCurrentStep('therapist_matching')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
+                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
               <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
               <div className="w-10"></div>
             </div>
 
             {/* Content */}
-            <div className="flex-1 px-6 pb-16 overflow-y-auto">
+            <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 overflow-y-auto">
               <div className="max-w-lg mx-auto">
-                <div className="text-center mb-8 mt-4">
-                  <h1 className="text-2xl md:text-3xl mb-4 text-gray-800" 
+                <div className="text-center mb-6 sm:mb-8 mt-4">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                     Therapist Preferences
                   </h1>
                 </div>
 
                 {/* Therapist Specializations */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-medium mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                <div className="mb-6 sm:mb-8">
+                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that specializes in:
                   </h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     {[
                       { name: 'ADHD', emoji: '🧠' },
                       { name: 'Anxiety', emoji: '🌿' },
@@ -768,7 +768,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                         <button
                           key={specialization.name}
                           onClick={() => toggleSpecialization(specialization.name)}
-                          className={`py-3 px-4 rounded-2xl text-sm transition-all flex items-center justify-between ${
+                          className={`py-2 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-between ${
                             isSelected
                               ? 'bg-[#5C3106] text-white'
                               : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
@@ -776,11 +776,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                           style={{ fontFamily: 'var(--font-inter)' }}
                         >
                           <span className="flex items-center">
-                            <span className="mr-2">{specialization.emoji}</span>
+                            <span className="mr-1 sm:mr-2">{specialization.emoji}</span>
                             {specialization.name}
                           </span>
                           <Plus 
-                            className={`w-4 h-4 transition-transform duration-200 ${
+                            className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
                               isSelected ? 'rotate-45' : ''
                             }`}
                           />
@@ -791,11 +791,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 </div>
 
                 {/* Gender Preference */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-medium mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                <div className="mb-6 sm:mb-8">
+                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that identifies as:
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {[
                       { name: 'Female', emoji: '👩' },
                       { name: 'Male', emoji: '👨' },
@@ -804,14 +804,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <button
                         key={gender.name}
                         onClick={() => updateSurveyData('therapist_gender_preference', gender.name)}
-                        className={`w-full py-3 px-4 rounded-2xl text-left transition-all ${
+                        className={`w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-left transition-all text-sm sm:text-base ${
                           surveyData.therapist_gender_preference === gender.name
                             ? 'bg-[#5C3106] text-white'
                             : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                         }`}
                         style={{ fontFamily: 'var(--font-inter)' }}
                       >
-                        <span className="mr-3">{gender.emoji}</span>
+                        <span className="mr-2 sm:mr-3">{gender.emoji}</span>
                         {gender.name}
                       </button>
                     ))}
@@ -819,18 +819,18 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 </div>
 
                 {/* Lived Experiences */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-medium mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                <div className="mb-6 sm:mb-8">
+                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     Are there any lived experiences you identify with that you feel are important to your match?
                   </h3>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {/* Family */}
                     <div>
-                      <h4 className="text-center font-medium text-gray-600 mb-3" style={{ fontFamily: 'var(--font-inter)' }}>
+                      <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                         Family
                       </h4>
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-1 gap-2 sm:gap-3">
                         {[
                           { name: 'Raised in a non-traditional family', emoji: '🌿' },
                           { name: 'Been in a caretaker role', emoji: '👤' },
@@ -841,7 +841,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`py-3 px-4 rounded-2xl text-sm transition-all flex items-center justify-between ${
+                              className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-between ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
@@ -849,11 +849,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
                               <span className="flex items-center">
-                                <span className="mr-2">{experience.emoji}</span>
+                                <span className="mr-1 sm:mr-2">{experience.emoji}</span>
                                 {experience.name}
                               </span>
                               <Plus 
-                                className={`w-4 h-4 transition-transform duration-200 ${
+                                className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
                                   isSelected ? 'rotate-45' : ''
                                 }`}
                               />
@@ -865,10 +865,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     {/* Upbringing */}
                     <div>
-                      <h4 className="text-center font-medium text-gray-600 mb-3" style={{ fontFamily: 'var(--font-inter)' }}>
+                      <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                         Upbringing
                       </h4>
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-1 gap-2 sm:gap-3">
                         {[
                           { name: 'Raised in an individualist culture', emoji: '🏛️' },
                           { name: 'Raised in a collectivist culture', emoji: '🤝' },
@@ -880,7 +880,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`py-3 px-4 rounded-2xl text-sm transition-all flex items-center justify-between ${
+                              className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-between ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
@@ -888,11 +888,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
                               <span className="flex items-center">
-                                <span className="mr-2">{experience.emoji}</span>
+                                <span className="mr-1 sm:mr-2">{experience.emoji}</span>
                                 {experience.name}
                               </span>
                               <Plus 
-                                className={`w-4 h-4 transition-transform duration-200 ${
+                                className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
                                   isSelected ? 'rotate-45' : ''
                                 }`}
                               />
@@ -904,10 +904,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     {/* Identity and Experiences */}
                     <div>
-                      <h4 className="text-center font-medium text-gray-600 mb-3" style={{ fontFamily: 'var(--font-inter)' }}>
+                      <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                         Identity and Experiences
                       </h4>
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-1 gap-2 sm:gap-3">
                         {[
                           { name: 'Identifying as LGBTQ+', emoji: '🏳️‍🌈' },
                           { name: 'Negatively affected by social media', emoji: '📱' }
@@ -917,7 +917,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`py-3 px-4 rounded-2xl text-sm transition-all flex items-center justify-between ${
+                              className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-between ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
@@ -925,11 +925,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
                               <span className="flex items-center">
-                                <span className="mr-2">{experience.emoji}</span>
+                                <span className="mr-1 sm:mr-2">{experience.emoji}</span>
                                 {experience.name}
                               </span>
                               <Plus 
-                                className={`w-4 h-4 transition-transform duration-200 ${
+                                className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
                                   isSelected ? 'rotate-45' : ''
                                 }`}
                               />
@@ -945,7 +945,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 <div className="pt-4">
                   <Button
                     onClick={() => setCurrentStep('alcohol_drugs')}
-                    className="w-full py-4 px-6 bg-blue-100 hover:bg-blue-200 text-gray-800 rounded-full text-lg font-medium transition-all"
+                    className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-blue-100 hover:bg-blue-200 text-gray-800 rounded-full text-base sm:text-lg font-medium transition-all"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >
                     Continue →
@@ -987,7 +987,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 sm:h-24 md:h-32 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -995,7 +995,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                <p className="text-center text-xs sm:text-sm md:text-base lg:text-lg text-gray-800 font-normal px-4" 
                     style={{ 
                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                       fontWeight: 400,
@@ -1008,7 +1008,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-2 sm:py-3 flex-shrink-0">
               <button 
                 onClick={() => {
                   if (alcoholDrugsCarouselIndex > 0) {
@@ -1017,116 +1017,121 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     setCurrentStep('therapist_preferences');
                   }
                 }} 
-                className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1.5 sm:p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <ArrowLeft className="w-6 h-6 text-gray-600" />
+                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
-              <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
-              <div className="w-10"></div>
+              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <div className="w-8"></div>
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-6 pb-16">
-              <div className="max-w-md w-full -mt-16">
-                <div className="text-center mb-8">
-                  <h1 className="text-2xl md:text-3xl mb-4 text-gray-800" 
-                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                    Alcohol and Recreational Drugs
-                  </h1>
-                  <p className="text-gray-500 text-sm italic" style={{ fontFamily: 'var(--font-inter)' }}>
-                    Disclaimer: Your information is confidential and used only for assessment and treatment.
-                  </p>
+            <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-6 sm:pb-8">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="max-w-md w-full">
+                  <div className="text-center mb-4 sm:mb-6">
+                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
+                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                      Alcohol and Recreational Drugs
+                    </h1>
+                    <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Disclaimer: Your information is confidential and used only for assessment and treatment.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border-2 border-gray-300 rounded-3xl p-5 sm:p-6 shadow-sm">
+                    <div className="text-center mb-5 sm:mb-6">
+                      <h2 className="text-sm sm:text-base md:text-lg text-gray-800 leading-relaxed px-2" 
+                          style={{ fontFamily: 'var(--font-inter)' }}>
+                        {currentQuestion.question}
+                      </h2>
+                    </div>
+
+                    <div className="space-y-2 sm:space-y-3">
+                      {currentQuestion.options.map((option) => {
+                        const isSelected = surveyData[currentQuestion.field] === option;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => updateSurveyData(currentQuestion.field, option)}
+                            className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-all ${
+                              isSelected
+                                ? 'bg-[#5C3106] text-white'
+                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Navigation */}
+              <div className="mt-6">
+                {/* Progress Indicators - Using dashes */}
+                <div className="flex justify-center items-center space-x-2 mb-4">
+                  {alcoholDrugsQuestions.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-0.5 transition-all duration-300 ${
+                        index === alcoholDrugsCarouselIndex 
+                          ? 'w-8 bg-[#5C3106]' 
+                          : 'w-6 bg-gray-300'
+                      }`}
+                    />
+                  ))}
                 </div>
 
-                <div className="bg-white border-2 border-gray-300 rounded-3xl p-8 shadow-sm">
-                  <div className="text-center mb-8">
-                    <h2 className="text-lg md:text-xl mb-6 text-gray-800 leading-relaxed" 
-                        style={{ fontFamily: 'var(--font-inter)' }}>
-                      {currentQuestion.question}
-                    </h2>
+                {/* Navigation Buttons */}
+                <div className="flex justify-between items-center">
+                  <div className="flex-1">
+                    {alcoholDrugsCarouselIndex > 0 && (
+                      <Button
+                        onClick={() => setAlcoholDrugsCarouselIndex(alcoholDrugsCarouselIndex - 1)}
+                        variant="outline"
+                        className="py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base"
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        Previous
+                      </Button>
+                    )}
                   </div>
 
-                  <div className="space-y-3 mb-8">
-                    {currentQuestion.options.map((option) => {
-                      const isSelected = surveyData[currentQuestion.field] === option;
-                      return (
-                        <button
-                          key={option}
-                          onClick={() => updateSurveyData(currentQuestion.field, option)}
-                          className={`w-full py-3 px-6 rounded-2xl text-lg font-medium transition-all ${
-                            isSelected
-                              ? 'bg-[#5C3106] text-white'
-                              : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
-                          }`}
-                          style={{ fontFamily: 'var(--font-inter)' }}
-                        >
-                          {option}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Navigation Buttons */}
-                  <div className="flex justify-between items-center">
-                    {/* Previous Button */}
-                    <div className="flex-1">
-                      {alcoholDrugsCarouselIndex > 0 && (
-                        <Button
-                          onClick={() => setAlcoholDrugsCarouselIndex(alcoholDrugsCarouselIndex - 1)}
-                          variant="outline"
-                          className="py-3 px-6 rounded-full"
-                          style={{ fontFamily: 'var(--font-inter)' }}
-                        >
-                          <ArrowLeft className="w-4 h-4 mr-2" />
-                          Previous
-                        </Button>
-                      )}
-                    </div>
-
-                    {/* Progress Dots */}
-                    <div className="flex space-x-2">
-                      {alcoholDrugsQuestions.map((_, index) => (
-                        <div
-                          key={index}
-                          className={`w-2 h-2 rounded-full ${
-                            index === alcoholDrugsCarouselIndex ? 'bg-[#5C3106]' : 'bg-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Next/Continue Button */}
-                    <div className="flex-1 flex justify-end">
-                      {isLastQuestion ? (
-                        <Button
-                          onClick={() => setCurrentStep('phq9')}
-                          disabled={!canContinue}
-                          className={`py-3 px-6 rounded-full ${
-                            canContinue
-                              ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          }`}
-                          style={{ fontFamily: 'var(--font-inter)' }}
-                        >
-                          Continue
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => setAlcoholDrugsCarouselIndex(alcoholDrugsCarouselIndex + 1)}
-                          disabled={!surveyData[currentQuestion.field]}
-                          className={`py-3 px-6 rounded-full ${
-                            surveyData[currentQuestion.field]
-                              ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          }`}
-                          style={{ fontFamily: 'var(--font-inter)' }}
-                        >
-                          Next
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      )}
-                    </div>
+                  <div className="flex-1 flex justify-end">
+                    {isLastQuestion ? (
+                      <Button
+                        onClick={() => setCurrentStep('phq9')}
+                        disabled={!canContinue}
+                        className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
+                          canContinue
+                            ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        Continue
+                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => setAlcoholDrugsCarouselIndex(alcoholDrugsCarouselIndex + 1)}
+                        disabled={!surveyData[currentQuestion.field]}
+                        className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
+                          surveyData[currentQuestion.field]
+                            ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        Next
+                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1134,881 +1139,844 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
           </div>
         );
 
-        case 'phq9':
-          const phq9Questions = [
-            {
-              question: "Little interest or pleasure in doing things",
-              field: 'pleasure_doing_things' as keyof SurveyData,
-              emoji: '😔'
-            },
-            {
-              question: "Feeling down, depressed, or hopeless",
-              field: 'feeling_down' as keyof SurveyData,
-              emoji: '🌧️'
-            },
-            {
-              question: "Trouble falling or staying asleep, or sleeping too much",
-              field: 'trouble_falling' as keyof SurveyData,
-              emoji: '😴'
-            },
-            {
-              question: "Feeling tired or having little energy",
-              field: 'feeling_tired' as keyof SurveyData,
-              emoji: '😞'
-            },
-            {
-              question: "Poor appetite or overeating",
-              field: 'poor_appetite' as keyof SurveyData,
-              emoji: '🍽️'
-            },
-            {
-              question: "Feeling bad about yourself — or that you are a failure or have let yourself or your family down",
-              field: 'feeling_bad_about_yourself' as keyof SurveyData,
-              emoji: '😓'
-            },
-            {
-              question: "Trouble concentrating on things, such as reading the newspaper or watching television",
-              field: 'trouble_concentrating' as keyof SurveyData,
-              emoji: '🧠'
-            },
-            {
-              question: "Moving or speaking so slowly that other people could have noticed. Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual",
-              field: 'moving_or_speaking_so_slowly' as keyof SurveyData,
-              emoji: '🔄'
-            },
-            {
-              question: "Thoughts that you would be better off dead, or of hurting yourself",
-              field: 'suicidal_thoughts' as keyof SurveyData,
-              emoji: '💭'
-            }
-          ];
-   
-          const currentPhq9Question = phq9Questions[phq9CarouselIndex];
-          const isLastPhq9Question = phq9CarouselIndex === phq9Questions.length - 1;
-          const canContinuePhq9 = phq9Questions.every(q => surveyData[q.field]);
-   
-          return (
-            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-              {/* Header with sunset image */}
-              <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
-                <img 
-                  src="/onboarding-banner.jpg" 
-                  alt="" 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
-                      style={{ 
-                        fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
-                        fontWeight: 400,
-                        letterSpacing: '0.02em',
-                        lineHeight: '1.1'
-                      }}>
-                    CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-                  </p>
-                </div>
+      case 'phq9':
+        const phq9Questions = [
+          {
+            question: "Little interest or pleasure in doing things",
+            field: 'pleasure_doing_things' as keyof SurveyData,
+            emoji: '😔'
+          },
+          {
+            question: "Feeling down, depressed, or hopeless",
+            field: 'feeling_down' as keyof SurveyData,
+            emoji: '🌧️'
+          },
+          {
+            question: "Trouble falling or staying asleep, or sleeping too much",
+            field: 'trouble_falling' as keyof SurveyData,
+            emoji: '😴'
+          },
+          {
+            question: "Feeling tired or having little energy",
+            field: 'feeling_tired' as keyof SurveyData,
+            emoji: '😞'
+          },
+          {
+            question: "Poor appetite or overeating",
+            field: 'poor_appetite' as keyof SurveyData,
+            emoji: '🍽️'
+          },
+          {
+            question: "Feeling bad about yourself — or that you are a failure or have let yourself or your family down",
+            field: 'feeling_bad_about_yourself' as keyof SurveyData,
+            emoji: '😓'
+          },
+          {
+            question: "Trouble concentrating on things, such as reading the newspaper or watching television",
+            field: 'trouble_concentrating' as keyof SurveyData,
+            emoji: '🧠'
+          },
+          {
+            question: "Moving or speaking so slowly that other people could have noticed. Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual",
+            field: 'moving_or_speaking_so_slowly' as keyof SurveyData,
+            emoji: '🔄'
+          },
+          {
+            question: "Thoughts that you would be better off dead, or of hurting yourself",
+            field: 'suicidal_thoughts' as keyof SurveyData,
+            emoji: '💭'
+          }
+        ];
+ 
+        const currentPhq9Question = phq9Questions[phq9CarouselIndex];
+        const isLastPhq9Question = phq9CarouselIndex === phq9Questions.length - 1;
+        const canContinuePhq9 = phq9Questions.every(q => surveyData[q.field]);
+ 
+        return (
+          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+            {/* Header with sunset image - smaller for mobile */}
+            <div className="relative h-20 sm:h-24 md:h-32 overflow-hidden flex-shrink-0">
+              <img 
+                src="/onboarding-banner.jpg" 
+                alt="" 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <p className="text-center text-xs sm:text-sm md:text-base lg:text-lg text-gray-800 font-normal px-4" 
+                    style={{ 
+                      fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                      fontWeight: 400,
+                      letterSpacing: '0.02em',
+                      lineHeight: '1.1'
+                    }}>
+                  CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+                </p>
               </div>
-   
-              {/* Navigation */}
-              <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-                <button 
-                  onClick={() => {
-                    if (phq9CarouselIndex > 0) {
-                      setPhq9CarouselIndex(phq9CarouselIndex - 1);
-                    } else {
-                      setCurrentStep('alcohol_drugs');
-                    }
-                  }} 
-                  className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <ArrowLeft className="w-6 h-6 text-gray-600" />
-                </button>
-                <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
-                <div className="w-10"></div>
-              </div>
-   
-              {/* Content */}
-              <div className="flex-1 flex items-center justify-center px-6 pb-16">
-                <div className="max-w-md w-full -mt-16">
-                  <div className="text-center mb-8">
-                    <h1 className="text-2xl md:text-3xl mb-4 text-gray-800" 
+            </div>
+ 
+            {/* Navigation */}
+            <div className="flex items-center justify-between px-4 py-2 sm:py-3 flex-shrink-0">
+              <button 
+                onClick={() => {
+                  if (phq9CarouselIndex > 0) {
+                    setPhq9CarouselIndex(phq9CarouselIndex - 1);
+                  } else {
+                    setCurrentStep('alcohol_drugs');
+                  }
+                }} 
+                className="p-1.5 sm:p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+              </button>
+              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <div className="w-8"></div>
+            </div>
+ 
+            {/* Content */}
+            <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-6 sm:pb-8">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="max-w-md w-full">
+                  <div className="text-center mb-4 sm:mb-6">
+                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Measuring Your Emotional Well-Being
                     </h1>
-                    <p className="text-gray-500 text-sm italic" style={{ fontFamily: 'var(--font-inter)' }}>
+                    <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
                       This may feel like a lot, but this snapshot will help us give you the best care.
                     </p>
                   </div>
-   
-                  <div className="bg-white border-2 border-gray-300 rounded-3xl p-8 shadow-sm">
-                    <div className="text-center mb-8">
-                      <h2 className="text-lg mb-6 text-gray-800 leading-relaxed" 
+ 
+                  <div className="bg-white border-2 border-gray-300 rounded-3xl p-5 sm:p-6 shadow-sm">
+                    <div className="text-center mb-5 sm:mb-6">
+                      <h2 className="text-sm sm:text-base mb-4 text-gray-800 leading-relaxed" 
                           style={{ fontFamily: 'var(--font-inter)' }}>
                         Over the last 2 weeks, how often have you been bothered by any of the following?
                       </h2>
-                      
                       {/* Emoji and Question */}
-                      <div className="mb-6">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <span className="text-2xl">{currentPhq9Question.emoji}</span>
-                        </div>
-                        <p className="text-base text-gray-800 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
-                          {currentPhq9Question.question}
-                        </p>
-                      </div>
-                    </div>
-   
-                    <div className="space-y-3 mb-8">
-                      {scaleOptions.map((option) => {
-                        const isSelected = surveyData[currentPhq9Question.field] === option;
-                        return (
-                          <button
-                            key={option}
-                            onClick={() => updateSurveyData(currentPhq9Question.field, option)}
-                            className={`w-full py-3 px-6 rounded-2xl text-lg font-medium transition-all ${
-                              isSelected
-                                ? 'bg-[#5C3106] text-white'
-                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
-   
-                    {/* Navigation Buttons */}
-                    <div className="flex justify-between items-center">
-                      {/* Previous Button */}
-                      <div className="flex-1">
-                        {phq9CarouselIndex > 0 && (
-                          <Button
-                            onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)}
-                            variant="outline"
-                            className="py-3 px-6 rounded-full"
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Previous
-                          </Button>
-                        )}
-                      </div>
-   
-                      {/* Progress Dots */}
-                      <div className="flex space-x-2">
-                        {phq9Questions.map((_, index) => (
-                          <div
-                            key={index}
-                            className={`w-2 h-2 rounded-full ${
-                              index === phq9CarouselIndex ? 'bg-[#5C3106]' : 'bg-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-   
-                      {/* Next/Continue Button */}
-                      <div className="flex-1 flex justify-end">
-                        {isLastPhq9Question ? (
-                          <Button
-                            onClick={() => setCurrentStep('gad7')}
-                            disabled={!canContinuePhq9}
-                            className={`py-3 px-6 rounded-full ${
-                              canContinuePhq9
-                                ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            Continue
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        ) : (
-                          <Button
-                            onClick={() => setPhq9CarouselIndex(phq9CarouselIndex + 1)}
-                            disabled={!surveyData[currentPhq9Question.field]}
-                            className={`py-3 px-6 rounded-full ${
-                              surveyData[currentPhq9Question.field]
-                                ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            Next
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-   
-        case 'gad7':
-          const gad7Questions = [
-            {
-              question: "Feeling nervous, anxious, or on edge",
-              field: 'feeling_nervous' as keyof SurveyData,
-              emoji: '😰'
-            },
-            {
-              question: "Not being able to stop or control worrying",
-              field: 'not_control_worrying' as keyof SurveyData,
-              emoji: '🌀'
-            },
-            {
-              question: "Worrying too much about different things",
-              field: 'worrying_too_much' as keyof SurveyData,
-              emoji: '😟'
-            },
-            {
-              question: "Trouble relaxing",
-              field: 'trouble_relaxing' as keyof SurveyData,
-              emoji: '😤'
-            },
-            {
-              question: "Being so restless that it is hard to sit still",
-              field: 'being_so_restless' as keyof SurveyData,
-              emoji: '🚶'
-            },
-            {
-              question: "Becoming easily annoyed or irritable",
-              field: 'easily_annoyed' as keyof SurveyData,
-              emoji: '😠'
-            },
-            {
-              question: "Feeling afraid, as if something awful might happen",
-              field: 'feeling_afraid' as keyof SurveyData,
-              emoji: '😨'
-            }
-          ];
-   
-          const currentGad7Question = gad7Questions[gad7CarouselIndex];
-          const isLastGad7Question = gad7CarouselIndex === gad7Questions.length - 1;
-          const canContinueGad7 = gad7Questions.every(q => surveyData[q.field]);
-   
-          return (
-            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-              {/* Header with sunset image */}
-              <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
-                <img 
-                  src="/onboarding-banner.jpg" 
-                  alt="" 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
-                      style={{ 
-                        fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
-                        fontWeight: 400,
-                        letterSpacing: '0.02em',
-                        lineHeight: '1.1'
-                      }}>
-                    CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-                  </p>
-                </div>
-              </div>
-   
-              {/* Navigation */}
-              <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-                <button 
-                  onClick={() => {
-                    if (gad7CarouselIndex > 0) {
-                      setGad7CarouselIndex(gad7CarouselIndex - 1);
-                    } else {
-                      setCurrentStep('phq9');
-                    }
-                  }} 
-                  className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <ArrowLeft className="w-6 h-6 text-gray-600" />
-                </button>
-                <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
-                <div className="w-10"></div>
-              </div>
-   
-              {/* Content */}
-              <div className="flex-1 flex items-center justify-center px-6 pb-16">
-                <div className="max-w-md w-full -mt-16">
-                  <div className="text-center mb-8">
-                    <h1 className="text-2xl md:text-3xl mb-4 text-gray-800" 
-                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                      Measuring Anxiety
-                    </h1>
-                    <p className="text-gray-500 text-sm italic" style={{ fontFamily: 'var(--font-inter)' }}>
-                      This may feel like a lot, but this snapshot will help us give you the best care.
-                    </p>
-                  </div>
-   
-                  <div className="bg-white border-2 border-gray-300 rounded-3xl p-8 shadow-sm">
-                    <div className="text-center mb-8">
-                      <h2 className="text-lg mb-6 text-gray-800 leading-relaxed" 
-                          style={{ fontFamily: 'var(--font-inter)' }}>
-                        Over the last 2 weeks, how often have you been bothered by any of the following?
-                      </h2>
-                      
-                      {/* Emoji and Question */}
-                      <div className="mb-6">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <span className="text-2xl">{currentGad7Question.emoji}</span>
-                        </div>
-                        <p className="text-base text-gray-800 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
-                          {currentGad7Question.question}
-                        </p>
-                      </div>
-                    </div>
-   
-                    <div className="space-y-3 mb-8">
-                      {scaleOptions.map((option) => {
-                        const isSelected = surveyData[currentGad7Question.field] === option;
-                        return (
-                          <button
-                            key={option}
-                            onClick={() => updateSurveyData(currentGad7Question.field, option)}
-                            className={`w-full py-3 px-6 rounded-2xl text-lg font-medium transition-all ${
-                              isSelected
-                                ? 'bg-[#5C3106] text-white'
-                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
-   
-                    {/* Navigation Buttons */}
-                    <div className="flex justify-between items-center">
-                      {/* Previous Button */}
-                      <div className="flex-1">
-                        {gad7CarouselIndex > 0 && (
-                          <Button
-                            onClick={() => setGad7CarouselIndex(gad7CarouselIndex - 1)}
-                            variant="outline"
-                            className="py-3 px-6 rounded-full"
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Previous
-                          </Button>
-                        )}
-                      </div>
-   
-                      {/* Progress Dots */}
-                      <div className="flex space-x-2">
-                        {gad7Questions.map((_, index) => (
-                          <div
-                            key={index}
-                            className={`w-2 h-2 rounded-full ${
-                              index === gad7CarouselIndex ? 'bg-[#5C3106]' : 'bg-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-   
-                      {/* Next/Continue Button */}
-                      <div className="flex-1 flex justify-end">
-                        {isLastGad7Question ? (
-                          <Button
-                            onClick={() => setCurrentStep('matching_complete')}
-                            disabled={!canContinueGad7}
-                            className={`py-3 px-6 rounded-full ${
-                              canContinueGad7
-                                ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            Continue
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        ) : (
-                          <Button
-                            onClick={() => setGad7CarouselIndex(gad7CarouselIndex + 1)}
-                            disabled={!surveyData[currentGad7Question.field]}
-                            className={`py-3 px-6 rounded-full ${
-                              surveyData[currentGad7Question.field]
-                                ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            Next
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-   
-        case 'matching_complete':
-          return (
-            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-              {/* Header with sunset image */}
-              <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
-                <img 
-                  src="/onboarding-banner.jpg" 
-                  alt="" 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
-                      style={{ 
-                        fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
-                        fontWeight: 400,
-                        letterSpacing: '0.02em',
-                        lineHeight: '1.1'
-                      }}>
-                    CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-                  </p>
-                </div>
-              </div>
-   
-              {/* Navigation */}
-              <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-                <button onClick={() => setCurrentStep('gad7')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
-                  <ArrowLeft className="w-6 h-6 text-gray-600" />
-                </button>
-                <div className="flex items-center">
-                  <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                    Sol Health
-                  </h2>
-                  <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
-                </div>
-                <div className="w-10"></div>
-              </div>
-   
-              {/* Content */}
-              <div className="flex-1 px-6 pb-16 overflow-y-auto">
-                <div className="max-w-lg mx-auto">
-                  <div className="text-center mb-8 mt-4">
-                    <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <span className="text-4xl">⚡</span>
-                    </div>
-                    
-                    <h1 className="text-3xl md:text-4xl mb-6 text-gray-800" 
-                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
-                      We're About To Match You!
-                    </h1>
-                    
-                    <p className="text-gray-600 text-base mb-8 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Please confirm your account details below.
-                    </p>
-                  </div>
+                     <div className="mb-4 sm:mb-5">
+                       <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                         <span className="text-xl sm:text-2xl">{currentPhq9Question.emoji}</span>
+                       </div>
+                       <p className="text-sm sm:text-base text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                         {currentPhq9Question.question}
+                       </p>
+                     </div>
+                   </div>
 
-                  {/* Basic Information */}
-                  <div className="mb-8">
-                    <h2 className="text-xl font-medium mb-6 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Basic Information
-                    </h2>
-                    
-                    <div className="space-y-4">
-                      {/* First Name */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          First Name
-                        </label>
-                        <input
-                          type="text"
-                          value={surveyData.preferred_name || surveyData.first_name}
-                          onChange={(e) => updateSurveyData('preferred_name', e.target.value)}
-                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
-                          style={{ fontFamily: 'var(--font-inter)' }}
-                        />
-                        {/* Show preferred name note if different from original first name */}
-                        {surveyData.preferred_name && surveyData.preferred_name !== surveyData.first_name && (
-                          <p className="text-sm text-blue-600 mt-1">
-                            Your therapist will address you as "{surveyData.preferred_name}"
-                          </p>
-                        )}
-                      </div>
+                   <div className="space-y-2 sm:space-y-3">
+                     {scaleOptions.map((option) => {
+                       const isSelected = surveyData[currentPhq9Question.field] === option;
+                       return (
+                         <button
+                           key={option}
+                           onClick={() => updateSurveyData(currentPhq9Question.field, option)}
+                           className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-all ${
+                             isSelected
+                               ? 'bg-[#5C3106] text-white'
+                               : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                           }`}
+                           style={{ fontFamily: 'var(--font-inter)' }}
+                         >
+                           {option}
+                         </button>
+                       );
+                     })}
+                   </div>
+                 </div>
+               </div>
+             </div>
 
-                      {/* Last Name */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Last Name
-                        </label>
-                        <input
-                          type="text"
-                          value={surveyData.last_name}
-                          onChange={(e) => updateSurveyData('last_name', e.target.value)}
-                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
-                          style={{ fontFamily: 'var(--font-inter)' }}
-                        />
-                      </div>
+             {/* Bottom Navigation */}
+             <div className="mt-6">
+               {/* Progress Indicators - Using dashes */}
+               <div className="flex justify-center items-center space-x-2 mb-4">
+                 {phq9Questions.map((_, index) => (
+                   <div
+                     key={index}
+                     className={`h-0.5 transition-all duration-300 ${
+                       index === phq9CarouselIndex 
+                         ? 'w-8 bg-[#5C3106]' 
+                         : 'w-6 bg-gray-300'
+                     }`}
+                   />
+                 ))}
+               </div>
 
-                      {/* Phone Number */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Phone Number
-                        </label>
-                        <input
-                          type="tel"
-                          value={surveyData.phone || ''}
-                          onChange={(e) => updateSurveyData('phone', e.target.value)}
-                          placeholder="+11234567890"
-                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
-                          style={{ fontFamily: 'var(--font-inter)' }}
-                        />
-                      </div>
+               {/* Navigation Buttons */}
+               <div className="flex justify-between items-center">
+                 <div className="flex-1">
+                   {phq9CarouselIndex > 0 && (
+                     <Button
+                       onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)}
+                       variant="outline"
+                       className="py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base"
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     >
+                       <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                       Previous
+                     </Button>
+                   )}
+                 </div>
 
-                      {/* Gender and Age Row */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Gender
-                          </label>
-                          <select
-                            value={surveyData.gender}
-                            onChange={(e) => updateSurveyData('gender', e.target.value)}
-                            className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            <option value="">Select Gender</option>
-                            <option value="Female">Female</option>
-                            <option value="Male">Male</option>
-                            <option value="Non-binary">Non-binary</option>
-                            <option value="Prefer not to say">Prefer not to say</option>
-                            <option value="Other">Other</option>
-                          </select>
-                        </div>
+                 <div className="flex-1 flex justify-end">
+                   {isLastPhq9Question ? (
+                     <Button
+                       onClick={() => setCurrentStep('gad7')}
+                       disabled={!canContinuePhq9}
+                       className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
+                         canContinuePhq9
+                           ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                       }`}
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     >
+                       Continue
+                       <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                     </Button>
+                   ) : (
+                     <Button
+                       onClick={() => setPhq9CarouselIndex(phq9CarouselIndex + 1)}
+                       disabled={!surveyData[currentPhq9Question.field]}
+                       className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
+                         surveyData[currentPhq9Question.field]
+                           ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                       }`}
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     >
+                       Next
+                       <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                     </Button>
+                   )}
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       );
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Age
-                          </label>
-                          <input
-                            type="number"
-                            min="18"
-                            max="120"
-                            value={surveyData.age}
-                            onChange={(e) => updateSurveyData('age', e.target.value)}
-                            placeholder="Select your age"
-                            className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          />
-                        </div>
-                      </div>
+     case 'gad7':
+       const gad7Questions = [
+         {
+           question: "Feeling nervous, anxious, or on edge",
+           field: 'feeling_nervous' as keyof SurveyData,
+           emoji: '😰'
+         },
+         {
+           question: "Not being able to stop or control worrying",
+           field: 'not_control_worrying' as keyof SurveyData,
+           emoji: '🌀'
+         },
+         {
+           question: "Worrying too much about different things",
+           field: 'worrying_too_much' as keyof SurveyData,
+           emoji: '😟'
+         },
+         {
+           question: "Trouble relaxing",
+           field: 'trouble_relaxing' as keyof SurveyData,
+           emoji: '😤'
+         },
+         {
+           question: "Being so restless that it is hard to sit still",
+           field: 'being_so_restless' as keyof SurveyData,
+           emoji: '🚶'
+         },
+         {
+           question: "Becoming easily annoyed or irritable",
+           field: 'easily_annoyed' as keyof SurveyData,
+           emoji: '😠'
+         },
+         {
+           question: "Feeling afraid, as if something awful might happen",
+           field: 'feeling_afraid' as keyof SurveyData,
+           emoji: '😨'
+         }
+       ];
 
-                      {/* Race/Ethnicity */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">
-                          Race/Ethnicity
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {[
-                            'Black / African',
-                            'Hispanic / Latinx', 
-                            'White',
-                            'Middle Eastern / North African (MENA)',
-                            'East Asian',
-                            'South Asian',
-                            'Southeast Asian',
-                            'Native Hawaiian / Other Pacific Islander',
-                            'Indigenous (Native American / Alaska Native / First Nations)',
-                            'Prefer not to say'
-                          ].map((ethnicity) => {
-                            const isSelected = surveyData.race_ethnicity.includes(ethnicity);
-                            return (
-                              <label key={ethnicity} className="flex items-center space-x-2 p-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={(e) => {
-                                    const current = surveyData.race_ethnicity;
-                                    if (e.target.checked) {
-                                      updateSurveyData('race_ethnicity', [...current, ethnicity]);
-                                    } else {
-                                      updateSurveyData('race_ethnicity', current.filter(item => item !== ethnicity));
-                                    }
-                                  }}
-                                  className="rounded"
-                                />
-                                <span className="text-sm">{ethnicity}</span>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
+       const currentGad7Question = gad7Questions[gad7CarouselIndex];
+       const isLastGad7Question = gad7CarouselIndex === gad7Questions.length - 1;
+       const canContinueGad7 = gad7Questions.every(q => surveyData[q.field]);
 
-                      {/* School or University */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          School or University
-                        </label>
-                        <input
-                          type="text"
-                          value={surveyData.university || ''}
-                          onChange={(e) => updateSurveyData('university', e.target.value)}
-                          placeholder="Optional"
-                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white"
-                          style={{ fontFamily: 'var(--font-inter)' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+       return (
+         <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+           {/* Header with sunset image - smaller for mobile */}
+           <div className="relative h-20 sm:h-24 md:h-32 overflow-hidden flex-shrink-0">
+             <img 
+               src="/onboarding-banner.jpg" 
+               alt="" 
+               className="w-full h-full object-cover"
+             />
+             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+             <div className="absolute inset-0 flex items-center justify-center">
+               <p className="text-center text-xs sm:text-sm md:text-base lg:text-lg text-gray-800 font-normal px-4" 
+                   style={{ 
+                     fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                     fontWeight: 400,
+                     letterSpacing: '0.02em',
+                     lineHeight: '1.1'
+                   }}>
+                 CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+               </p>
+             </div>
+           </div>
 
-                  {/* How did you hear about Sol Health */}
-                  <div className="mb-8">
-                    <h3 className="text-lg font-medium mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                      How did you hear about Sol Health?
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { name: 'Friend/Family', emoji: '👥' },
-                        { name: 'In-Person Event', emoji: '🎪' },
-                        { name: 'Instagram', emoji: '📷' },
-                        { name: 'TikTok', emoji: '🎵' },
-                        { name: 'Psychology Today', emoji: '🧠' },
-                        { name: 'ZocDoc', emoji: '🩺' },
-                        { name: 'Open Path Collective', emoji: '🛤️' },
-                        { name: 'MyAtlas', emoji: '🗺️' },
-                        { name: 'Referral from healthcare professional', emoji: '👩‍⚕️' },
-                        { name: 'Sad Girls Club - Remedy Winner', emoji: '🌙' },
-                        { name: 'Flyer', emoji: '📄' },
-                        { name: 'Email', emoji: '✉️' },
-                        { name: 'Google', emoji: '🔍' }
-                      ].map((source) => {
-                        const isSelected = surveyData.referred_by === source.name;
-                        return (
-                          <button
-                            key={source.name}
-                            onClick={() => updateSurveyData('referred_by', isSelected ? '' : source.name)}
-                            className={`py-2 px-3 rounded-full text-sm transition-all flex items-center ${
-                              isSelected
-                                ? 'bg-[#5C3106] text-white'
-                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            <span className="mr-2">{source.emoji}</span>
-                            {source.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+           {/* Navigation */}
+           <div className="flex items-center justify-between px-4 py-2 sm:py-3 flex-shrink-0">
+             <button 
+               onClick={() => {
+                 if (gad7CarouselIndex > 0) {
+                   setGad7CarouselIndex(gad7CarouselIndex - 1);
+                 } else {
+                   setCurrentStep('phq9');
+                 }
+               }} 
+               className="p-1.5 sm:p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+             >
+               <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+             </button>
+             <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+             <div className="w-8"></div>
+           </div>
 
-                  {/* Terms and Conditions */}
-                  <div className="mb-8">
-                    <label className="flex items-start space-x-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="mt-1 rounded"
-                        required
-                      />
-                      <span className="text-sm text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
-                        I agree to Sol Health's{' '}
-                        <a href="https://solhealth.co/terms-of-service" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
-                          Terms of Service
-                        </a>
-                        ,{' '}
-                        <a href="https://solhealth.co/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
-                          Privacy Policy
-                        </a>
-                        , and{' '}
-                        <a href="https://solhealth.co/telehealth-consent" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
-                          Telehealth Consent
-                        </a>
-                        .
-                      </span>
-                    </label>
-                  </div>
+           {/* Content */}
+           <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-6 sm:pb-8">
+             <div className="flex-1 flex items-center justify-center">
+               <div className="max-w-md w-full">
+                 <div className="text-center mb-4 sm:mb-6">
+                   <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
+                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                     Measuring Anxiety
+                   </h1>
+                   <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                     This may feel like a lot, but this snapshot will help us give you the best care.
+                   </p>
+                 </div>
 
-                  {/* Submit Button */}
-                  <Button
-                    onClick={() => onSubmit(surveyData)}
-                    className="w-full py-5 px-8 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-full text-lg font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    style={{ fontFamily: 'var(--font-inter)' }}
-                  >
-                    ⚡ Match me to my therapist →
-                  </Button>
-                </div>
-              </div>
-            </div>
-          );
-   
-        default:
-          return null;
-      }
-    };
-   
-    const isStepValid = () => {
-      switch (currentStep) {
-        case 'video':
-          return true; // Video step is always valid
-        case 'safety_screening':
-          return surveyData.safety_screening !== ''; // Must have selected yes or no
-        case 'therapist_matching':
-          return surveyData.matching_preference !== ''; // Must have selected preference
-        case 'therapist_search':
-          return surveyData.selected_therapist !== ''; // Must have selected a therapist
-        case 'therapist_preferences':
-          return true; // Optional preferences, always valid
-        case 'alcohol_drugs':
-          return surveyData.alcohol_frequency !== '' && surveyData.recreational_drugs_frequency !== '';
-        case 'phq9':
-          // Check if all PHQ-9 questions are answered
-          const phq9Fields = [
-            'pleasure_doing_things', 'feeling_down', 'trouble_falling', 'feeling_tired',
-            'poor_appetite', 'feeling_bad_about_yourself', 'trouble_concentrating', 
-            'moving_or_speaking_so_slowly', 'suicidal_thoughts'
-          ];
-          return phq9Fields.every(field => surveyData[field as keyof SurveyData]);
-        case 'gad7':
-          // Check if all GAD-7 questions are answered
-          const gad7Fields = [
-            'feeling_nervous', 'not_control_worrying', 'worrying_too_much', 
-            'trouble_relaxing', 'being_so_restless', 'easily_annoyed', 'feeling_afraid'
-          ];
-          return gad7Fields.every(field => surveyData[field as keyof SurveyData]);
-        case 'matching_complete':
-          return true; // Final step, always valid
-        default:
-          return false;
-      }
-    };
-   
-    // Special handling for all steps - no progress bar or card wrapper
-    if (currentStep === 'video' || currentStep === 'safety_screening' || currentStep === 'therapist_matching' || currentStep === 'therapist_search' || currentStep === 'therapist_preferences' || currentStep === 'alcohol_drugs' || currentStep === 'phq9' || currentStep === 'gad7' || currentStep === 'matching_complete') {
-      return (
-        <>
-          {renderStepContent()}
-          
-          {/* Why We Ask Modal */}
-          <Dialog open={showWhyWeAskModal} onOpenChange={setShowWhyWeAskModal}>
-            <DialogContent className="max-w-md mx-auto">
-              <DialogHeader className="relative">
-                <button
-                  onClick={() => setShowWhyWeAskModal(false)}
-                  className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-                <DialogTitle className="text-left text-2xl font-medium" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                  Why we ask this question
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
-                <p>
-                  At Sol Health, we want to make sure you're safe and matched to the right level of care. Our therapists are trained to work with those with mild to moderate symptoms. When someone is facing active suicidal or homicidal thoughts or hallucinations/delusions, a more intensive setting is the best and safest option.
-                </p>
-                
-                <div>
-                  <h4 className="font-medium text-gray-800 mb-2">What we'll do if this applies to you</h4>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Share a referral list with affordable, in-network and community options</li>
-                  </ul>
-                </div>
-   
-                <p className="italic">
-                  We ask this to protect your wellbeing. Your answers are confidential and used only to guide care. This form isn't monitored 24/7 and isn't suitable for urgent situations.
-                </p>
-   
-                <p className="font-medium">
-                  If you're in immediate danger or feel unsafe, call 988 (Suicide and Crisis Lifeline), 911, or go to the nearest emergency room.
-                </p>
-              </div>
-            </DialogContent>
-          </Dialog>
-   
-          {/* Referral Modal for "Yes" Response */}
-          <Dialog open={showReferralModal} onOpenChange={setShowReferralModal}>
-            <DialogContent className="max-w-md mx-auto">
-              <DialogHeader className="relative">
-                <button
-                  onClick={() => setShowReferralModal(false)}
-                  className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-                <DialogTitle className="text-left text-3xl font-medium leading-tight" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                  Let's get you to the right level of care
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-6 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
-                <p>
-                  Because our therapists are trained to provide care for those with mild to moderate needs, we're not the right fit for your right now. Your safety comes first, and a higher level of care will serve you best.
-                </p>
-                
-                <p>
-                  At Sol Health, we want to prioritize people's well-being above all else, and as such, we can refer you to other affordable options.
-                </p>
-   
-                <p className="italic text-sm">
-                  *If you're in crisis or need immediate support, call 988 (Suicide and Crisis Lifeline), 911, or go to your nearest emergency room.
-                </p>
-   
-                <div className="pt-4">
-                  <Button
-                    onClick={() => {
-                      window.open('https://solhealth.co/resources', '_blank');
-                    }}
-                    className="w-full py-4 px-6 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-lg font-medium transition-all border-2 border-gray-800"
-                    style={{ fontFamily: 'var(--font-inter)' }}
-                  >
-                    Referrals Resource List →
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </>
-      );
-    }
-   
-    return (
-      <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3' }}>
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-200 h-2">
-          <div 
-            className="bg-blue-500 h-2 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-   
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle className="text-center">
-                Step {currentStepIndex} of {totalSteps - 1}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {renderStepContent()}
-              
-              <div className="flex justify-between mt-8">
-                <Button
-                  onClick={goToPrevStep}
-                  variant="outline"
-                  className="flex items-center"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  {currentStepIndex === 1 ? 'Back to Payment' : 'Previous'}
-                </Button>
-                
-                <Button
-                  onClick={goToNextStep}
-                  disabled={!isStepValid()}
-                  className="flex items-center"
-                >
-                  {currentStepIndex === totalSteps - 1 ? 'Find My Therapist' : 'Continue'}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+                 <div className="bg-white border-2 border-gray-300 rounded-3xl p-5 sm:p-6 shadow-sm">
+                   <div className="text-center mb-5 sm:mb-6">
+                     <h2 className="text-sm sm:text-base mb-4 text-gray-800 leading-relaxed" 
+                         style={{ fontFamily: 'var(--font-inter)' }}>
+                       Over the last 2 weeks, how often have you been bothered by any of the following?
+                     </h2>
+                     
+                     {/* Emoji and Question */}
+                     <div className="mb-4 sm:mb-5">
+                       <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                         <span className="text-xl sm:text-2xl">{currentGad7Question.emoji}</span>
+                       </div>
+                       <p className="text-sm sm:text-base text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                         {currentGad7Question.question}
+                       </p>
+                     </div>
+                   </div>
+
+                   <div className="space-y-2 sm:space-y-3">
+                     {scaleOptions.map((option) => {
+                       const isSelected = surveyData[currentGad7Question.field] === option;
+                       return (
+                         <button
+                           key={option}
+                           onClick={() => updateSurveyData(currentGad7Question.field, option)}
+                           className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-all ${
+                             isSelected
+                               ? 'bg-[#5C3106] text-white'
+                               : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                           }`}
+                           style={{ fontFamily: 'var(--font-inter)' }}
+                         >
+                           {option}
+                         </button>
+                       );
+                     })}
+                   </div>
+                 </div>
+               </div>
+             </div>
+
+             {/* Bottom Navigation */}
+             <div className="mt-6">
+               {/* Progress Indicators - Using dashes */}
+               <div className="flex justify-center items-center space-x-2 mb-4">
+                 {gad7Questions.map((_, index) => (
+                   <div
+                     key={index}
+                     className={`h-0.5 transition-all duration-300 ${
+                       index === gad7CarouselIndex 
+                         ? 'w-8 bg-[#5C3106]' 
+                         : 'w-6 bg-gray-300'
+                     }`}
+                   />
+                 ))}
+               </div>
+
+               {/* Navigation Buttons */}
+               <div className="flex justify-between items-center">
+                 <div className="flex-1">
+                   {gad7CarouselIndex > 0 && (
+                     <Button
+                       onClick={() => setGad7CarouselIndex(gad7CarouselIndex - 1)}
+                       variant="outline"
+                       className="py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base"
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     >
+                       <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                       Previous
+                     </Button>
+                   )}
+                 </div>
+
+                 <div className="flex-1 flex justify-end">
+                   {isLastGad7Question ? (
+                     <Button
+                       onClick={() => setCurrentStep('matching_complete')}
+                       disabled={!canContinueGad7}
+                       className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
+                         canContinueGad7
+                           ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                       }`}
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     >
+                       Continue
+                       <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                     </Button>
+                   ) : (
+                     <Button
+                       onClick={() => setGad7CarouselIndex(gad7CarouselIndex + 1)}
+                       disabled={!surveyData[currentGad7Question.field]}
+                       className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
+                         surveyData[currentGad7Question.field]
+                           ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
+                           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                       }`}
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     >
+                       Next
+                       <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                     </Button>
+                   )}
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       );
+
+     case 'matching_complete':
+       return (
+         <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+           {/* Header with sunset image */}
+           <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
+             <img 
+               src="/onboarding-banner.jpg" 
+               alt="" 
+               className="w-full h-full object-cover"
+             />
+             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+             <div className="absolute inset-0 flex items-center justify-center">
+               <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+                   style={{ 
+                     fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                     fontWeight: 400,
+                     letterSpacing: '0.02em',
+                     lineHeight: '1.1'
+                   }}>
+                 CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+               </p>
+             </div>
+           </div>
+
+           {/* Navigation */}
+           <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
+             <button onClick={() => setCurrentStep('gad7')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+               <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+             </button>
+             <div className="flex items-center">
+               <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                 Sol Health
+               </h2>
+               <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+             </div>
+             <div className="w-10"></div>
+           </div>
+
+           {/* Content */}
+           <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 overflow-y-auto">
+             <div className="max-w-lg mx-auto">
+               <div className="text-center mb-6 sm:mb-8 mt-4">
+                 <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                   <span className="text-3xl sm:text-4xl">⚡</span>
+                 </div>
+                 
+                 <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-6 text-gray-800" 
+                     style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                   We're About To Match You!
+                 </h1>
+                 
+                 <p className="text-gray-600 text-sm sm:text-base mb-6 sm:mb-8 leading-relaxed px-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                   Please confirm your account details below.
+                 </p>
+               </div>
+
+               {/* Basic Information */}
+               <div className="mb-6 sm:mb-8">
+                 <h2 className="text-lg sm:text-xl font-medium mb-4 sm:mb-6 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                   Basic Information
+                 </h2>
+                 
+                 <div className="space-y-3 sm:space-y-4">
+                   {/* First Name */}
+                   <div>
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                       First Name
+                     </label>
+                     <input
+                       type="text"
+                       value={surveyData.preferred_name || surveyData.first_name}
+                       onChange={(e) => updateSurveyData('preferred_name', e.target.value)}
+                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     />
+                     {surveyData.preferred_name && surveyData.preferred_name !== surveyData.first_name && (
+                       <p className="text-xs sm:text-sm text-blue-600 mt-1">
+                         Your therapist will address you as "{surveyData.preferred_name}"
+                       </p>
+                     )}
+                   </div>
+
+                   {/* Last Name */}
+                   <div>
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                       Last Name
+                     </label>
+                     <input
+                       type="text"
+                       value={surveyData.last_name}
+                       onChange={(e) => updateSurveyData('last_name', e.target.value)}
+                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     />
+                   </div>
+
+                   {/* Phone Number */}
+                   <div>
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                       Phone Number
+                     </label>
+                     <input
+                       type="tel"
+                       value={surveyData.phone || ''}
+                       onChange={(e) => updateSurveyData('phone', e.target.value)}
+                       placeholder="+11234567890"
+                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     />
+                   </div>
+
+                   {/* Gender and Age Row */}
+                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                     <div>
+                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                         Gender
+                       </label>
+                       <select
+                         value={surveyData.gender}
+                         onChange={(e) => updateSurveyData('gender', e.target.value)}
+                         className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                         style={{ fontFamily: 'var(--font-inter)' }}
+                       >
+                         <option value="">Select Gender</option>
+                         <option value="Female">Female</option>
+                         <option value="Male">Male</option>
+                         <option value="Non-binary">Non-binary</option>
+                         <option value="Prefer not to say">Prefer not to say</option>
+                         <option value="Other">Other</option>
+                       </select>
+                     </div>
+
+                     <div>
+                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                         Age
+                       </label>
+                       <input
+                         type="number"
+                         min="18"
+                         max="120"
+                         value={surveyData.age}
+                         onChange={(e) => updateSurveyData('age', e.target.value)}
+                         placeholder="Select your age"
+                         className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                         style={{ fontFamily: 'var(--font-inter)' }}
+                       />
+                     </div>
+                   </div>
+
+                   {/* Race/Ethnicity */}
+                   <div>
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+                       Race/Ethnicity
+                     </label>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                       {[
+                         'Black / African',
+                         'Hispanic / Latinx', 
+                         'White',
+                         'Middle Eastern / North African (MENA)',
+                         'East Asian',
+                         'South Asian',
+                         'Southeast Asian',
+                         'Native Hawaiian / Other Pacific Islander',
+                         'Indigenous (Native American / Alaska Native / First Nations)',
+                         'Prefer not to say'
+                       ].map((ethnicity) => {
+                         const isSelected = surveyData.race_ethnicity.includes(ethnicity);
+                         return (
+                           <label key={ethnicity} className="flex items-center space-x-2 p-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                             <input
+                               type="checkbox"
+                               checked={isSelected}
+                               onChange={(e) => {
+                                 const current = surveyData.race_ethnicity;
+                                 if (e.target.checked) {
+                                   updateSurveyData('race_ethnicity', [...current, ethnicity]);
+                                 } else {
+                                   updateSurveyData('race_ethnicity', current.filter(item => item !== ethnicity));
+                                 }
+                               }}
+                               className="rounded"
+                             />
+                             <span className="text-xs sm:text-sm">{ethnicity}</span>
+                           </label>
+                         );
+                       })}
+                     </div>
+                   </div>
+
+                   {/* School or University */}
+                   <div>
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                       School or University
+                     </label>
+                     <input
+                       type="text"
+                       value={surveyData.university || ''}
+                       onChange={(e) => updateSurveyData('university', e.target.value)}
+                       placeholder="Optional"
+                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     />
+                   </div>
+                 </div>
+               </div>
+
+               {/* How did you hear about Sol Health */}
+               <div className="mb-6 sm:mb-8">
+                 <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                   How did you hear about Sol Health?
+                 </h3>
+                 <div className="flex flex-wrap gap-2">
+                   {[
+                     { name: 'Friend/Family', emoji: '👥' },
+                     { name: 'In-Person Event', emoji: '🎪' },
+                     { name: 'Instagram', emoji: '📷' },
+                     { name: 'TikTok', emoji: '🎵' },
+                     { name: 'Psychology Today', emoji: '🧠' },
+                     { name: 'ZocDoc', emoji: '🩺' },
+                     { name: 'Open Path Collective', emoji: '🛤️' },
+                     { name: 'MyAtlas', emoji: '🗺️' },
+                     { name: 'Referral from healthcare professional', emoji: '👩‍⚕️' },
+                     { name: 'Sad Girls Club - Remedy Winner', emoji: '🌙' },
+                     { name: 'Flyer', emoji: '📄' },
+                     { name: 'Email', emoji: '✉️' },
+                     { name: 'Google', emoji: '🔍' }
+                   ].map((source) => {
+                     const isSelected = surveyData.referred_by === source.name;
+                     return (
+                       <button
+                         key={source.name}
+                         onClick={() => updateSurveyData('referred_by', isSelected ? '' : source.name)}
+                         className={`py-1.5 sm:py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm transition-all flex items-center ${
+                           isSelected
+                             ? 'bg-[#5C3106] text-white'
+                             : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                         }`}
+                         style={{ fontFamily: 'var(--font-inter)' }}
+                       >
+                         <span className="mr-1 sm:mr-2">{source.emoji}</span>
+                         {source.name}
+                       </button>
+                     );
+                   })}
+                 </div>
+               </div>
+
+               {/* Terms and Conditions */}
+               <div className="mb-6 sm:mb-8">
+                 <label className="flex items-start space-x-3 cursor-pointer">
+                   <input
+                     type="checkbox"
+                     className="mt-1 rounded"
+                     required
+                   />
+                   <span className="text-xs sm:text-sm text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
+                     I agree to Sol Health's{' '}
+                     <a href="https://solhealth.co/terms-of-service" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
+                       Terms of Service
+                     </a>
+                     ,{' '}
+                     <a href="https://solhealth.co/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
+                       Privacy Policy
+                     </a>
+                     , and{' '}
+                     <a href="https://solhealth.co/telehealth-consent" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
+                       Telehealth Consent
+                     </a>
+                     .
+                   </span>
+                 </label>
+               </div>
+
+               {/* Submit Button */}
+               <Button
+                 onClick={() => onSubmit(surveyData)}
+                 className="w-full py-4 sm:py-5 px-6 sm:px-8 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-full text-base sm:text-lg font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
+                 style={{ fontFamily: 'var(--font-inter)' }}
+               >
+                 ⚡ Match me to my therapist →
+               </Button>
+             </div>
+           </div>
+         </div>
+       );
+
+     default:
+       return null;
    }
+ };
+
+ const isStepValid = () => {
+   switch (currentStep) {
+     case 'video':
+       return true;
+     case 'safety_screening':
+       return surveyData.safety_screening !== '';
+     case 'therapist_matching':
+       return surveyData.matching_preference !== '';
+     case 'therapist_search':
+       return surveyData.selected_therapist !== '';
+     case 'therapist_preferences':
+       return true;
+     case 'alcohol_drugs':
+       return surveyData.alcohol_frequency !== '' && surveyData.recreational_drugs_frequency !== '';
+     case 'phq9':
+       const phq9Fields = [
+         'pleasure_doing_things', 'feeling_down', 'trouble_falling', 'feeling_tired',
+         'poor_appetite', 'feeling_bad_about_yourself', 'trouble_concentrating', 
+         'moving_or_speaking_so_slowly', 'suicidal_thoughts'
+       ];
+       return phq9Fields.every(field => surveyData[field as keyof SurveyData]);
+     case 'gad7':
+       const gad7Fields = [
+         'feeling_nervous', 'not_control_worrying', 'worrying_too_much', 
+         'trouble_relaxing', 'being_so_restless', 'easily_annoyed', 'feeling_afraid'
+       ];
+       return gad7Fields.every(field => surveyData[field as keyof SurveyData]);
+     case 'matching_complete':
+       return true;
+     default:
+       return false;
+   }
+ };
+
+ // Special handling for all steps - no progress bar or card wrapper
+ if (currentStep === 'video' || currentStep === 'safety_screening' || currentStep === 'therapist_matching' || currentStep === 'therapist_search' || currentStep === 'therapist_preferences' || currentStep === 'alcohol_drugs' || currentStep === 'phq9' || currentStep === 'gad7' || currentStep === 'matching_complete') {
+   return (
+     <>
+       {renderStepContent()}
+       
+       {/* Why We Ask Modal */}
+       <Dialog open={showWhyWeAskModal} onOpenChange={setShowWhyWeAskModal}>
+         <DialogContent className="max-w-md mx-auto">
+           <DialogHeader className="relative">
+             <button
+               onClick={() => setShowWhyWeAskModal(false)}
+               className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
+             >
+               <X className="w-5 h-5" />
+             </button>
+             <DialogTitle className="text-left text-2xl font-medium" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+               Why we ask this question
+             </DialogTitle>
+           </DialogHeader>
+           <div className="space-y-4 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+             <p>
+               At Sol Health, we want to make sure you're safe and matched to the right level of care. Our therapists are trained to work with those with mild to moderate symptoms. When someone is facing active suicidal or homicidal thoughts or hallucinations/delusions, a more intensive setting is the best and safest option.
+             </p>
+             
+             <div>
+               <h4 className="font-medium text-gray-800 mb-2">What we'll do if this applies to you</h4>
+               <ul className="list-disc pl-5 space-y-1">
+                 <li>Share a referral list with affordable, in-network and community options</li>
+               </ul>
+             </div>
+
+             <p className="italic">
+               We ask this to protect your wellbeing. Your answers are confidential and used only to guide care. This form isn't monitored 24/7 and isn't suitable for urgent situations.
+             </p>
+
+             <p className="font-medium">
+               If you're in immediate danger or feel unsafe, call 988 (Suicide and Crisis Lifeline), 911, or go to the nearest emergency room.
+             </p>
+           </div>
+         </DialogContent>
+       </Dialog>
+
+       {/* Referral Modal for "Yes" Response */}
+       <Dialog open={showReferralModal} onOpenChange={setShowReferralModal}>
+         <DialogContent className="max-w-md mx-auto">
+           <DialogHeader className="relative">
+             <button
+               onClick={() => setShowReferralModal(false)}
+               className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
+             >
+               <X className="w-5 h-5" />
+             </button>
+             <DialogTitle className="text-left text-3xl font-medium leading-tight" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+               Let's get you to the right level of care
+             </DialogTitle>
+           </DialogHeader>
+           <div className="space-y-6 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+             <p>
+               Because our therapists are trained to provide care for those with mild to moderate needs, we're not the right fit for your right now. Your safety comes first, and a higher level of care will serve you best.
+             </p>
+             
+             <p>
+               At Sol Health, we want to prioritize people's well-being above all else, and as such, we can refer you to other affordable options.
+             </p>
+
+             <p className="italic text-sm">
+               *If you're in crisis or need immediate support, call 988 (Suicide and Crisis Lifeline), 911, or go to your nearest emergency room.
+             </p>
+
+             <div className="pt-4">
+               <Button
+                 onClick={() => {
+                   window.open('https://solhealth.co/resources', '_blank');
+                 }}
+                 className="w-full py-4 px-6 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-lg font-medium transition-all border-2 border-gray-800"
+                 style={{ fontFamily: 'var(--font-inter)' }}
+               >
+                 Referrals Resource List →
+               </Button>
+             </div>
+           </div>
+         </DialogContent>
+       </Dialog>
+     </>
+   );
+ }
+
+ return null;
+}
