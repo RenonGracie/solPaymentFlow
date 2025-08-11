@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ArrowRight, X, Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { VIDEOS } from "@/lib/videos";
 
 interface SurveyData {
@@ -132,6 +132,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
   const [phq9IntroEnded, setPhq9IntroEnded] = useState(false);
   const [showGad7Intro, setShowGad7Intro] = useState(true);
   const [gad7IntroEnded, setGad7IntroEnded] = useState(false);
+  
+  // Intro video early-continue flags
+  const [phq9IntroTimerReady, setPhq9IntroTimerReady] = useState(false);
+  const [gad7IntroTimerReady, setGad7IntroTimerReady] = useState(false);
   
   const [surveyData, setSurveyData] = useState<SurveyData>({
     // Safety Screening
@@ -1022,7 +1026,13 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                           return (
                             <button
                               key={option}
-                              onClick={() => updateSurveyData('alcohol_frequency', option)}
+                              onClick={() => {
+                                updateSurveyData('alcohol_frequency', option);
+                                const ready = option && surveyData.recreational_drugs_frequency;
+                                if (ready) {
+                                  setTimeout(() => { setShowPhq9Intro(true); setPhq9IntroEnded(false); setCurrentStep('phq9'); }, 120);
+                                }
+                              }}
                               className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
@@ -1049,7 +1059,13 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                           return (
                             <button
                               key={option}
-                              onClick={() => updateSurveyData('recreational_drugs_frequency', option)}
+                              onClick={() => {
+                                updateSurveyData('recreational_drugs_frequency', option);
+                                const ready = surveyData.alcohol_frequency && option;
+                                if (ready) {
+                                  setTimeout(() => { setShowPhq9Intro(true); setPhq9IntroEnded(false); setCurrentStep('phq9'); }, 120);
+                                }
+                              }}
                               className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
@@ -1067,22 +1083,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 </div>
               </div>
 
-              {/* Bottom Navigation */}
-              <div className="mt-6 flex justify-end">
-                <Button
-                  onClick={() => { setShowPhq9Intro(true); setPhq9IntroEnded(false); setCurrentStep('phq9'); }}
-                  disabled={!surveyData.alcohol_frequency || !surveyData.recreational_drugs_frequency}
-                  className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
-                    surveyData.alcohol_frequency && surveyData.recreational_drugs_frequency
-                      ? 'bg-yellow-100 hover:bg-yellow-300 text-gray-800'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  }`}
-                  style={{ fontFamily: 'var(--font-inter)' }}
-                >
-                  Continue
-                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                </Button>
-              </div>
+              {/* Bottom Navigation removed; auto-advance once both responses are present */}
             </div>
           </div>
         );
@@ -1162,6 +1163,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       loop={false}
                       controls={false}
                       preload="auto"
+                      onPlay={() => {
+                        setPhq9IntroTimerReady(false);
+                        setTimeout(() => setPhq9IntroTimerReady(true), 2500);
+                      }}
                       onEnded={(e) => {
                         setPhq9IntroEnded(true);
                         const v = e.currentTarget;
@@ -1176,9 +1181,9 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     <div className="absolute inset-x-0 bottom-3 flex justify-center">
                       <Button
                         onClick={() => setShowPhq9Intro(false)}
-                        disabled={!phq9IntroEnded}
+                        disabled={!(phq9IntroEnded || phq9IntroTimerReady)}
                         className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
-                          phq9IntroEnded ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          phq9IntroEnded || phq9IntroTimerReady ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                         style={{ fontFamily: 'var(--font-inter)' }}
                       >
@@ -1252,68 +1257,67 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   </div>
 
                   <div className="bg-transparent border border-[#5C3106] rounded-3xl p-4 sm:p-5 shadow-[1px_1px_0_#5C3106]">
-                    <div className="text-center mb-5 sm:mb-6">
+                    <div key={phq9CarouselIndex} className="text-center mb-5 sm:mb-6 animate-question">
                       {/* Question */}
-                     <div className="mb-4 sm:mb-5">
-                       <p className="text-xs sm:text-sm text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
-                         {currentPhq9Question.question}
-                       </p>
-                     </div>
-                   </div>
+                      <div className="mb-4 sm:mb-5">
+                        <p className="text-xs sm:text-sm text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                          {currentPhq9Question.question}
+                        </p>
+                      </div>
+                    </div>
 
-                   <div className="space-y-2">
-                     {scaleOptions.map((option) => {
-                       const isSelected = surveyData[currentPhq9Question.field] === option;
-                       return (
-                         <button
-                           key={option}
-                           onClick={() => updateSurveyData(currentPhq9Question.field, option)}
-                           className={`w-full py-2 px-3 rounded-2xl text-xs sm:text-sm font-medium transition-colors ${
-                             isSelected
-                               ? 'bg-[#5C3106] text-white'
-                               : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
-                           }`}
-                           style={{ fontFamily: 'var(--font-inter)' }}
-                         >
-                           {option}
-                         </button>
-                       );
-                     })}
-                   </div>
+                    <div className="space-y-2">
+                      {scaleOptions.map((option) => {
+                        const isSelected = surveyData[currentPhq9Question.field] === option;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => {
+                              updateSurveyData(currentPhq9Question.field, option);
+                              if (isLastPhq9Question) {
+                                if (canContinuePhq9) {
+                                  setCurrentStep('gad7');
+                                }
+                              } else {
+                                setTimeout(() => setPhq9CarouselIndex(phq9CarouselIndex + 1), 120);
+                              }
+                            }}
+                            className={`w-full py-2 px-3 rounded-2xl text-xs sm:text-sm font-medium transition-colors ${
+                              isSelected
+                                ? 'bg-[#5C3106] text-white'
+                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
 
-                   {/* Progress + Nav inside box */}
-                   <div className="mt-6">
-                     <div className="flex justify-center items-center space-x-2 mb-2">
-                       {phq9Questions.map((_, index) => (
-                         <div
-                           key={index}
-                           className={`h-0.5 transition-all duration-300 ${
-                             index === phq9CarouselIndex ? 'w-8 bg-[#5C3106]' : 'w-6 bg-gray-300'
-                           }`}
-                         />
-                       ))}
-                     </div>
-                     <div className="flex justify-between items-center">
-                       <div>
-                         {phq9CarouselIndex > 0 && (
-                           <Button onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)} variant="outline" className="py-2 px-4 rounded-full text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                             <ArrowLeft className="w-4 h-4 mr-1" /> Back
-                           </Button>
-                         )}
-                       </div>
-                       <div>
-                         {isLastPhq9Question ? (
-                           <Button onClick={() => setCurrentStep('gad7')} disabled={!canContinuePhq9} className={`py-2 px-4 rounded-full text-sm ${canContinuePhq9 ? 'bg-[#E8D0B6] hover:bg-[#5C3106] hover:text-white text-gray-800' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`} style={{ fontFamily: 'var(--font-inter)' }}>
-                             Continue
-                           </Button>
-                         ) : (
-                           <Button onClick={() => setPhq9CarouselIndex(phq9CarouselIndex + 1)} disabled={!surveyData[currentPhq9Question.field]} className={`py-2 px-4 rounded-full text-sm ${surveyData[currentPhq9Question.field] ? 'bg-[#E8D0B6] hover:bg-[#5C3106] hover:text-white text-gray-800' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`} style={{ fontFamily: 'var(--font-inter)' }}>
-                             Next
-                           </Button>
-                         )}
-                       </div>
-                     </div>
-                   </div>
+                    {/* Progress + Nav inside box */}
+                    <div className="mt-6">
+                      <div className="flex justify-center items-center space-x-2 mb-2">
+                        {phq9Questions.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`h-0.5 transition-all duration-300 ${
+                              index === phq9CarouselIndex ? 'w-8 bg-[#5C3106]' : 'w-6 bg-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          {phq9CarouselIndex > 0 && (
+                            <Button onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)} variant="outline" className="py-2 px-4 rounded-full text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                              <ArrowLeft className="w-4 h-4 mr-1" /> Back
+                            </Button>
+                          )}
+                        </div>
+                        <div />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1388,6 +1392,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      loop={false}
                      controls={false}
                      preload="auto"
+                     onPlay={() => {
+                       setGad7IntroTimerReady(false);
+                       setTimeout(() => setGad7IntroTimerReady(true), 2500);
+                     }}
                      onEnded={(e) => {
                        setGad7IntroEnded(true);
                        const v = e.currentTarget;
@@ -1397,14 +1405,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                            v.currentTime = Math.max(0, v.duration - 0.01);
                          }
                        } catch {}
-                                             }}
+                     }}
                    />
                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
                      <Button
                        onClick={() => setShowGad7Intro(false)}
-                       disabled={!gad7IntroEnded}
+                       disabled={!(gad7IntroEnded || gad7IntroTimerReady)}
                        className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
-                         gad7IntroEnded ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                         gad7IntroEnded || gad7IntroTimerReady ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                        }`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      >
@@ -1478,7 +1486,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                  </div>
 
                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-4 sm:p-5 shadow-[1px_1px_0_#5C3106]">
-                   <div className="text-center mb-5 sm:mb-6">
+                   <div key={gad7CarouselIndex} className="text-center mb-5 sm:mb-6 animate-question">
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
                        <p className="text-xs sm:text-sm text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -1540,71 +1548,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                </div>
              </div>
 
-             {/* Bottom Navigation */}
-             <div className="mt-6">
-               {/* Progress Indicators - Using dashes */}
-               <div className="flex justify-center items-center space-x-2 mb-4">
-                 {gad7Questions.map((_, index) => (
-                   <div
-                     key={index}
-                     className={`h-0.5 transition-all duration-300 ${
-                       index === gad7CarouselIndex 
-                         ? 'w-8 bg-[#5C3106]' 
-                         : 'w-6 bg-gray-300'
-                     }`}
-                   />
-                 ))}
-               </div>
-
-               {/* Navigation Buttons */}
-               <div className="flex justify-between items-center">
-                 <div className="flex-1">
-                   {gad7CarouselIndex > 0 && (
-                     <Button
-                       onClick={() => setGad7CarouselIndex(gad7CarouselIndex - 1)}
-                       variant="outline"
-                       className="py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base"
-                       style={{ fontFamily: 'var(--font-inter)' }}
-                     >
-                       <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                       Previous
-                     </Button>
-                   )}
-                 </div>
-
-                 <div className="flex-1 flex justify-end">
-                   {isLastGad7Question ? (
-                                           <Button
-                        onClick={() => setCurrentStep('matching_complete')}
-                        disabled={!canContinueGad7}
-                        className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
-                          canContinueGad7
-                            ? 'bg-[#E8D0B6] hover:bg-[#5C3106] hover:text-white text-gray-800'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        }`}
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        Continue
-                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                      </Button>
-                   ) : (
-                                           <Button
-                        onClick={() => setGad7CarouselIndex(gad7CarouselIndex + 1)}
-                        disabled={!surveyData[currentGad7Question.field]}
-                        className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
-                          surveyData[currentGad7Question.field]
-                            ? 'bg-[#E8D0B6] hover:bg-[#5C3106] hover:text-white text-gray-800'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        }`}
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        Next
-                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                      </Button>
-                   )}
-                 </div>
-               </div>
-             </div>
+             {/* Bottom Navigation removed to mirror PHQ-9 layout */}
            </div>
          </div>
        );
@@ -1937,14 +1881,9 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        
        {/* Why We Ask Modal */}
        <Dialog open={showWhyWeAskModal} onOpenChange={setShowWhyWeAskModal}>
-         <DialogContent className="max-w-md mx-auto">
+         <DialogContent className="max-w-md mx-auto" /* close button rendered by dialog; we won't add another */>
            <DialogHeader className="relative">
-             <button
-               onClick={() => setShowWhyWeAskModal(false)}
-               className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
-             >
-               <X className="w-5 h-5" />
-             </button>
+             {/* Remove extra manual X to avoid duplicate */}
              <DialogTitle className="text-left text-2xl font-medium" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                Why we ask this question
              </DialogTitle>
@@ -1976,12 +1915,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        <Dialog open={showReferralModal} onOpenChange={setShowReferralModal}>
          <DialogContent className="max-w-md mx-auto">
            <DialogHeader className="relative">
-             <button
-               onClick={() => setShowReferralModal(false)}
-               className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
-             >
-               <X className="w-5 h-5" />
-             </button>
+             {/* Remove extra manual X to avoid duplicate */}
              <DialogTitle className="text-left text-3xl font-medium leading-tight" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                Let's get you to the right level of care
              </DialogTitle>
@@ -2013,6 +1947,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
            </div>
          </DialogContent>
        </Dialog>
+
+       {/* Local style for subtle transitions */}
+       <style jsx>{`
+         .animate-question { animation: fadeScale 160ms ease-out both; }
+         @keyframes fadeScale {
+           from { opacity: 0; transform: scale(0.985); background-color: white; }
+           to { opacity: 1; transform: scale(1); background-color: transparent; }
+         }
+       `}</style>
      </>
    );
  }

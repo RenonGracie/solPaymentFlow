@@ -445,19 +445,76 @@ export default function OnboardingFlow({
   // Preload all videos at runtime to reduce startup delay
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const urls = Object.values(VIDEOS).filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u));
+
     const warmVideos: HTMLVideoElement[] = [];
-    urls.forEach((href) => {
-      const v = document.createElement('video');
-      v.src = href;
-      v.preload = 'auto';
-      v.muted = true;
-      v.setAttribute('playsinline', '');
-      try { v.load(); } catch {}
-      warmVideos.push(v);
+    let cancelled = false;
+
+    // 1) Ensure local onboarding videos are requested first from the app directory
+    const localOnboardingSources = ['/onboarding-video-9x16.mp4', '/onboarding-video-16x9.mp4'];
+
+    const waitForLocalOnboarding = new Promise<void>((resolve) => {
+      let readyCount = 0;
+      const markReady = () => {
+        readyCount += 1;
+        if (readyCount >= localOnboardingSources.length) resolve();
+      };
+
+      localOnboardingSources.forEach((href) => {
+        const v = document.createElement('video');
+        v.src = href;
+        v.preload = 'auto';
+        v.muted = true;
+        v.setAttribute('playsinline', '');
+        v.oncanplaythrough = markReady;
+        v.onloadeddata = markReady;
+        try {
+          v.load();
+        } catch {}
+        warmVideos.push(v);
+      });
+
+      // Fallback in case events don't fire quickly
+      setTimeout(() => resolve(), 1500);
     });
+
+    // 2) After local onboarding is warmed, warm remote videos sequentially to avoid contention
+    waitForLocalOnboarding.then(() => {
+      if (cancelled) return;
+
+      const urls = Object.entries(VIDEOS)
+        .map(([, href]) => href)
+        .filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u))
+        // do not warm onboarding remotes to avoid duplicate downloads; local versions are preferred
+        .filter((u) => !/onboarding-video-(?:9x16|16x9)\.mp4$/i.test(u));
+
+      const loadSequential = (index: number) => {
+        if (cancelled || index >= urls.length) return;
+        const href = urls[index];
+        const v = document.createElement('video');
+        v.src = href;
+        v.preload = 'auto';
+        v.muted = true;
+        v.setAttribute('playsinline', '');
+        const next = () => loadSequential(index + 1);
+        v.oncanplaythrough = next;
+        v.onloadeddata = next;
+        try {
+          v.load();
+        } catch {}
+        warmVideos.push(v);
+      };
+
+      // start sequential warm
+      loadSequential(0);
+    });
+
     return () => {
-      warmVideos.forEach((v) => { try { v.src = ''; } catch {} });
+      cancelled = true;
+      warmVideos.forEach((v) => {
+        try {
+          v.src = '';
+        } catch {}
+      });
     };
   }, []);
 
