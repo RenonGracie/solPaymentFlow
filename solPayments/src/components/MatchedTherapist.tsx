@@ -72,7 +72,8 @@ export default function MatchedTherapist({
       const yyyy = selectedDateObj.getFullYear();
       const mm = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
       const dd = String(selectedDateObj.getDate()).padStart(2, '0');
-      const datetime = `${yyyy}-${mm}-${dd}T${convertTo24Hour(selectedTimeSlot)}:00`;
+      const normalizedTime = selectedTimeSlot.replace(/\s/g, '');
+      const datetime = `${yyyy}-${mm}-${dd}T${convertTo24Hour(normalizedTime)}:00`;
       onBookSession(currentTherapistData, datetime);
     }
   };
@@ -159,6 +160,15 @@ export default function MatchedTherapist({
   const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
   const goPrevMonth = () => setCalendarDate(new Date(currentYear, currentMonth - 1, 1));
   const goNextMonth = () => setCalendarDate(new Date(currentYear, currentMonth + 1, 1));
+
+  // Build time slots from therapist.available_slots for the selected day
+  const slotsForDay = (therapist.available_slots || [])
+    .map((iso: string) => new Date(iso))
+    .filter((dt: Date) => selectedDateObj && isSameDay(dt, selectedDateObj))
+    .sort((a: Date, b: Date) => a.getTime() - b.getTime());
+
+  const formatTimeLabel = (date: Date) =>
+    date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
@@ -379,20 +389,41 @@ export default function MatchedTherapist({
 
                   {/* Time Slots */}
                   <div className="grid grid-cols-2 gap-3 mb-6">
-                    {['1:00pm', '2:00pm', '5:00pm', '6:00pm', '7:00pm', '8:00pm'].map((time) => (
-                      <button
-                        key={`time-${time}`}
-                        onClick={() => setSelectedTimeSlot(time)}
-                        className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
-                          selectedTimeSlot === time
-                            ? 'border-yellow-400 bg-yellow-50'
-                            : 'border-[#5C3106] bg-white hover:bg-yellow-50'
-                        }`}
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        {time}
-                      </button>
-                    ))}
+                    {slotsForDay.length > 0 ? (
+                      slotsForDay.map((dt) => {
+                        const label = formatTimeLabel(dt);
+                        const normalized = label.replace(/\s/g, '').toLowerCase();
+                        return (
+                          <button
+                            key={dt.toISOString()}
+                            onClick={() => setSelectedTimeSlot(normalized)}
+                            className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
+                              selectedTimeSlot === normalized
+                                ? 'border-yellow-400 bg-yellow-50'
+                                : 'border-[#5C3106] bg-white hover:bg-yellow-50'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })
+                    ) : (
+                      ['1:00pm', '2:00pm', '5:00pm', '6:00pm', '7:00pm', '8:00pm'].map((time) => (
+                        <button
+                          key={`time-${time}`}
+                          onClick={() => setSelectedTimeSlot(time)}
+                          className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
+                            selectedTimeSlot === time
+                              ? 'border-yellow-400 bg-yellow-50'
+                              : 'border-[#5C3106] bg-white hover:bg-yellow-50'
+                          }`}
+                          style={{ fontFamily: 'var(--font-inter)' }}
+                        >
+                          {time}
+                        </button>
+                      ))
+                    )}
                   </div>
 
                   <Button
