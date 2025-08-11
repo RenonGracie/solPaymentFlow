@@ -20,9 +20,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const videoCdn = process.env.NEXT_PUBLIC_VIDEO_BASE_URL;
   return (
     <html lang="en" className={`${inter.variable}`}>
       <head>
+        {videoCdn && (
+          <>
+            <link rel="preconnect" href={videoCdn} crossOrigin="anonymous" />
+            <link rel="dns-prefetch" href={videoCdn} />
+          </>
+        )}
         <Script
           crossOrigin="anonymous"
           src="//unpkg.com/same-runtime/dist/index.global.js"

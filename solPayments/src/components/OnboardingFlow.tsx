@@ -154,6 +154,8 @@ export default function OnboardingFlow({
   const [isPortrait, setIsPortrait] = useState(false);
   const [screenType, setScreenType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [isWideScreen, setIsWideScreen] = useState(false);
+  // Initial video loading state
+  const [initialVideoReady, setInitialVideoReady] = useState(false);
 
   // State selection variables
   const [selectedState, setSelectedState] = useState('');
@@ -440,24 +442,54 @@ export default function OnboardingFlow({
     onSelectPaymentType("insurance");
   };
 
+  // Preload all videos at runtime to reduce startup delay
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urls = Object.values(VIDEOS).filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u));
+    const warmVideos: HTMLVideoElement[] = [];
+    urls.forEach((href) => {
+      const v = document.createElement('video');
+      v.src = href;
+      v.preload = 'auto';
+      v.muted = true;
+      v.setAttribute('playsinline', '');
+      try { v.load(); } catch {}
+      warmVideos.push(v);
+    });
+    return () => {
+      warmVideos.forEach((v) => { try { v.src = ''; } catch {} });
+    };
+  }, []);
+
   // Splash Screen with Video
   if (currentStep === 0) {
     // Mobile portrait layout - 9:16 video full screen
     if (screenType === 'mobile') {
       return (
-        <div className="min-h-screen relative overflow-hidden bg-black">
+        <div className="relative bg-black h-[100dvh] w-full overflow-hidden overscroll-none">
           <video 
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-bottom"
             autoPlay 
             muted 
             loop 
             playsInline
+            preload="auto"
+            onCanPlayThrough={() => setInitialVideoReady(true)}
           >
-            <source src={VIDEOS.onboarding9x16} type="video/mp4" />
+            <source src="/onboarding-video-9x16.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8">
+          {!initialVideoReady && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/30">
+              <div className="flex items-center space-x-2 text-white">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span className="text-sm">Loading…</span>
+              </div>
+            </div>
+          )}
+
+          <div className="absolute bottom-0 left-0 right-0 z-20 px-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)' }}>
             <Button
               onClick={handleContinue}
               className="w-full py-5 px-8 bg-white/95 backdrop-blur-sm rounded-2xl text-gray-800 text-lg font-medium hover:bg-white transition-all"
@@ -481,8 +513,9 @@ export default function OnboardingFlow({
               muted 
               loop 
               playsInline
+              preload="auto"
             >
-              <source src={VIDEOS.onboarding9x16} type="video/mp4" />
+              <source src="/onboarding-video-9x16.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
@@ -525,9 +558,10 @@ export default function OnboardingFlow({
               muted 
               loop 
               playsInline
+              preload="auto"
             >
-                           <source src={VIDEOS.onboarding16x9} type="video/mp4" />
-             Your browser does not support the video tag.
+              <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
             </video>
           </div>
 
@@ -570,9 +604,10 @@ export default function OnboardingFlow({
             muted 
             loop 
             playsInline
+            preload="auto"
           >
-                         <source src={VIDEOS.onboarding16x9} type="video/mp4" />
-             Your browser does not support the video tag.
+            <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
           </video>
         </div>
 

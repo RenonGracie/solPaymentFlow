@@ -294,6 +294,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 muted 
                 loop 
                 playsInline
+                preload="auto"
               >
                 <source src={VIDEOS.howItWorks9x16} type="video/mp4" />
                 Your browser does not support the video tag.
@@ -323,6 +324,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   muted 
                   loop 
                   playsInline
+                  preload="auto"
                 >
                   <source src={VIDEOS.howItWorks9x16} type="video/mp4" />
                   Your browser does not support the video tag.
@@ -366,6 +368,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   muted 
                   loop 
                   playsInline
+                  preload="auto"
                 >
                   <source src={VIDEOS.howItWorks16x9} type="video/mp4" />
                   Your browser does not support the video tag.
@@ -411,6 +414,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 muted 
                 loop 
                 playsInline
+                preload="auto"
               >
                 <source src={VIDEOS.howItWorks16x9} type="video/mp4" />
                 Your browser does not support the video tag.
