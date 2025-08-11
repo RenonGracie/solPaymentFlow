@@ -809,9 +809,9 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 {/* Gender Preference */}
                 <div className="mb-6 sm:mb-8">
                   <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                    I would like a therapist that identifies as:
+                    I would like a therapist that identifies as <span className="text-red-500">*</span>
                   </h3>
-                  <div className={`flex flex-wrap justify-center gap-1.5 sm:gap-2 rounded-lg ${surveyData.therapist_gender_preference === '' ? 'ring-1 ring-red-300' : ''}`}>
+                  <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
                     {[
                       { name: 'Female', emoji: '👩' },
                       { name: 'Male', emoji: '👨' },
@@ -823,7 +823,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                         className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl transition-colors text-[11px] sm:text-xs inline-flex ${
                           surveyData.therapist_gender_preference === gender.name
                             ? 'bg-[#5C3106] text-white'
-                            : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                            : `bg-white border-2 text-gray-800 hover:bg-gray-50 ${surveyData.therapist_gender_preference === '' ? 'border-red-300' : 'border-gray-300'}`
                         }`}
                         style={{ fontFamily: 'var(--font-inter)' }}
                       >
@@ -1173,6 +1173,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       onPlay={() => {
                         setPhq9IntroTimerReady(false);
                         setTimeout(() => setPhq9IntroTimerReady(true), 2500);
+                        // Hard fallback to enable continue even if onEnded doesn't fire
+                        setTimeout(() => setPhq9IntroEnded(true), 8000);
                       }}
                       onEnded={(e) => {
                         setPhq9IntroEnded(true);
@@ -1258,6 +1260,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       onPlay={() => {
                         setPhq9IntroTimerReady(false);
                         setTimeout(() => setPhq9IntroTimerReady(true), 2500);
+                        // Hard fallback to enable continue even if onEnded doesn't fire
+                        setTimeout(() => setPhq9IntroEnded(true), 8000);
                       }}
                       onEnded={(e) => {
                         setPhq9IntroEnded(true);
@@ -1352,6 +1356,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      onPlay={() => {
                        setGad7IntroTimerReady(false);
                        setTimeout(() => setGad7IntroTimerReady(true), 2500);
+                       setTimeout(() => setGad7IntroEnded(true), 8000);
                      }}
                      onEnded={(e) => {
                        setGad7IntroEnded(true);
