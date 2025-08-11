@@ -32,6 +32,7 @@ interface SurveyData {
   preferred_name?: string; // Add this field
   phone?: string;
   age: string;
+  date_of_birth: string;
   gender: string;
   state: string; // This is US state, not status!
   race_ethnicity: string[]; // Multi-select race/ethnicity
@@ -59,7 +60,7 @@ interface SurveyData {
   // Additional
   lived_experiences: string[];
   university?: string;
-  referred_by?: string;
+  referred_by?: string | string[];
 }
 
 interface CustomSurveyProps {
@@ -146,7 +147,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
     selected_therapist: '',
     
     // Therapist Preferences
-    therapist_gender_preference: 'No preference',
+    therapist_gender_preference: '',
     therapist_specialization: [],
     therapist_lived_experiences: [],
     
@@ -161,6 +162,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
     preferred_name: formData.preferredName || formData.firstName, // Add preferred name with fallback
     phone: '',
     age: '',
+    date_of_birth: '',
     gender: '',
     state: formData.state || '', // Pre-fill state if passed from onboarding
     race_ethnicity: [],
@@ -258,6 +260,17 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
   const currentStepIndex = SURVEY_STEPS.indexOf(currentStep);
   const totalSteps = SURVEY_STEPS.length;
   const progress = ((currentStepIndex + 1) / totalSteps) * 100;
+
+  // Required fields validation for matching_complete screen
+  const isMatchingCompleteValid = () => {
+    const hasFirst = (surveyData.preferred_name || '').trim().length > 0;
+    const hasLast = (surveyData.last_name || '').trim().length > 0;
+    const hasPhone = (surveyData.phone || '').trim().length > 0;
+    const hasGender = (surveyData.gender || '').trim().length > 0;
+    const hasDob = (surveyData.date_of_birth || '').trim().length > 0;
+    const hasRace = (surveyData.race_ethnicity || []).length > 0;
+    return hasFirst && hasLast && hasPhone && hasGender && hasDob && hasRace;
+  };
 
   const scaleOptions = [
     'Not at all',
@@ -584,20 +597,20 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <div className="space-y-3 sm:space-y-4">
                     <button
                       onClick={() => handleMatchingPreference('match_me')}
-                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-lg sm:text-xl font-medium hover:bg-gray-50 transition-colors flex items-center"
+                      className="relative w-full py-3 sm:py-4 px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106] flex items-center justify-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
-                      <span className="mr-3">🪄</span>
-                      Match me to my best-fit therapist
+                      <span className="absolute left-4 sm:left-5">🪄</span>
+                      <span className="px-6 text-center">Match me to my best-fit therapist</span>
                     </button>
 
                     <button
                       onClick={() => handleMatchingPreference('requesting_specific')}
-                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-lg sm:text-xl font-medium hover:bg-gray-50 transition-colors flex items-center"
+                      className="relative w-full py-3 sm:py-4 px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106] flex items-center justify-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
-                      <span className="mr-3">🎯</span>
-                      I'm requesting someone specific
+                      <span className="absolute left-4 sm:left-5">🎯</span>
+                      <span className="px-6 text-center">I'm requesting someone specific</span>
                     </button>
                   </div>
                 </div>
@@ -1669,15 +1682,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                      <div>
                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                         Age
+                         Date of Birth
                        </label>
                        <input
-                         type="number"
-                         min="18"
-                         max="120"
-                         value={surveyData.age}
-                         onChange={(e) => updateSurveyData('age', e.target.value)}
-                         placeholder="Select your age"
+                         type="date"
+                         value={surveyData.date_of_birth || ''}
+                         onChange={(e) => updateSurveyData('date_of_birth', e.target.value)}
                          className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
                          style={{ fontFamily: 'var(--font-inter)' }}
                        />
@@ -1822,7 +1832,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                {/* Submit Button */}
                <Button
                  onClick={() => onSubmit(surveyData)}
-                 className="w-full py-4 sm:py-5 px-6 sm:px-8 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-full text-base sm:text-lg font-medium transition-colors"
+                 disabled={!isMatchingCompleteValid()}
+                 className={`w-full py-4 sm:py-5 px-6 sm:px-8 rounded-full text-base sm:text-lg font-medium transition-colors ${
+                   isMatchingCompleteValid() ? 'bg-yellow-400 hover:bg-yellow-500 text-gray-800' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                 }`}
                  style={{ fontFamily: 'var(--font-inter)' }}
                >
                  ⚡ Match me to my therapist →
@@ -1848,7 +1861,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
      case 'therapist_search':
        return surveyData.selected_therapist !== '';
      case 'therapist_preferences':
-       return true;
+       return surveyData.therapist_gender_preference !== '';
      case 'alcohol_drugs':
        return surveyData.alcohol_frequency !== '' && surveyData.recreational_drugs_frequency !== '';
      case 'phq9':
@@ -1960,3 +1973,4 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
  return null;
 }
+

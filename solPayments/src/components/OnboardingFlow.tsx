@@ -767,7 +767,7 @@ export default function OnboardingFlow({
               disabled={!formData.preferredName.trim()}
               className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors duration-200 ${
                 formData.preferredName.trim() 
-                  ? 'bg-blue-100 text-gray-800 hover:bg-blue-200' 
+                  ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
               style={{ fontFamily: 'var(--font-inter)' }}
@@ -850,10 +850,10 @@ export default function OnboardingFlow({
             <Button
               onClick={handleContinue}
               disabled={!formData.email.includes('@')}
-              className={`w-full py-5 px-8 rounded-full text-white text-lg font-medium transition-colors ${
+              className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors ${
                 formData.email.includes('@')
-                  ? 'bg-amber-700 hover:bg-amber-800' 
-                  : 'bg-gray-400 cursor-not-allowed'
+                  ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
               style={{ fontFamily: 'var(--font-inter)' }}
             >
@@ -964,13 +964,13 @@ export default function OnboardingFlow({
                       Associate Therapists
                     </p>
                     <span className="inline-block rounded-full bg-blue-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
-                      (~$20-40 average session cost)
+                      ~$20-40 average session cost
                     </span>
                   </div>
                 </button>
                 
                 {/* Expanded Insurance Content */}
-                <div className={`bg-white border-l border-r border-b border-yellow-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
+                <div className={`bg-white border-l border-r border-b border-blue-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
                   expandedCard === 'insurance' 
                     ? 'max-h-[1000px] opacity-100' 
                     : 'max-h-0 opacity-0'
@@ -1035,7 +1035,7 @@ export default function OnboardingFlow({
                       Graduate Therapists
                     </p>
                     <span className="inline-block rounded-full bg-yellow-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
-                      ($30 per session)
+                      $30 per session
                     </span>
                   </div>
                 </button>

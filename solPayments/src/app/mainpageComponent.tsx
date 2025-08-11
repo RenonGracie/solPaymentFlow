@@ -90,7 +90,7 @@ interface SurveyData {
   // Additional
   lived_experiences: string[];
   university?: string;
-  referred_by?: string;
+  referred_by?: string | string[];
 }
 
 // No longer needed
