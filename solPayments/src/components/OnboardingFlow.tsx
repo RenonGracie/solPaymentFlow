@@ -1575,7 +1575,7 @@ export default function OnboardingFlow({
                     value={selectedProvider}
                     onChange={(e) => setSelectedProvider(e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >
                     <option value="">Select provider</option>
@@ -1597,7 +1597,7 @@ export default function OnboardingFlow({
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
                     style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
                     placeholder="John"
                   />
@@ -1613,7 +1613,7 @@ export default function OnboardingFlow({
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
                     style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
                     placeholder="Smith"
                   />
@@ -1629,7 +1629,7 @@ export default function OnboardingFlow({
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   />
                 </div>
@@ -1644,7 +1644,7 @@ export default function OnboardingFlow({
                     value={formData.memberId}
                     onChange={(e) => handleInputChange('memberId', e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
                     style={{ fontFamily: 'var(--font-inter)' }}
                     placeholder="Enter your member ID"
                   />
@@ -1660,7 +1660,7 @@ export default function OnboardingFlow({
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full text-lg border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 text-center disabled:opacity-50"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
                     style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
                     placeholder="melinda@gmail.com"
                   />

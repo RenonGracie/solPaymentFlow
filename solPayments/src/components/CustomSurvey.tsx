@@ -811,7 +811,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that identifies as:
                   </h3>
-                  <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+                  <div className={`flex flex-wrap justify-center gap-1.5 sm:gap-2 rounded-lg ${surveyData.therapist_gender_preference === '' ? 'ring-1 ring-red-300' : ''}`}>
                     {[
                       { name: 'Female', emoji: '👩' },
                       { name: 'Male', emoji: '👨' },
@@ -1555,6 +1555,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        );
 
      case 'matching_complete':
+       // Required validations for subtle red outlines
+       const invalidFirst = !(surveyData.preferred_name || '').trim();
+       const invalidLast = !(surveyData.last_name || '').trim();
+       const invalidPhone = !(surveyData.phone || '').trim();
+       const invalidGender = !(surveyData.gender || '').trim();
+       const invalidDob = !(surveyData.date_of_birth || '').trim();
+       const invalidRace = (surveyData.race_ethnicity || []).length === 0;
+
        return (
          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
            {/* Header with sunset image */}
@@ -1620,7 +1628,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        type="text"
                        value={surveyData.preferred_name || surveyData.first_name}
                        onChange={(e) => updateSurveyData('preferred_name', e.target.value)}
-                       className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base shadow-[1px_1px_0_#5C3106]"
+                       className={`w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base shadow-[1px_1px_0_#5C3106] ${invalidFirst ? 'ring-1 ring-red-300 border-red-300' : ''}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                      {surveyData.preferred_name && surveyData.preferred_name !== surveyData.first_name && (
@@ -1639,7 +1647,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        type="text"
                        value={surveyData.last_name}
                        onChange={(e) => updateSurveyData('last_name', e.target.value)}
-                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       className={`w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base ${invalidLast ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                    </div>
@@ -1654,7 +1662,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        value={surveyData.phone || ''}
                        onChange={(e) => updateSurveyData('phone', e.target.value)}
                        placeholder="+11234567890"
-                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base ${invalidPhone ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                    </div>
@@ -1668,7 +1676,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        <select
                          value={surveyData.gender}
                          onChange={(e) => updateSurveyData('gender', e.target.value)}
-                         className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base ${invalidGender ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                          style={{ fontFamily: 'var(--font-inter)' }}
                        >
                          <option value="">Select Gender</option>
@@ -1688,7 +1696,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                          type="date"
                          value={surveyData.date_of_birth || ''}
                          onChange={(e) => updateSurveyData('date_of_birth', e.target.value)}
-                         className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base ${invalidDob ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                          style={{ fontFamily: 'var(--font-inter)' }}
                        />
                      </div>
@@ -1699,7 +1707,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                        Race/Ethnicity
                      </label>
-                     <div className="flex flex-wrap gap-2 sm:gap-2.5">
+                     <div className={`flex flex-wrap gap-2 sm:gap-2.5 rounded-lg ${invalidRace ? 'ring-1 ring-red-300' : ''}`}>
                        {[
                          'Black / African',
                          'Hispanic / Latinx', 
