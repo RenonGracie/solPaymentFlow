@@ -118,14 +118,19 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
   // Therapist search state
   const [therapistSearchQuery, setTherapistSearchQuery] = useState('');
   
-  // Alcohol and drugs carousel state
-  const [alcoholDrugsCarouselIndex, setAlcoholDrugsCarouselIndex] = useState(0);
+  // Alcohol and drugs section (no carousel)
   
   // PHQ-9 carousel state  
   const [phq9CarouselIndex, setPhq9CarouselIndex] = useState(0);
   
   // GAD-7 carousel state
   const [gad7CarouselIndex, setGad7CarouselIndex] = useState(0);
+  
+  // Section intro videos
+  const [showPhq9Intro, setShowPhq9Intro] = useState(true);
+  const [phq9IntroEnded, setPhq9IntroEnded] = useState(false);
+  const [showGad7Intro, setShowGad7Intro] = useState(true);
+  const [gad7IntroEnded, setGad7IntroEnded] = useState(false);
   
   const [surveyData, setSurveyData] = useState<SurveyData>({
     // Safety Screening
@@ -295,10 +300,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
               <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8">
                 <Button
-                  onClick={handleVideoContinue}
-                  className="w-full py-5 px-8 bg-white/95 backdrop-blur-sm rounded-2xl text-gray-800 text-lg font-medium hover:bg-white transition-all"
-                  style={{ fontFamily: 'var(--font-inter)' }}
-                >
+                    onClick={handleVideoContinue}
+                    className="w-full py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  >
                   Continue
                 </Button>
               </div>
@@ -337,7 +342,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   
                   <Button
                     onClick={handleVideoContinue}
-                    className="w-full py-5 px-8 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full py-5 px-8 bg-transparent border-2 border-gray-300 rounded-lg text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >
                     Continue
@@ -382,7 +387,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <div className="max-w-md mx-auto w-full">
                     <Button
                       onClick={handleVideoContinue}
-                      className="w-full py-4 lg:py-5 px-8 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full py-4 lg:py-5 px-8 bg-transparent border-2 border-gray-300 rounded-lg text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       Continue
@@ -426,7 +431,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 
                 <Button
                   onClick={handleVideoContinue}
-                  className="w-full py-4 px-6 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-base font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full py-4 px-6 bg-transparent border-2 border-gray-300 rounded-lg text-gray-800 text-base font-medium hover:bg-[#F5E8D1] transition-colors"
                   style={{ fontFamily: 'var(--font-inter)' }}
                 >
                   Continue
@@ -440,7 +445,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
+            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -460,27 +465,21 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               </div>
             </div>
 
-            {/* Navigation */}
+            {/* Navigation (no brand) */}
             <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
               <button onClick={onBack} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
-              <div className="flex items-center">
-                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                  Sol Health
-                </h2>
-                <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
-              </div>
               <div className="w-10"></div>
             </div>
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
               <div className="max-w-md w-full -mt-8 sm:-mt-16">
-                <div className="bg-white border-2 border-gray-300 rounded-3xl p-6 sm:p-8 shadow-sm">
-                  <div className="text-center mb-6 sm:mb-8">
-                    <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-relaxed" 
-                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#1A1B1F]">
+                    <div className="text-center mb-6 sm:mb-8">
+                      <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-relaxed" 
+                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Over the past 2 weeks, have you been actively suicidal or homicidal OR have you been experiencing hallucinations or delusions?
                     </h1>
                     
@@ -496,7 +495,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <div className="space-y-3 sm:space-y-4">
                     <button
                       onClick={() => handleSafetyResponse('yes')}
-                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106]"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       Yes
@@ -504,7 +503,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     <button
                       onClick={() => handleSafetyResponse('no')}
-                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106]"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       No
@@ -520,7 +519,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
+            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -540,29 +539,23 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               </div>
             </div>
 
-            {/* Navigation */}
+            {/* Navigation (no brand) */}
             <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
               <button onClick={() => setCurrentStep('safety_screening')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
-              <div className="flex items-center">
-                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                  Sol Health
-                </h2>
-                <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
-              </div>
               <div className="w-10"></div>
             </div>
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
               <div className="max-w-md w-full -mt-8 sm:-mt-16">
-                <div className="bg-white border-2 border-gray-300 rounded-3xl p-6 sm:p-8 shadow-sm">
-                  <div className="text-center mb-6 sm:mb-8">
-                    <h1 className="text-lg sm:text-xl md:text-2xl mb-3 sm:mb-4 text-gray-800 leading-relaxed" 
-                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                      Would you like to be matched with a therapist, or are you requesting someone specific?
-                    </h1>
+                                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#1A1B1F]">
+                   <div className="text-center mb-6 sm:mb-8">
+                     <h1 className="text-lg sm:text-xl md:text-2xl mb-3 sm:mb-4 text-gray-800 leading-relaxed" 
+                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                       Would you like to be matched with a therapist, or are you requesting someone specific?
+                     </h1>
                     
                     <button
                       className="text-gray-500 text-xs sm:text-sm underline hover:text-gray-700 transition-colors"
@@ -575,7 +568,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <div className="space-y-3 sm:space-y-4">
                     <button
                       onClick={() => handleMatchingPreference('match_me')}
-                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-colors flex items-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       <span className="mr-3">⚡</span>
@@ -584,7 +577,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     <button
                       onClick={() => handleMatchingPreference('requesting_specific')}
-                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-colors flex items-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       <span className="mr-3">😊</span>
@@ -601,7 +594,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
+            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -621,28 +614,22 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               </div>
             </div>
 
-            {/* Navigation */}
+            {/* Navigation (no brand) */}
             <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
               <button onClick={() => setCurrentStep('therapist_matching')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
-              <div className="flex items-center">
-                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                  Sol Health
-                </h2>
-                <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
-              </div>
               <div className="w-10"></div>
             </div>
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
-              <div className="max-w-md w-full -mt-8 sm:-mt-16">
-                <div className="text-center mb-6 sm:mb-8">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
-                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                    Search for Your Therapist
-                  </h1>
+                             <div className="max-w-md w-full -mt-8 sm:-mt-16 border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#1A1B1F] bg-transparent">
+                 <div className="text-center mb-6 sm:mb-8">
+                   <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
+                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                     Search for Your Therapist
+                   </h1>
                   <p className="text-gray-600 text-xs sm:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
                     {paymentType === 'cash_pay' 
                       ? 'Search our graduate therapists available for $30/session'
@@ -658,7 +645,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     value={therapistSearchQuery}
                     onChange={(e) => setTherapistSearchQuery(e.target.value)}
                     placeholder="Start typing therapist name..."
-                    className="w-full py-3 sm:py-4 px-4 rounded-2xl border-2 border-gray-300 focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base shadow-[1px_1px_0_#5C3106]"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   />
                 </div>
@@ -696,7 +683,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
+            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -721,7 +708,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               <button onClick={() => setCurrentStep('therapist_matching')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
-              <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+              <div className="w-2"></div>
               <div className="w-10"></div>
             </div>
 
@@ -740,50 +727,50 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that specializes in:
                   </h3>
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
                     {[
-                      { name: 'ADHD', emoji: '🧠' },
+                      { name: 'ADHD', emoji: '🌀' },
                       { name: 'Anxiety', emoji: '🌿' },
                       { name: 'Body image', emoji: '🪞' },
                       { name: 'Building confidence', emoji: '🌱' },
                       { name: 'Career/academic stress', emoji: '📚' },
                       { name: 'Depression', emoji: '🌧️' },
-                      { name: 'Eating disorders', emoji: '🍽️' },
+                      { name: 'Eating disorders', emoji: '🌾' },
                       { name: 'Emotional regulation', emoji: '🌊' },
-                      { name: 'Family life', emoji: '🌳' },
+                      { name: 'Family life', emoji: '🏡' },
                       { name: 'Grief and loss', emoji: '🦋' },
                       { name: 'LGBTQ+ identity', emoji: '🏳️‍🌈' },
                       { name: 'Life transitions', emoji: '🌟' },
                       { name: 'Loneliness', emoji: '🌙' },
-                      { name: 'OCD', emoji: '⚪' },
-                      { name: 'Panic attacks', emoji: '🌀' },
-                      { name: 'Phobias', emoji: '🌨️' },
-                      { name: 'PTSD', emoji: '🔍' },
-                      { name: 'Relationship challenges', emoji: '⭐' },
-                      { name: 'Stress and burnout', emoji: '📍' },
-                      { name: 'Trauma', emoji: '🎯' }
+                      { name: 'OCD', emoji: '🐾' },
+                      { name: 'Panic attacks', emoji: '⭕' },
+                      { name: 'Phobias', emoji: '⛰️' },
+                      { name: 'PTSD', emoji: '🔎' },
+                      { name: 'Relationship challenges', emoji: '🌻' },
+                      { name: 'Stress and burnout', emoji: '🧯' },
+                      { name: 'Trauma', emoji: '🌸' }
                     ].map((specialization) => {
                       const isSelected = surveyData.therapist_specialization.includes(specialization.name);
                       return (
                         <button
                           key={specialization.name}
                           onClick={() => toggleSpecialization(specialization.name)}
-                          className={`py-2 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-between ${
+                          className={`h-11 sm:h-12 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm transition-colors inline-flex ${
                             isSelected
                               ? 'bg-[#5C3106] text-white'
                               : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                           }`}
                           style={{ fontFamily: 'var(--font-inter)' }}
                         >
-                          <span className="flex items-center">
-                            <span className="mr-1 sm:mr-2">{specialization.emoji}</span>
-                            {specialization.name}
-                          </span>
-                          <Plus 
-                            className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
-                              isSelected ? 'rotate-45' : ''
-                            }`}
-                          />
+                          <div className="grid grid-cols-[24px,auto,20px] items-center gap-2">
+                            <span className="text-base sm:text-lg leading-none">{specialization.emoji}</span>
+                            <span className="text-center truncate whitespace-nowrap leading-none">{specialization.name}</span>
+                            <Plus 
+                              className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
+                                isSelected ? 'rotate-45' : ''
+                              }`}
+                            />
+                          </div>
                         </button>
                       );
                     })}
@@ -804,15 +791,18 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <button
                         key={gender.name}
                         onClick={() => updateSurveyData('therapist_gender_preference', gender.name)}
-                        className={`w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-left transition-all text-sm sm:text-base ${
+                        className={`w-full h-11 sm:h-12 px-3 sm:px-4 rounded-xl transition-colors text-[13px] sm:text-sm ${
                           surveyData.therapist_gender_preference === gender.name
                             ? 'bg-[#5C3106] text-white'
                             : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                         }`}
                         style={{ fontFamily: 'var(--font-inter)' }}
                       >
-                        <span className="mr-2 sm:mr-3">{gender.emoji}</span>
-                        {gender.name}
+                        <div className="grid grid-cols-[24px,1fr,20px] items-center gap-2 w-full">
+                          <span className="text-base sm:text-lg leading-none">{gender.emoji}</span>
+                          <span className="text-center leading-none">{gender.name}</span>
+                          <span />
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -830,7 +820,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                         Family
                       </h4>
-                      <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                      <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
                         {[
                           { name: 'Raised in a non-traditional family', emoji: '🌿' },
                           { name: 'Been in a caretaker role', emoji: '👤' },
@@ -841,22 +831,22 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-between ${
+                              className={`h-11 sm:h-12 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm transition-colors inline-flex ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <span className="flex items-center">
-                                <span className="mr-1 sm:mr-2">{experience.emoji}</span>
-                                {experience.name}
-                              </span>
-                              <Plus 
-                                className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
-                                  isSelected ? 'rotate-45' : ''
-                                }`}
-                              />
+                              <div className="grid grid-cols-[24px,auto,20px] items-center gap-2">
+                                <span className="text-base sm:text-lg leading-none">{experience.emoji}</span>
+                                <span className="text-center truncate whitespace-nowrap leading-none">{experience.name}</span>
+                                <Plus 
+                                  className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
+                                    isSelected ? 'rotate-45' : ''
+                                  }`}
+                                />
+                              </div>
                             </button>
                           );
                         })}
@@ -868,11 +858,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                         Upbringing
                       </h4>
-                      <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                      <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
                         {[
-                          { name: 'Raised in an individualist culture', emoji: '🏛️' },
+                          { name: 'Raised in an individualist culture', emoji: '🧍' },
                           { name: 'Raised in a collectivist culture', emoji: '🤝' },
-                          { name: 'Lived in many places', emoji: '📍' },
+                          { name: 'Lived in many places', emoji: '🗺️' },
                           { name: 'First/second generation immigrant', emoji: '🌎' }
                         ].map((experience) => {
                           const isSelected = surveyData.therapist_lived_experiences.includes(experience.name);
@@ -880,22 +870,22 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-between ${
+                              className={`h-11 sm:h-12 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm transition-colors inline-flex ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <span className="flex items-center">
-                                <span className="mr-1 sm:mr-2">{experience.emoji}</span>
-                                {experience.name}
-                              </span>
-                              <Plus 
-                                className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
-                                  isSelected ? 'rotate-45' : ''
-                                }`}
-                              />
+                              <div className="grid grid-cols-[24px,auto,20px] items-center gap-2">
+                                <span className="text-base sm:text-lg leading-none">{experience.emoji}</span>
+                                <span className="text-center truncate whitespace-nowrap leading-none">{experience.name}</span>
+                                <Plus 
+                                  className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
+                                    isSelected ? 'rotate-45' : ''
+                                  }`}
+                                />
+                              </div>
                             </button>
                           );
                         })}
@@ -907,7 +897,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                         Identity and Experiences
                       </h4>
-                      <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                      <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
                         {[
                           { name: 'Identifying as LGBTQ+', emoji: '🏳️‍🌈' },
                           { name: 'Negatively affected by social media', emoji: '📱' }
@@ -917,22 +907,22 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-between ${
+                              className={`h-11 sm:h-12 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm transition-colors inline-flex ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <span className="flex items-center">
-                                <span className="mr-1 sm:mr-2">{experience.emoji}</span>
-                                {experience.name}
-                              </span>
-                              <Plus 
-                                className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
-                                  isSelected ? 'rotate-45' : ''
-                                }`}
-                              />
+                              <div className="grid grid-cols-[24px,auto,20px] items-center gap-2">
+                                <span className="text-base sm:text-lg leading-none">{experience.emoji}</span>
+                                <span className="text-center truncate whitespace-nowrap leading-none">{experience.name}</span>
+                                <Plus 
+                                  className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
+                                    isSelected ? 'rotate-45' : ''
+                                  }`}
+                                />
+                              </div>
                             </button>
                           );
                         })}
@@ -943,13 +933,13 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                 {/* Continue Button */}
                 <div className="pt-4">
-                  <Button
-                    onClick={() => setCurrentStep('alcohol_drugs')}
-                    className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-blue-100 hover:bg-blue-200 text-gray-800 rounded-full text-base sm:text-lg font-medium transition-all"
-                    style={{ fontFamily: 'var(--font-inter)' }}
-                  >
-                    Continue →
-                  </Button>
+                                    <Button
+                     onClick={() => setCurrentStep('alcohol_drugs')}
+                     className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-yellow-100 hover:bg-yellow-300 text-gray-800 rounded-full text-base sm:text-lg font-medium transition-all"
+                     style={{ fontFamily: 'var(--font-inter)' }}
+                   >
+                     Continue →
+                   </Button>
                 </div>
               </div>
             </div>
@@ -957,37 +947,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         );
 
       case 'alcohol_drugs':
-        const alcoholDrugsQuestions = [
-          {
-            question: "Do you drink alcohol? If yes, how often per week?",
-            field: 'alcohol_frequency' as keyof SurveyData,
-            options: [
-              'Not at all',
-              'Several days', 
-              'More than half the days',
-              'Nearly every day'
-            ]
-          },
-          {
-            question: "Do you use recreational drugs? If yes, how often per week?",
-            field: 'recreational_drugs_frequency' as keyof SurveyData,
-            options: [
-              'Not at all',
-              'Several days',
-              'More than half the days', 
-              'Nearly every day'
-            ]
-          }
-        ];
-
-        const currentQuestion = alcoholDrugsQuestions[alcoholDrugsCarouselIndex];
-        const isLastQuestion = alcoholDrugsCarouselIndex === alcoholDrugsQuestions.length - 1;
-        const canContinue = surveyData.alcohol_frequency && surveyData.recreational_drugs_frequency;
-
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 sm:h-24 md:h-32 overflow-hidden flex-shrink-0">
+            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1010,13 +973,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             {/* Navigation */}
             <div className="flex items-center justify-between px-4 py-2 sm:py-3 flex-shrink-0">
               <button 
-                onClick={() => {
-                  if (alcoholDrugsCarouselIndex > 0) {
-                    setAlcoholDrugsCarouselIndex(alcoholDrugsCarouselIndex - 1);
-                  } else {
-                    setCurrentStep('therapist_preferences');
-                  }
-                }} 
+                onClick={() => setCurrentStep('therapist_preferences')} 
                 className="p-1.5 sm:p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
@@ -1039,101 +996,80 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     </p>
                   </div>
 
-                  <div className="bg-white border-2 border-gray-300 rounded-3xl p-5 sm:p-6 shadow-sm">
-                    <div className="text-center mb-5 sm:mb-6">
-                      <h2 className="text-sm sm:text-base md:text-lg text-gray-800 leading-relaxed px-2" 
+                  {/* Stacked Questions */}
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-6 shadow-[1px_1px_0_#1A1B1F] space-y-6">
+                    {/* Alcohol */}
+                    <div>
+                      <h2 className="text-sm sm:text-base md:text-lg text-gray-800 leading-relaxed px-2 mb-3" 
                           style={{ fontFamily: 'var(--font-inter)' }}>
-                        {currentQuestion.question}
+                        Do you drink alcohol? If yes, how often per week?
                       </h2>
+                      <div className="space-y-2 sm:space-y-3">
+                        {['Not at all','Several days','More than half the days','Nearly every day'].map((option) => {
+                          const isSelected = surveyData.alcohol_frequency === option;
+                          return (
+                            <button
+                              key={option}
+                              onClick={() => updateSurveyData('alcohol_frequency', option)}
+                              className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
+                                isSelected
+                                  ? 'bg-[#5C3106] text-white'
+                                  : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                              }`}
+                              style={{ fontFamily: 'var(--font-inter)' }}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
-                    <div className="space-y-2 sm:space-y-3">
-                      {currentQuestion.options.map((option) => {
-                        const isSelected = surveyData[currentQuestion.field] === option;
-                        return (
-                          <button
-                            key={option}
-                            onClick={() => updateSurveyData(currentQuestion.field, option)}
-                            className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-all ${
-                              isSelected
-                                ? 'bg-[#5C3106] text-white'
-                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
+                    {/* Recreational Drugs */}
+                    <div>
+                      <h2 className="text-sm sm:text-base md:text-lg text-gray-800 leading-relaxed px-2 mb-3" 
+                          style={{ fontFamily: 'var(--font-inter)' }}>
+                        Do you use recreational drugs? If yes, how often per week?
+                      </h2>
+                      <div className="space-y-2 sm:space-y-3">
+                        {['Not at all','Several days','More than half the days','Nearly every day'].map((option) => {
+                          const isSelected = surveyData.recreational_drugs_frequency === option;
+                          return (
+                            <button
+                              key={option}
+                              onClick={() => updateSurveyData('recreational_drugs_frequency', option)}
+                              className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
+                                isSelected
+                                  ? 'bg-[#5C3106] text-white'
+                                  : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                              }`}
+                              style={{ fontFamily: 'var(--font-inter)' }}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Bottom Navigation */}
-              <div className="mt-6">
-                {/* Progress Indicators - Using dashes */}
-                <div className="flex justify-center items-center space-x-2 mb-4">
-                  {alcoholDrugsQuestions.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`h-0.5 transition-all duration-300 ${
-                        index === alcoholDrugsCarouselIndex 
-                          ? 'w-8 bg-[#5C3106]' 
-                          : 'w-6 bg-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                {/* Navigation Buttons */}
-                <div className="flex justify-between items-center">
-                  <div className="flex-1">
-                    {alcoholDrugsCarouselIndex > 0 && (
-                      <Button
-                        onClick={() => setAlcoholDrugsCarouselIndex(alcoholDrugsCarouselIndex - 1)}
-                        variant="outline"
-                        className="py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base"
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                        Previous
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="flex-1 flex justify-end">
-                    {isLastQuestion ? (
-                      <Button
-                        onClick={() => setCurrentStep('phq9')}
-                        disabled={!canContinue}
-                        className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
-                          canContinue
-                            ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        }`}
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        Continue
-                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => setAlcoholDrugsCarouselIndex(alcoholDrugsCarouselIndex + 1)}
-                        disabled={!surveyData[currentQuestion.field]}
-                        className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
-                          surveyData[currentQuestion.field]
-                            ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        }`}
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        Next
-                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
+              <div className="mt-6 flex justify-end">
+                <Button
+                  onClick={() => { setShowPhq9Intro(true); setPhq9IntroEnded(false); setCurrentStep('phq9'); }}
+                  disabled={!surveyData.alcohol_frequency || !surveyData.recreational_drugs_frequency}
+                  className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
+                    surveyData.alcohol_frequency && surveyData.recreational_drugs_frequency
+                      ? 'bg-yellow-100 hover:bg-yellow-300 text-gray-800'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  Continue
+                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                </Button>
               </div>
             </div>
           </div>
@@ -1182,11 +1118,80 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         const currentPhq9Question = phq9Questions[phq9CarouselIndex];
         const isLastPhq9Question = phq9CarouselIndex === phq9Questions.length - 1;
         const canContinuePhq9 = phq9Questions.every(q => surveyData[q.field]);
- 
+
+        if (showPhq9Intro) {
+          return (
+            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+              <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+                <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+              </div>
+              <div className="flex items-center justify-between px-4 py-2 sm:py-3 flex-shrink-0">
+                <button 
+                  onClick={() => setCurrentStep('alcohol_drugs')} 
+                  className="p-1.5 sm:p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+                </button>
+                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                <div className="w-8"></div>
+              </div>
+
+              <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-6 sm:pb-8">
+                <div className="max-w-md w-full">
+                  <div className="text-center mb-4 sm:mb-6">
+                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                      Measuring Your Emotional Well-Being
+                    </h1>
+                    <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                      This may feel like a lot, but this snapshot will help us give you the best care.
+                    </p>
+                  </div>
+
+                  <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
+                    <video
+                      className="w-full h-full object-cover"
+                      src="/emotional-well-being.mp4"
+                      autoPlay
+                      muted
+                      playsInline
+                      loop={false}
+                      controls={false}
+                      preload="auto"
+                      onEnded={(e) => {
+                        setPhq9IntroEnded(true);
+                        const v = e.currentTarget;
+                        try {
+                          v.pause();
+                          if (!isNaN(v.duration)) {
+                            v.currentTime = Math.max(0, v.duration - 0.01);
+                          }
+                        } catch {}
+                      }}
+                    />
+                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
+                      <Button
+                        onClick={() => setShowPhq9Intro(false)}
+                        disabled={!phq9IntroEnded}
+                        className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
+                          phq9IntroEnded ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        Continue
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image - smaller for mobile */}
-            <div className="relative h-20 sm:h-24 md:h-32 overflow-hidden flex-shrink-0">
+            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1210,7 +1215,9 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             <div className="flex items-center justify-between px-4 py-2 sm:py-3 flex-shrink-0">
               <button 
                 onClick={() => {
-                  if (phq9CarouselIndex > 0) {
+                  if (showPhq9Intro) {
+                    setCurrentStep('alcohol_drugs');
+                  } else if (phq9CarouselIndex > 0) {
                     setPhq9CarouselIndex(phq9CarouselIndex - 1);
                   } else {
                     setCurrentStep('alcohol_drugs');
@@ -1231,16 +1238,16 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <div className="text-center mb-4 sm:mb-6">
                     <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                      {phq9CarouselIndex === 0 ? 'Measuring Your Emotional Well-Being' : 'Over the last 2 weeks, how often have you been bothered by any of the following?'}
+                                             {showPhq9Intro ? 'Measuring Your Emotional Well-Being' : 'Over the last 2 weeks, how often have you been bothered by any of the following?'}
                     </h1>
-                    {phq9CarouselIndex === 0 && (
+                    {showPhq9Intro && (
                       <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
                         This may feel like a lot, but this snapshot will help us give you the best care.
                       </p>
                     )}
                   </div>
 
-                  <div className="bg-white border-2 border-gray-300 rounded-3xl p-5 sm:p-6 shadow-sm">
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-6 shadow-[1px_1px_0_#1A1B1F]">
                     <div className="text-center mb-5 sm:mb-6">
                       {/* Question */}
                      <div className="mb-4 sm:mb-5">
@@ -1257,7 +1264,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                          <button
                            key={option}
                            onClick={() => updateSurveyData(currentPhq9Question.field, option)}
-                           className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-all ${
+                           className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
                              isSelected
                                ? 'bg-[#5C3106] text-white'
                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
@@ -1269,78 +1276,46 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        );
                      })}
                    </div>
-                 </div>
-               </div>
-             </div>
 
-             {/* Bottom Navigation */}
-             <div className="mt-6">
-               {/* Progress Indicators - Using dashes */}
-               <div className="flex justify-center items-center space-x-2 mb-4">
-                 {phq9Questions.map((_, index) => (
-                   <div
-                     key={index}
-                     className={`h-0.5 transition-all duration-300 ${
-                       index === phq9CarouselIndex 
-                         ? 'w-8 bg-[#5C3106]' 
-                         : 'w-6 bg-gray-300'
-                     }`}
-                   />
-                 ))}
-               </div>
-
-               {/* Navigation Buttons */}
-               <div className="flex justify-between items-center">
-                 <div className="flex-1">
-                   {phq9CarouselIndex > 0 && (
-                     <Button
-                       onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)}
-                       variant="outline"
-                       className="py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base"
-                       style={{ fontFamily: 'var(--font-inter)' }}
-                     >
-                       <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                       Previous
-                     </Button>
-                   )}
-                 </div>
-
-                 <div className="flex-1 flex justify-end">
-                   {isLastPhq9Question ? (
-                     <Button
-                       onClick={() => setCurrentStep('gad7')}
-                       disabled={!canContinuePhq9}
-                       className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
-                         canContinuePhq9
-                           ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                       }`}
-                       style={{ fontFamily: 'var(--font-inter)' }}
-                     >
-                       Continue
-                       <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                     </Button>
-                   ) : (
-                     <Button
-                       onClick={() => setPhq9CarouselIndex(phq9CarouselIndex + 1)}
-                       disabled={!surveyData[currentPhq9Question.field]}
-                       className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
-                         surveyData[currentPhq9Question.field]
-                           ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                       }`}
-                       style={{ fontFamily: 'var(--font-inter)' }}
-                     >
-                       Next
-                       <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                     </Button>
-                   )}
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
-       );
+                   {/* Progress + Nav inside box */}
+                   <div className="mt-6">
+                     <div className="flex justify-center items-center space-x-2 mb-2">
+                       {phq9Questions.map((_, index) => (
+                         <div
+                           key={index}
+                           className={`h-0.5 transition-all duration-300 ${
+                             index === phq9CarouselIndex ? 'w-8 bg-[#5C3106]' : 'w-6 bg-gray-300'
+                           }`}
+                         />
+                       ))}
+                     </div>
+                     <div className="flex justify-between items-center">
+                       <div>
+                         {phq9CarouselIndex > 0 && (
+                           <Button onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)} variant="outline" className="py-2 px-4 rounded-full text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                             <ArrowLeft className="w-4 h-4 mr-1" /> Back
+                           </Button>
+                         )}
+                       </div>
+                       <div>
+                         {isLastPhq9Question ? (
+                           <Button onClick={() => setCurrentStep('gad7')} disabled={!canContinuePhq9} className={`py-2 px-4 rounded-full text-sm ${canContinuePhq9 ? 'bg-[#E8D0B6] hover:bg-[#5C3106] hover:text-white text-gray-800' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`} style={{ fontFamily: 'var(--font-inter)' }}>
+                             Continue
+                           </Button>
+                         ) : (
+                           <Button onClick={() => setPhq9CarouselIndex(phq9CarouselIndex + 1)} disabled={!surveyData[currentPhq9Question.field]} className={`py-2 px-4 rounded-full text-sm ${surveyData[currentPhq9Question.field] ? 'bg-[#E8D0B6] hover:bg-[#5C3106] hover:text-white text-gray-800' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`} style={{ fontFamily: 'var(--font-inter)' }}>
+                             Next
+                           </Button>
+                         )}
+                       </div>
+                     </div>
+                   </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
 
      case 'gad7':
        const gad7Questions = [
@@ -1378,10 +1353,79 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        const isLastGad7Question = gad7CarouselIndex === gad7Questions.length - 1;
        const canContinueGad7 = gad7Questions.every(q => surveyData[q.field]);
 
+       if (showGad7Intro) {
+         return (
+           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+             <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+               <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
+               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+             </div>
+             <div className="flex items-center justify-between px-4 py-2 sm:py-3 flex-shrink-0">
+               <button 
+                 onClick={() => setCurrentStep('phq9')} 
+                 className="p-1.5 sm:p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+               >
+                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+               </button>
+               <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+               <div className="w-8"></div>
+             </div>
+
+             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-6 sm:pb-8">
+               <div className="max-w-md w-full">
+                 <div className="text-center mb-4 sm:mb-6">
+                   <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                     Measuring Anxiety
+                   </h1>
+                   <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                     This may feel like a lot, but this snapshot will help us give you the best care.
+                   </p>
+                 </div>
+
+                 <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
+                                       <video
+                      className="w-full h-full object-cover"
+                      src="/measuring-anxiety.mp4"
+                      autoPlay
+                      muted
+                      playsInline
+                      loop={false}
+                      controls={false}
+                      preload="auto"
+                      onEnded={(e) => {
+                        setGad7IntroEnded(true);
+                        const v = e.currentTarget;
+                        try {
+                          v.pause();
+                          if (!isNaN(v.duration)) {
+                            v.currentTime = Math.max(0, v.duration - 0.01);
+                          }
+                        } catch {}
+                                            }}
+                    />
+                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
+                      <Button
+                        onClick={() => setShowGad7Intro(false)}
+                        disabled={!gad7IntroEnded}
+                        className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
+                          gad7IntroEnded ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        Continue
+                      </Button>
+                    </div>
+                  </div>
+               </div>
+             </div>
+           </div>
+         );
+       }
+
        return (
          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
            {/* Header with sunset image - smaller for mobile */}
-           <div className="relative h-20 sm:h-24 md:h-32 overflow-hidden flex-shrink-0">
+           <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
              <img 
                src="/onboarding-banner.jpg" 
                alt="" 
@@ -1403,16 +1447,18 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
            {/* Navigation */}
            <div className="flex items-center justify-between px-4 py-2 sm:py-3 flex-shrink-0">
-             <button 
-               onClick={() => {
-                 if (gad7CarouselIndex > 0) {
-                   setGad7CarouselIndex(gad7CarouselIndex - 1);
-                 } else {
-                   setCurrentStep('phq9');
-                 }
-               }} 
-               className="p-1.5 sm:p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
-             >
+                           <button 
+                onClick={() => {
+                  if (showGad7Intro) {
+                    setCurrentStep('phq9');
+                  } else if (gad7CarouselIndex > 0) {
+                    setGad7CarouselIndex(gad7CarouselIndex - 1);
+                  } else {
+                    setCurrentStep('phq9');
+                  }
+                }} 
+                className="p-1.5 sm:p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
              </button>
              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
@@ -1426,16 +1472,16 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                  <div className="text-center mb-4 sm:mb-6">
                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                     {gad7CarouselIndex === 0 ? 'Measuring Anxiety' : 'Over the last 2 weeks, how often have you been bothered by any of the following?'}
+                     {showGad7Intro ? 'Measuring Anxiety' : 'Over the last 2 weeks, how often have you been bothered by any of the following?'}
                    </h1>
-                   {gad7CarouselIndex === 0 && (
+                   {showGad7Intro && (
                      <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
                        This may feel like a lot, but this snapshot will help us give you the best care.
                      </p>
                    )}
                  </div>
 
-                 <div className="bg-white border-2 border-gray-300 rounded-3xl p-5 sm:p-6 shadow-sm">
+                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-6 shadow-[1px_1px_0_#1A1B1F]">
                    <div className="text-center mb-5 sm:mb-6">
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
@@ -1451,8 +1497,17 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        return (
                          <button
                            key={option}
-                           onClick={() => updateSurveyData(currentGad7Question.field, option)}
-                           className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-all ${
+                           onClick={() => {
+                             updateSurveyData(currentGad7Question.field, option);
+                             if (isLastGad7Question) {
+                               if (canContinueGad7) {
+                                 setCurrentStep('matching_complete');
+                               }
+                             } else {
+                               setTimeout(() => setGad7CarouselIndex(gad7CarouselIndex + 1), 120);
+                             }
+                           }}
+                           className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
                              isSelected
                                ? 'bg-[#5C3106] text-white'
                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
@@ -1463,6 +1518,27 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                          </button>
                        );
                      })}
+                   </div>
+
+                   {/* Progress and back arrow inside box */}
+                   <div className="mt-6">
+                     <div className="flex items-center justify-center space-x-2 mb-2">
+                       <button
+                         onClick={() => gad7CarouselIndex > 0 ? setGad7CarouselIndex(gad7CarouselIndex - 1) : setCurrentStep('phq9')}
+                         className="p-2 rounded-full hover:bg-gray-100"
+                         aria-label="Previous"
+                       >
+                         <ArrowLeft className="w-5 h-5 text-gray-700" />
+                       </button>
+                       {gad7Questions.map((_, index) => (
+                         <div
+                           key={index}
+                           className={`h-0.5 transition-all duration-300 ${
+                             index === gad7CarouselIndex ? 'w-8 bg-[#5C3106]' : 'w-6 bg-gray-300'
+                           }`}
+                         />
+                       ))}
+                     </div>
                    </div>
                  </div>
                </div>
@@ -1502,33 +1578,33 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                  <div className="flex-1 flex justify-end">
                    {isLastGad7Question ? (
-                     <Button
-                       onClick={() => setCurrentStep('matching_complete')}
-                       disabled={!canContinueGad7}
-                       className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
-                         canContinueGad7
-                           ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                       }`}
-                       style={{ fontFamily: 'var(--font-inter)' }}
-                     >
-                       Continue
-                       <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                     </Button>
+                                           <Button
+                        onClick={() => setCurrentStep('matching_complete')}
+                        disabled={!canContinueGad7}
+                        className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
+                          canContinueGad7
+                            ? 'bg-[#E8D0B6] hover:bg-[#5C3106] hover:text-white text-gray-800'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        Continue
+                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                      </Button>
                    ) : (
-                     <Button
-                       onClick={() => setGad7CarouselIndex(gad7CarouselIndex + 1)}
-                       disabled={!surveyData[currentGad7Question.field]}
-                       className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
-                         surveyData[currentGad7Question.field]
-                           ? 'bg-blue-100 hover:bg-blue-200 text-gray-800'
-                           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                       }`}
-                       style={{ fontFamily: 'var(--font-inter)' }}
-                     >
-                       Next
-                       <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                     </Button>
+                                           <Button
+                        onClick={() => setGad7CarouselIndex(gad7CarouselIndex + 1)}
+                        disabled={!surveyData[currentGad7Question.field]}
+                        className={`py-2 sm:py-2.5 px-4 sm:px-5 rounded-full text-sm sm:text-base ${
+                          surveyData[currentGad7Question.field]
+                            ? 'bg-[#E8D0B6] hover:bg-[#5C3106] hover:text-white text-gray-800'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        Next
+                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                      </Button>
                    )}
                  </div>
                </div>
@@ -1541,7 +1617,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        return (
          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
            {/* Header with sunset image */}
-           <div className="relative h-24 sm:h-32 md:h-40 overflow-hidden flex-shrink-0">
+           <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
              <img 
                src="/onboarding-banner.jpg" 
                alt="" 
@@ -1561,17 +1637,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
              </div>
            </div>
 
-           {/* Navigation */}
+           {/* Navigation (no brand) */}
            <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
              <button onClick={() => setCurrentStep('gad7')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
              </button>
-             <div className="flex items-center">
-               <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                 Sol Health
-               </h2>
-               <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
-             </div>
              <div className="w-10"></div>
            </div>
 
@@ -1609,7 +1679,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        type="text"
                        value={surveyData.preferred_name || surveyData.first_name}
                        onChange={(e) => updateSurveyData('preferred_name', e.target.value)}
-                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base shadow-[1px_1px_0_#5C3106]"
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                      {surveyData.preferred_name && surveyData.preferred_name !== surveyData.first_name && (
@@ -1814,7 +1884,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                {/* Submit Button */}
                <Button
                  onClick={() => onSubmit(surveyData)}
-                 className="w-full py-4 sm:py-5 px-6 sm:px-8 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-full text-base sm:text-lg font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
+                 className="w-full py-4 sm:py-5 px-6 sm:px-8 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-full text-base sm:text-lg font-medium transition-colors"
                  style={{ fontFamily: 'var(--font-inter)' }}
                >
                  ⚡ Match me to my therapist →

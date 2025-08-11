@@ -500,7 +500,7 @@ export default function OnboardingFlow({
               
               <Button
                 onClick={handleContinue}
-                className="w-full py-5 px-8 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full py-5 px-8 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-lg font-medium hover:bg-gray-50 transition-colors"
                 style={{ fontFamily: 'var(--font-inter)' }}
               >
                 Continue
@@ -546,7 +546,7 @@ export default function OnboardingFlow({
               <div className="max-w-md mx-auto w-full">
                 <Button
                   onClick={handleContinue}
-                  className="w-full py-4 lg:py-5 px-8 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-lg font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full py-4 lg:py-5 px-8 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-lg font-medium hover:bg-gray-50 transition-colors"
                   style={{ fontFamily: 'var(--font-inter)' }}
                 >
                   Continue
@@ -590,7 +590,7 @@ export default function OnboardingFlow({
             
             <Button
               onClick={handleContinue}
-              className="w-full py-4 px-6 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-base font-medium hover:bg-gray-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full py-4 px-6 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-base font-medium hover:bg-gray-50 transition-colors"
               style={{ fontFamily: 'var(--font-inter)' }}
             >
               Continue
@@ -606,7 +606,7 @@ export default function OnboardingFlow({
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
         {/* Header with sunset image - fixed height */}
-        <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -672,9 +672,9 @@ export default function OnboardingFlow({
             <Button
               onClick={handleContinue}
               disabled={!formData.preferredName.trim()}
-              className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-all duration-200 ${
+              className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors duration-200 ${
                 formData.preferredName.trim() 
-                  ? 'bg-blue-100 text-gray-800 hover:bg-blue-200 hover:scale-[1.02] active:scale-[0.98]' 
+                  ? 'bg-blue-100 text-gray-800 hover:bg-blue-200' 
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
               style={{ fontFamily: 'var(--font-inter)' }}
@@ -693,7 +693,7 @@ export default function OnboardingFlow({
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
         {/* Header with sunset image - fixed height */}
-        <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -739,27 +739,27 @@ export default function OnboardingFlow({
             </div>
 
             <div className="mb-8">
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                onFocus={() => setShowKeyboard(true)}
-                onBlur={() => setShowKeyboard(false)}
-                placeholder="melinda@gmail.com"
-                className="w-full text-lg md:text-xl border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 placeholder-gray-400 text-center"
-                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
-                autoComplete="email"
-                autoCorrect="off"
-                autoCapitalize="off"
-              />
+                              <input
+                 type="email"
+                 value={formData.email}
+                 onChange={(e) => handleInputChange('email', e.target.value)}
+                 onFocus={() => setShowKeyboard(true)}
+                 onBlur={() => setShowKeyboard(false)}
+                 placeholder="well@being.co"
+                 className="w-full text-lg md:text-xl border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 placeholder-gray-400 text-center"
+                 style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                 autoComplete="email"
+                 autoCorrect="off"
+                 autoCapitalize="off"
+               />
             </div>
 
             <Button
               onClick={handleContinue}
               disabled={!formData.email.includes('@')}
-              className={`w-full py-5 px-8 rounded-full text-white text-lg font-medium transition-all ${
+              className={`w-full py-5 px-8 rounded-full text-white text-lg font-medium transition-colors ${
                 formData.email.includes('@')
-                  ? 'bg-amber-700 hover:bg-amber-800 hover:scale-[1.02] active:scale-[0.98]' 
+                  ? 'bg-amber-700 hover:bg-amber-800' 
                   : 'bg-gray-400 cursor-not-allowed'
               }`}
               style={{ fontFamily: 'var(--font-inter)' }}
@@ -783,7 +783,7 @@ export default function OnboardingFlow({
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
         {/* Header - fixed height */}
-        <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -847,7 +847,7 @@ export default function OnboardingFlow({
                       setExpandedCard('insurance');
                     }
                   }}
-                  className={`w-full text-left bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-all duration-700 ease-in-out hover:scale-[1.02] ${
+                  className={`w-full text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors duration-700 ease-in-out ${
                     expandedCard === 'insurance' 
                       ? 'rounded-t-2xl border-b-0' 
                       : 'rounded-2xl'
@@ -896,7 +896,7 @@ export default function OnboardingFlow({
                     
                     <Button
                       onClick={() => handlePaymentSelection("insurance")}
-                      className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800 py-3"
+                      className="w-full bg-blue-200 hover:bg-blue-300 text-gray-800 py-3"
                     >
                       Select Insurance Option
                     </Button>
@@ -914,7 +914,7 @@ export default function OnboardingFlow({
                       setExpandedCard('cash_pay');
                     }
                   }}
-                  className={`w-full text-left bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-all duration-700 ease-in-out hover:scale-[1.02] ${
+                  className={`w-full text-left bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-colors duration-700 ease-in-out ${
                     expandedCard === 'cash_pay' 
                       ? 'rounded-t-2xl border-b-0' 
                       : 'rounded-2xl'
@@ -968,7 +968,7 @@ export default function OnboardingFlow({
                     
                     <Button
                       onClick={() => handlePaymentSelection("cash_pay")}
-                      className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800 py-3"
+                      className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-800 py-3"
                     >
                       Select Cash Pay Option
                     </Button>
@@ -987,7 +987,7 @@ export default function OnboardingFlow({
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
         {/* Header with image */}
-        <div className="relative h-24 md:h-28 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -1026,9 +1026,9 @@ export default function OnboardingFlow({
           <div className="max-w-xs w-full -mt-12">
             {/* Yellow badge */}
             <div className="flex justify-center mb-8">
-              <div className="bg-yellow-100 border border-yellow-400 rounded-full px-6 py-3 flex items-center animate-in fade-in-0 slide-in-from-top-4 duration-500">
-                <span className="mr-2">💰</span>
-                <span className="text-gray-800 font-medium">$30 / Session Out-of-Pocket Selected</span>
+              <div className="bg-yellow-100 border border-yellow-400 rounded-full px-4 py-2 flex items-center animate-in fade-in-0 slide-in-from-top-4 duration-500">
+                <span className="mr-1 text-base">💰</span>
+                <span className="text-gray-800 font-medium text-sm">$30 / Session Out-of-Pocket Selected</span>
               </div>
             </div>
 
@@ -1191,9 +1191,9 @@ export default function OnboardingFlow({
             <Button
               onClick={handleStateConfirm}
               disabled={!selectedState}
-              className={`w-full py-3 px-6 rounded-full text-base font-medium transition-all duration-200 ${
+              className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 ${
                 selectedState 
-                  ? 'bg-blue-100 text-gray-800 hover:bg-blue-200 hover:scale-[1.02] active:scale-[0.98]' 
+                  ? 'bg-blue-100 text-gray-800 hover:bg-blue-200' 
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
@@ -1258,7 +1258,7 @@ export default function OnboardingFlow({
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
         {/* Header with image */}
-        <div className="relative h-24 md:h-28 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -1376,7 +1376,7 @@ export default function OnboardingFlow({
                   setFormData(prev => ({ ...prev, state: 'NJ' }));
                   setCurrentStep(6);
                 }}
-                className="w-full py-3 px-6 rounded-full text-base font-medium transition-all duration-200 bg-blue-100 text-gray-800 hover:bg-blue-200 hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 bg-blue-100 text-gray-800 hover:bg-blue-200"
                 style={{ fontFamily: 'var(--font-inter)' }}
               >
                 Verify my insurance benefits
@@ -1400,7 +1400,7 @@ export default function OnboardingFlow({
                     // Switch to cash pay flow
                     setCurrentStep(4); // Go to state selection
                   }}
-                  className="w-full py-3 px-4 md:px-6 rounded-full text-sm md:text-base font-medium transition-all duration-200 bg-yellow-100 text-gray-800 hover:bg-yellow-200 hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full py-3 px-4 md:px-6 rounded-full text-sm md:text-base font-medium transition-colors duration-200 bg-yellow-100 text-gray-800 hover:bg-yellow-200"
                   style={{ fontFamily: 'var(--font-inter)' }}
                 >
                   <span className="block md:hidden">Choose $30/Session Out-Of-Pocket</span>
@@ -1420,7 +1420,7 @@ export default function OnboardingFlow({
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
         {/* Header with image */}
-        <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -1605,9 +1605,9 @@ export default function OnboardingFlow({
               <Button
                 onClick={handleInsuranceVerification}
                 disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId || !formData.email}
-                className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-all ${
+                className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors ${
                   selectedProvider && formData.firstName && formData.lastName && formData.dateOfBirth && formData.memberId && formData.email
-                    ? 'bg-amber-700 text-white hover:bg-amber-800 hover:scale-[1.02] active:scale-[0.98]' 
+                    ? 'bg-amber-700 text-white hover:bg-amber-800' 
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 }`}
                 style={{ fontFamily: 'var(--font-inter)' }}
@@ -1666,7 +1666,7 @@ export default function OnboardingFlow({
                 
                 <Button
                   onClick={handleInsuranceComplete}
-                  className="w-full py-5 px-8 rounded-full text-lg font-medium bg-green-600 text-white hover:bg-green-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="w-full py-5 px-8 rounded-full text-lg font-medium bg-green-600 text-white hover:bg-green-700 transition-colors"
                   style={{ fontFamily: 'var(--font-inter)' }}
                 >
                   Continue to Questionnaire
