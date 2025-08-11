@@ -771,22 +771,22 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                         <button
                           key={specialization.name}
                           onClick={() => toggleSpecialization(specialization.name)}
-                          className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex ${
+                          className={`relative h-9 sm:h-10 px-7 sm:px-8 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex items-center justify-center ${
                             isSelected
                               ? 'bg-[#5C3106] text-white'
                               : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                           }`}
                           style={{ fontFamily: 'var(--font-inter)' }}
                         >
-                          <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
-                            <span className="text-sm sm:text-base leading-none">{specialization.emoji}</span>
-                            <span className="text-center truncate whitespace-nowrap leading-none">{specialization.name}</span>
-                            <Plus 
-                              className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
-                                isSelected ? 'rotate-45' : ''
-                              }`}
-                            />
-                          </div>
+                          <span className="absolute left-2 sm:left-3 text-sm sm:text-base leading-none">{specialization.emoji}</span>
+                          <span className="text-center truncate whitespace-nowrap leading-none px-2">
+                            {specialization.name}
+                          </span>
+                          <Plus 
+                            className={`absolute right-2 sm:right-3 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                              isSelected ? 'rotate-45' : ''
+                            }`}
+                          />
                         </button>
                       );
                     })}
@@ -847,22 +847,20 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex ${
+                              className={`relative h-9 sm:h-10 px-7 sm:px-8 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex items-center justify-center ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
-                                <span className="text-sm sm:text-base leading-none">{experience.emoji}</span>
-                                <span className="text-center truncate whitespace-nowrap leading-none">{experience.name}</span>
-                                <Plus 
-                                  className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
-                                    isSelected ? 'rotate-45' : ''
-                                  }`}
-                                />
-                              </div>
+                              <span className="absolute left-2 sm:left-3 text-sm sm:text-base leading-none">{experience.emoji}</span>
+                              <span className="text-center truncate whitespace-nowrap leading-none px-2">{experience.name}</span>
+                              <Plus 
+                                className={`absolute right-2 sm:right-3 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                                  isSelected ? 'rotate-45' : ''
+                                }`}
+                              />
                             </button>
                           );
                         })}
@@ -886,22 +884,20 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex ${
+                              className={`relative h-9 sm:h-10 px-7 sm:px-8 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex items-center justify-center ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
-                                <span className="text-sm sm:text-base leading-none">{experience.emoji}</span>
-                                <span className="text-center truncate whitespace-nowrap leading-none">{experience.name}</span>
-                                <Plus 
-                                  className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
-                                    isSelected ? 'rotate-45' : ''
-                                  }`}
-                                />
-                              </div>
+                              <span className="absolute left-2 sm:left-3 text-sm sm:text-base leading-none">{experience.emoji}</span>
+                              <span className="text-center truncate whitespace-nowrap leading-none px-2">{experience.name}</span>
+                              <Plus 
+                                className={`absolute right-2 sm:right-3 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                                  isSelected ? 'rotate-45' : ''
+                                }`}
+                              />
                             </button>
                           );
                         })}
@@ -923,22 +919,20 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex ${
+                              className={`relative h-9 sm:h-10 px-7 sm:px-8 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex items-center justify-center ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
-                                <span className="text-sm sm:text-base leading-none">{experience.emoji}</span>
-                                <span className="text-center truncate whitespace-nowrap leading-none">{experience.name}</span>
-                                <Plus 
-                                  className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
-                                    isSelected ? 'rotate-45' : ''
-                                  }`}
-                                />
-                              </div>
+                              <span className="absolute left-2 sm:left-3 text-sm sm:text-base leading-none">{experience.emoji}</span>
+                              <span className="text-center truncate whitespace-nowrap leading-none px-2">{experience.name}</span>
+                              <Plus 
+                                className={`absolute right-2 sm:right-3 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
+                                  isSelected ? 'rotate-45' : ''
+                                }`}
+                              />
                             </button>
                           );
                         })}
@@ -1013,14 +1007,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   </div>
 
                   {/* Stacked Questions */}
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-6 shadow-[1px_1px_0_#5C3106] space-y-6">
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
                     {/* Alcohol */}
                     <div>
-                      <h2 className="text-sm sm:text-base md:text-lg text-gray-800 leading-relaxed px-2 mb-3" 
-                          style={{ fontFamily: 'var(--font-inter)' }}>
+                      <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-relaxed px-2 mb-4" 
+                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                         Do you drink alcohol? If yes, how often per week?
                       </h2>
-                      <div className="space-y-2 sm:space-y-3">
+                      <div className="space-y-3 sm:space-y-4">
                         {['Not at all','Several days','More than half the days','Nearly every day'].map((option) => {
                           const isSelected = surveyData.alcohol_frequency === option;
                           return (
@@ -1033,10 +1027,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                                   setTimeout(() => { setShowPhq9Intro(true); setPhq9IntroEnded(false); setCurrentStep('phq9'); }, 120);
                                 }
                               }}
-                              className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
+                              className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                                 isSelected
-                                  ? 'bg-[#5C3106] text-white'
-                                  : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                                  ? 'bg-[#5C3106] text-white border border-[#5C3106]'
+                                  : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
@@ -1049,11 +1043,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     {/* Recreational Drugs */}
                     <div>
-                      <h2 className="text-sm sm:text-base md:text-lg text-gray-800 leading-relaxed px-2 mb-3" 
-                          style={{ fontFamily: 'var(--font-inter)' }}>
+                      <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-relaxed px-2 mb-4" 
+                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                         Do you use recreational drugs? If yes, how often per week?
                       </h2>
-                      <div className="space-y-2 sm:space-y-3">
+                      <div className="space-y-3 sm:space-y-4">
                         {['Not at all','Several days','More than half the days','Nearly every day'].map((option) => {
                           const isSelected = surveyData.recreational_drugs_frequency === option;
                           return (
@@ -1066,10 +1060,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                                   setTimeout(() => { setShowPhq9Intro(true); setPhq9IntroEnded(false); setCurrentStep('phq9'); }, 120);
                                 }
                               }}
-                              className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
+                              className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                                 isSelected
-                                  ? 'bg-[#5C3106] text-white'
-                                  : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                                  ? 'bg-[#5C3106] text-white border border-[#5C3106]'
+                                  : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
@@ -1169,14 +1163,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       }}
                       onEnded={(e) => {
                         setPhq9IntroEnded(true);
-                        const v = e.currentTarget;
-                        try {
-                          v.pause();
-                          if (!isNaN(v.duration)) {
-                            v.currentTime = Math.max(0, v.duration - 0.01);
-                          }
-                        } catch {}
-                      }}
+                       }}
                     />
                     <div className="absolute inset-x-0 bottom-3 flex justify-center">
                       <Button
@@ -1256,17 +1243,17 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     )}
                   </div>
 
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-4 sm:p-5 shadow-[1px_1px_0_#5C3106]">
-                    <div key={phq9CarouselIndex} className="text-center mb-5 sm:mb-6 animate-question">
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
+                    <div key={phq9CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
                       {/* Question */}
                       <div className="mb-4 sm:mb-5">
-                        <p className="text-xs sm:text-sm text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                        <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                           {currentPhq9Question.question}
                         </p>
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-3 sm:space-y-4">
                       {scaleOptions.map((option) => {
                         const isSelected = surveyData[currentPhq9Question.field] === option;
                         return (
@@ -1275,17 +1262,21 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             onClick={() => {
                               updateSurveyData(currentPhq9Question.field, option);
                               if (isLastPhq9Question) {
-                                if (canContinuePhq9) {
+                                const allAnsweredAfterSelect = phq9Questions.every((q) => {
+                                  const val = q.field === currentPhq9Question.field ? option : surveyData[q.field];
+                                  return Boolean(val);
+                                });
+                                if (allAnsweredAfterSelect) {
                                   setCurrentStep('gad7');
                                 }
                               } else {
                                 setTimeout(() => setPhq9CarouselIndex(phq9CarouselIndex + 1), 120);
                               }
                             }}
-                            className={`w-full py-2 px-3 rounded-2xl text-xs sm:text-sm font-medium transition-colors ${
+                            className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                               isSelected
-                                ? 'bg-[#5C3106] text-white'
-                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                                ? 'bg-[#5C3106] text-white border border-[#5C3106]'
+                                : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
                             }`}
                             style={{ fontFamily: 'var(--font-inter)' }}
                           >
@@ -1296,7 +1287,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     </div>
 
                     {/* Progress + Nav inside box */}
-                    <div className="mt-6">
+                    <div className="mt-6 sm:mt-8">
                       <div className="flex justify-center items-center space-x-2 mb-2">
                         {phq9Questions.map((_, index) => (
                           <div
@@ -1310,7 +1301,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <div className="flex justify-between items-center">
                         <div>
                           {phq9CarouselIndex > 0 && (
-                            <Button onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)} variant="outline" className="py-2 px-4 rounded-full text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                            <Button onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)} variant="outline" className="py-2 px-4 rounded-full text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                               <ArrowLeft className="w-4 h-4 mr-1" /> Back
                             </Button>
                           )}
@@ -1398,14 +1389,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      }}
                      onEnded={(e) => {
                        setGad7IntroEnded(true);
-                       const v = e.currentTarget;
-                       try {
-                         v.pause();
-                         if (!isNaN(v.duration)) {
-                           v.currentTime = Math.max(0, v.duration - 0.01);
-                         }
-                       } catch {}
-                     }}
+                       }}
                    />
                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
                      <Button
@@ -1485,17 +1469,17 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                    )}
                  </div>
 
-                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-4 sm:p-5 shadow-[1px_1px_0_#5C3106]">
-                   <div key={gad7CarouselIndex} className="text-center mb-5 sm:mb-6 animate-question">
+                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
+                   <div key={gad7CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
-                       <p className="text-xs sm:text-sm text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                       <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                          {currentGad7Question.question}
                        </p>
                      </div>
                    </div>
 
-                   <div className="space-y-2">
+                   <div className="space-y-3 sm:space-y-4">
                      {scaleOptions.map((option) => {
                        const isSelected = surveyData[currentGad7Question.field] === option;
                        return (
@@ -1504,17 +1488,21 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                            onClick={() => {
                              updateSurveyData(currentGad7Question.field, option);
                              if (isLastGad7Question) {
-                               if (canContinueGad7) {
+                               const allAnsweredAfterSelect = gad7Questions.every((q) => {
+                                 const val = q.field === currentGad7Question.field ? option : surveyData[q.field];
+                                 return Boolean(val);
+                               });
+                               if (allAnsweredAfterSelect) {
                                  setCurrentStep('matching_complete');
                                }
                              } else {
                                setTimeout(() => setGad7CarouselIndex(gad7CarouselIndex + 1), 120);
                              }
                            }}
-                           className={`w-full py-2 px-3 rounded-2xl text-xs sm:text-sm font-medium transition-colors ${
+                           className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                              isSelected
-                               ? 'bg-[#5C3106] text-white'
-                               : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                               ? 'bg-[#5C3106] text-white border border-[#5C3106]'
+                               : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
                            }`}
                            style={{ fontFamily: 'var(--font-inter)' }}
                          >
@@ -1525,7 +1513,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                    </div>
 
                    {/* Progress and back arrow inside box */}
-                   <div className="mt-6">
+                   <div className="mt-6 sm:mt-8">
                      <div className="flex items-center justify-center space-x-2 mb-2">
                        <button
                          onClick={() => gad7CarouselIndex > 0 ? setGad7CarouselIndex(gad7CarouselIndex - 1) : setCurrentStep('phq9')}
@@ -1696,12 +1684,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      </div>
                    </div>
 
-                   {/* Race/Ethnicity */}
+                   {/* Race/Ethnicity - pill multi-select */}
                    <div>
                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                        Race/Ethnicity
                      </label>
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                     <div className="flex flex-wrap gap-2 sm:gap-2.5">
                        {[
                          'Black / African',
                          'Hispanic / Latinx', 
@@ -1716,22 +1704,25 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        ].map((ethnicity) => {
                          const isSelected = surveyData.race_ethnicity.includes(ethnicity);
                          return (
-                           <label key={ethnicity} className="flex items-center space-x-2 p-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                             <input
-                               type="checkbox"
-                               checked={isSelected}
-                               onChange={(e) => {
-                                 const current = surveyData.race_ethnicity;
-                                 if (e.target.checked) {
-                                   updateSurveyData('race_ethnicity', [...current, ethnicity]);
-                                 } else {
-                                   updateSurveyData('race_ethnicity', current.filter(item => item !== ethnicity));
-                                 }
-                               }}
-                               className="rounded"
-                             />
-                             <span className="text-xs sm:text-sm">{ethnicity}</span>
-                           </label>
+                           <button
+                             key={ethnicity}
+                             onClick={() => {
+                               const current = surveyData.race_ethnicity;
+                               if (isSelected) {
+                                 updateSurveyData('race_ethnicity', current.filter(item => item !== ethnicity));
+                               } else {
+                                 updateSurveyData('race_ethnicity', [...current, ethnicity]);
+                               }
+                             }}
+                             className={`h-9 sm:h-10 px-3.5 sm:px-4 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex items-center justify-center ${
+                               isSelected
+                                 ? 'bg-[#5C3106] text-white'
+                                 : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
+                             }`}
+                             style={{ fontFamily: 'var(--font-inter)' }}
+                           >
+                             <span className="text-center whitespace-nowrap leading-none">{ethnicity}</span>
+                           </button>
                          );
                        })}
                      </div>
@@ -1754,7 +1745,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                  </div>
                </div>
 
-               {/* How did you hear about Sol Health */}
+               {/* How did you hear about Sol Health - pill multi-select */}
                <div className="mb-6 sm:mb-8">
                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                    How did you hear about Sol Health?
@@ -1775,11 +1766,18 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      { name: 'Email', emoji: '✉️' },
                      { name: 'Google', emoji: '🔍' }
                    ].map((source) => {
-                     const isSelected = surveyData.referred_by === source.name;
+                     const isSelected = (surveyData.referred_by || '') === source.name || Array.isArray(surveyData.referred_by) && (surveyData.referred_by as unknown as string[]).includes(source.name);
                      return (
                        <button
                          key={source.name}
-                         onClick={() => updateSurveyData('referred_by', isSelected ? '' : source.name)}
+                         onClick={() => {
+                           const current = Array.isArray(surveyData.referred_by) ? (surveyData.referred_by as unknown as string[]) : (surveyData.referred_by ? [surveyData.referred_by] : []);
+                           if (isSelected) {
+                             updateSurveyData('referred_by', current.filter(item => item !== source.name));
+                           } else {
+                             updateSurveyData('referred_by', [...current, source.name]);
+                           }
+                         }}
                          className={`py-1.5 sm:py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm transition-all flex items-center ${
                            isSelected
                              ? 'bg-[#5C3106] text-white'

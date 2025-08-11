@@ -72,6 +72,20 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-inter), 'Inter', sans-serif;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+  }
+
+  html, body, #__next, [data-overlay-container] {
+    height: 100%;
+    overscroll-behavior: none;
+  }
+
+  /* Prevent pull-to-refresh/overscroll in mobile browsers (Chrome/Safari/Firefox) */
+  :root {
+    overscroll-behavior: none;
+    touch-action: manipulation;
   }
 
   .very-vogue-title {
