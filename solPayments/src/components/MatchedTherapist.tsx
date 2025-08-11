@@ -29,7 +29,8 @@ export default function MatchedTherapist({
 }: MatchedTherapistProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<number | null>(11);
+  const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(new Date());
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [viewedTherapistIds, setViewedTherapistIds] = useState<Set<string>>(new Set());
   const [showVideo, setShowVideo] = useState(false);
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
@@ -67,8 +68,11 @@ export default function MatchedTherapist({
   };
   
   const handleBookSession = () => {
-    if (selectedTimeSlot && selectedDate && onBookSession) {
-      const datetime = `2025-01-${selectedDate.toString().padStart(2, '0')}T${convertTo24Hour(selectedTimeSlot)}:00`;
+    if (selectedTimeSlot && selectedDateObj && onBookSession) {
+      const yyyy = selectedDateObj.getFullYear();
+      const mm = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
+      const dd = String(selectedDateObj.getDate()).padStart(2, '0');
+      const datetime = `${yyyy}-${mm}-${dd}T${convertTo24Hour(selectedTimeSlot)}:00`;
       onBookSession(currentTherapistData, datetime);
     }
   };
@@ -131,8 +135,33 @@ export default function MatchedTherapist({
     (therapist.welcome_video_link.startsWith('http://') || 
      therapist.welcome_video_link.startsWith('https://'));
 
+  // Calendar computations (Monday-start week)
+  const currentYear = calendarDate.getFullYear();
+  const currentMonth = calendarDate.getMonth();
+  const monthLabel = calendarDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const jsFirstDay = new Date(currentYear, currentMonth, 1).getDay(); // 0 Sun .. 6 Sat
+  const firstWeekdayIndex = (jsFirstDay + 6) % 7; // 0 Mon .. 6 Sun
+  const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+  const calendarCells = Array.from({ length: 42 }, (_, i) => {
+    const dayNum = i - firstWeekdayIndex + 1;
+    if (dayNum < 1) {
+      const d = daysInPrevMonth + dayNum;
+      return { key: `p-${i}`, day: d, inMonth: false as const, date: new Date(currentYear, currentMonth - 1, d) };
+    }
+    if (dayNum > daysInCurrentMonth) {
+      const d = dayNum - daysInCurrentMonth;
+      return { key: `n-${i}`, day: d, inMonth: false as const, date: new Date(currentYear, currentMonth + 1, d) };
+    }
+    return { key: `c-${i}`, day: dayNum, inMonth: true as const, date: new Date(currentYear, currentMonth, dayNum) };
+  });
+
+  const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+  const goPrevMonth = () => setCalendarDate(new Date(currentYear, currentMonth - 1, 1));
+  const goNextMonth = () => setCalendarDate(new Date(currentYear, currentMonth + 1, 1));
+
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#FFFBF3' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
       {/* Header - Fixed height */}
       <div className="relative overflow-hidden h-[160px] flex-shrink-0">
         <Image
@@ -172,15 +201,15 @@ export default function MatchedTherapist({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden px-6 py-4">
+      <div className="flex-1 px-4 md:px-6 py-4">
         <div className="h-full flex flex-col max-w-7xl mx-auto">
-          <div className="flex-1 grid grid-cols-12 gap-6 min-h-0">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 min-h-0">
             {/* Left Column - Therapist Details */}
-            <div className="col-span-7 flex flex-col min-h-0">
-              <Card className="flex-1 overflow-hidden border-0 shadow-lg">
-                <CardContent className="h-full p-6 overflow-y-auto">
+            <div className="col-span-1 md:col-span-7 flex flex-col min-h-0">
+              <Card className="md:flex-1 overflow-visible md:overflow-hidden bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
+                <CardContent className="p-4 md:p-6 md:h-full md:overflow-y-auto">
                   {/* Therapist Header */}
-                  <div className="flex items-start gap-4 mb-6">
+                  <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
                     <div className="flex-shrink-0">
                       {therapist.image_link && !imageError[therapist.id] ? (
                         <img
@@ -198,21 +227,18 @@ export default function MatchedTherapist({
                       )}
                     </div>
                     
-                    <div className="flex-1">
-                      <h2 className="text-2xl font-bold text-gray-800">
-                        {therapist.intern_name}
-                      </h2>
-                      <p className="text-gray-600">{therapist.program}</p>
-                      
+                    <div className="flex-1 w-full">
+                      <h2 className="very-vogue-title text-3xl text-gray-800">{therapist.intern_name}</h2>
+                      <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>{therapist.program}</p>
                       {/* Matched specialties */}
                       <div className="flex flex-wrap gap-2 mt-3">
                         {matchedSpecialties.slice(0, 3).map((specialty, i) => (
-                          <span key={i} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                          <span key={i} className="px-3 py-1 bg-yellow-100 text-gray-800 rounded-full text-xs border border-[#5C3106] shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
                             {specialty}
                           </span>
                         ))}
                         {matchedSpecialties.length > 3 && (
-                          <button className="text-blue-600 text-sm hover:underline">
+                          <button className="text-blue-700 text-sm underline" style={{ fontFamily: 'var(--font-inter)' }}>
                             +{matchedSpecialties.length - 3} more
                           </button>
                         )}
@@ -223,7 +249,7 @@ export default function MatchedTherapist({
                     {hasValidVideo && (
                       <button
                         onClick={() => setShowVideo(!showVideo)}
-                        className="flex-shrink-0 w-32 h-20 bg-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors relative overflow-hidden"
+                        className="mt-2 md:mt-0 w-full md:w-32 h-20 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors relative overflow-hidden shadow-[1px_1px_0_#5C3106]"
                       >
                         {therapist.image_link && !imageError[therapist.id] && (
                           <img
@@ -239,7 +265,7 @@ export default function MatchedTherapist({
                   </div>
 
                   {/* Demographics */}
-                  <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
                     <div>
                       <p className="text-gray-500">Identifies as</p>
                       <p className="font-medium">{therapist.identities_as || therapist.gender || 'Not specified'}</p>
@@ -265,20 +291,21 @@ export default function MatchedTherapist({
 
                   {/* Skills and Experience */}
                   <div className="space-y-4">
-                    <h3 className="font-bold text-lg">Skills and Experience</h3>
+                    <h3 className="very-vogue-title text-2xl text-gray-800">Skills and Experience</h3>
                     
                     {/* Specialties */}
                     <div>
-                      <p className="text-sm text-gray-600 mb-2">Specializes in</p>
+                      <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Specializes in</p>
                       <div className="flex flex-wrap gap-2">
                         {sortedSpecialties.map((specialty, i) => (
                           <span 
                             key={`specialty-${i}`}
-                            className={`px-3 py-1 rounded-full text-sm border ${
+                            className={`px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] ${
                               matchedSpecialties.includes(specialty)
-                                ? 'bg-yellow-100 border-yellow-300 text-yellow-800'
+                                ? 'bg-yellow-100 border-[#5C3106] text-gray-800'
                                 : 'bg-white border-gray-300 text-gray-700'
                             }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
                           >
                             {specialty}
                           </span>
@@ -289,10 +316,10 @@ export default function MatchedTherapist({
                     {/* Therapeutic orientation */}
                     {therapist.therapeutic_orientation && therapist.therapeutic_orientation.length > 0 && (
                       <div>
-                        <p className="text-sm text-gray-600 mb-2">Therapeutic orientation</p>
+                        <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Therapeutic orientation</p>
                         <div className="flex flex-wrap gap-2">
                           {therapist.therapeutic_orientation.map((orientation, i) => (
-                            <span key={`orientation-${i}`} className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm">
+                            <span key={`orientation-${i}`} className="px-3 py-1 bg-white border border-gray-300 rounded-full text-xs shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
                               {orientation}
                             </span>
                           ))}
@@ -305,41 +332,48 @@ export default function MatchedTherapist({
             </div>
 
             {/* Right Column - Booking */}
-            <div className="col-span-5 flex flex-col min-h-0">
-              <Card className="flex-1 border-0 shadow-lg">
-                <CardContent className="h-full p-6 flex flex-col">
-                  <h3 className="text-xl font-bold mb-2">Book Your First Session</h3>
-                  <p className="text-sm text-gray-600 mb-4">Local Timezone (Central Time)</p>
+            <div className="col-span-1 md:col-span-5 flex flex-col min-h-0">
+              <Card className="md:flex-1 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106] md:sticky md:top-4">
+                <CardContent className="p-4 md:p-6 flex flex-col">
+                  <h3 className="very-vogue-title text-2xl text-gray-800 mb-1">Book Your First Session</h3>
+                  <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>Local Timezone (Central Time)</p>
 
                   {/* Calendar */}
                   <div className="mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-medium">January 2025</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium" style={{ fontFamily: 'var(--font-inter)' }}>{monthLabel}</h4>
                       <div className="flex gap-2">
-                        <button className="p-1 hover:bg-gray-100 rounded">
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <button className="p-1 hover:bg-gray-100 rounded">
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
+                        <button onClick={goPrevMonth} className="p-1 hover:bg-gray-100 rounded border border-gray-200" aria-label="Previous month"><ChevronLeft className="w-4 h-4" /></button>
+                        <button onClick={goNextMonth} className="p-1 hover:bg-gray-100 rounded border border-gray-200" aria-label="Next month"><ChevronRight className="w-4 h-4" /></button>
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-7 gap-1 text-center text-sm">
-                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-                        <div key={`day-${i}`} className="p-2 text-gray-500 text-xs">{day}</div>
-                      ))}
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                        <button
-                          key={`date-${day}`}
-                          onClick={() => setSelectedDate(day)}
-                          className={`p-2 rounded hover:bg-yellow-100 transition-colors ${
-                            selectedDate === day ? 'bg-yellow-400 text-white' : ''
-                          }`}
-                        >
-                          {day}
-                        </button>
-                      ))}
+                    <div className="border border-[#5C3106] rounded-2xl p-2 shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
+                      <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-1">
+                        {['m','t','w','t','f','s','s'].map((d, i) => (
+                          <div key={`dh-${i}`} className="py-1 uppercase tracking-wide">{d}</div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-1 text-center text-sm">
+                        {calendarCells.map((cell) => {
+                          const selected = selectedDateObj ? isSameDay(cell.date, selectedDateObj) : false;
+                          return (
+                            <button
+                              key={cell.key}
+                              onClick={() => cell.inMonth && setSelectedDateObj(cell.date)}
+                              disabled={!cell.inMonth}
+                              className={`py-2 rounded-lg transition-colors border ${
+                                selected
+                                  ? 'bg-yellow-400 text-white border-yellow-400'
+                                  : cell.inMonth
+                                    ? 'bg-white hover:bg-yellow-50 border-transparent'
+                                    : 'bg-white text-gray-300 cursor-not-allowed opacity-60 border-transparent'
+                              }`}
+                            >
+                              {cell.day}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
@@ -349,11 +383,12 @@ export default function MatchedTherapist({
                       <button
                         key={`time-${time}`}
                         onClick={() => setSelectedTimeSlot(time)}
-                        className={`p-3 rounded-lg border transition-all ${
+                        className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
                           selectedTimeSlot === time
                             ? 'border-yellow-400 bg-yellow-50'
-                            : 'border-gray-200 hover:border-gray-300'
+                            : 'border-[#5C3106] bg-white hover:bg-yellow-50'
                         }`}
+                        style={{ fontFamily: 'var(--font-inter)' }}
                       >
                         {time}
                       </button>
@@ -361,19 +396,19 @@ export default function MatchedTherapist({
                   </div>
 
                   <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-6"
+                    className="w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full mb-6"
                     onClick={handleBookSession}
-                    disabled={!selectedTimeSlot || !selectedDate}
+                    disabled={!selectedTimeSlot || !selectedDateObj}
                   >
                     Book 45-Min Session →
                   </Button>
 
                   {/* Find Another Therapist */}
                   <div className="text-center mt-auto">
-                    <p className="text-sm text-gray-500 mb-2">It's Okay to Keep Looking</p>
+                    <p className="very-vogue-title text-xl text-gray-800 mb-2">It's Okay to Keep Looking…</p>
                     <Button
                       variant="outline"
-                      className="w-full"
+                      className="w-full rounded-full border-2 border-[#5C3106]"
                       onClick={handleFindAnother}
                     >
                       Find Another Therapist →
@@ -387,8 +422,8 @@ export default function MatchedTherapist({
           {/* Previously Viewed Therapists */}
           {previouslyViewed.length > 0 && (
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-4">Previously Viewed Therapists</h3>
-              <div className="grid grid-cols-4 gap-4">
+              <h3 className="very-vogue-title text-2xl text-gray-800 mb-4">Previously Viewed Therapists</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {previouslyViewed.slice(0, 4).map((therapistData) => (
                   <button
                     key={`prev-${therapistData.therapist.id}`}
