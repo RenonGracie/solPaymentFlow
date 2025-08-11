@@ -1551,8 +1551,8 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center px-6 pb-16">
-          <div className="flow-narrow w-full -mt-16 mx-auto">
+        <div className="flex-1 flex items-center justify-center px-6 pb-14">
+          <div className="flow-narrow w-full -mt-6 sm:-mt-8 mx-auto">
             <div className="text-center mb-8 flow-narrow mx-auto">
               <h1 className="text-3xl md:text-4xl mb-4 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>

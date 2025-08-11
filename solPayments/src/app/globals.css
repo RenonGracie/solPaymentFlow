@@ -91,6 +91,11 @@
     overscroll-behavior: none;
   }
 
+  /* Ensure rubber-band overscroll shows app beige, not white */
+  html, body {
+    background-color: #FFFBF3 !important;
+  }
+
   /* Prevent pull-to-refresh/overscroll in mobile browsers (Chrome/Safari/Firefox) */
   :root {
     overscroll-behavior: none;

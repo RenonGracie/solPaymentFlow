@@ -35,8 +35,10 @@ export default function RootLayout({
           src="//unpkg.com/same-runtime/dist/index.global.js"
         />
       </head>
-      <body suppressHydrationWarning className="antialiased">
-        <ClientBody>{children}</ClientBody>
+      <body suppressHydrationWarning className="antialiased" style={{ backgroundColor: '#FFFBF3' }}>
+        <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3' }}>
+          <ClientBody>{children}</ClientBody>
+        </div>
       </body>
     </html>
   );

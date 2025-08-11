@@ -304,9 +304,9 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         // Mobile portrait layout - 9:16 video full screen
         if (screenType === 'mobile') {
           return (
-            <div className="min-h-screen relative overflow-hidden bg-black">
+            <div className="h-[100svh] relative overflow-hidden bg-black">
               <video 
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover object-bottom"
                 autoPlay 
                 muted 
                 loop 
@@ -333,7 +333,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         // iPad/Tablet portrait - side by side with 9:16 video
         if (screenType === 'tablet') {
           return (
-            <div className="min-h-screen flex flex-row" style={{ backgroundColor: '#FFFAEE' }}>
+            <div className="h-[100svh] flex flex-row" style={{ backgroundColor: '#FFFAEE' }}>
               <div className="relative overflow-hidden" style={{ width: '56.25vh', backgroundColor: '#FFFAEE' }}>
                 <video 
                   className="absolute inset-0 w-full h-full object-cover"
@@ -376,7 +376,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         // Desktop landscape - For very narrow desktop windows (< 1024px width), use vertical stack
         if (isWideScreen === false && screenType === 'desktop') {
           return (
-            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFAEE' }}>
+            <div className="h-[100svh] flex flex-col" style={{ backgroundColor: '#FFFAEE' }}>
               {/* Video on top - takes up most of the screen */}
               <div className="flex-[3] relative overflow-hidden flex items-center justify-center" style={{ backgroundColor: '#FFFAEE' }}>
                 <video 
@@ -422,7 +422,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
         // Desktop landscape - wide screens get 75/25 horizontal split
         return (
-          <div className="min-h-screen flex flex-row" style={{ backgroundColor: '#FFFAEE' }}>
+          <div className="h-[100svh] flex flex-row" style={{ backgroundColor: '#FFFAEE' }}>
             {/* Video section - takes 75% of width */}
             <div className="w-3/4 relative overflow-hidden" style={{ backgroundColor: '#FFFAEE' }}>
               <video 
@@ -497,10 +497,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-10 sm:pb-14">
-              <div className="flow-narrow w-full -mt-6 sm:-mt-12 mx-auto">
+              <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
-                    <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-relaxed" 
+                    <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-[1.1]" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Over the past 2 weeks, have you been actively suicidal or homicidal OR have you been experiencing hallucinations or delusions?
                     </h1>
@@ -579,10 +579,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-10 sm:pb-14">
-              <div className="flow-narrow w-full -mt-6 sm:-mt-12 mx-auto">
+              <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl mb-4 sm:mb-5 text-gray-800 leading-tight"
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-5 text-gray-800 leading-tight"
                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                        Would you like to be matched with a therapist, or are you requesting someone specific?
                      </h1>
@@ -653,7 +653,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-10 sm:pb-14">
-              <div className="flow-narrow w-full -mt-6 sm:-mt-12 mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent">
+              <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent">
                 <div className="text-center mb-6 sm:mb-8">
                   <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
@@ -819,7 +819,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <button
                         key={gender.name}
                         onClick={() => updateSurveyData('therapist_gender_preference', gender.name)}
-                        className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl transition-colors text-[11px] sm:text-xs inline-flex ${
+                        className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl transition-colors text-[11px] sm:text-xs inline-flex items-center justify-center ${
                           surveyData.therapist_gender_preference === gender.name
                             ? 'bg-[#5C3106] text-white'
                             : `bg-white border-2 text-gray-800 hover:bg-gray-50 ${surveyData.therapist_gender_preference === '' ? 'border-red-300' : 'border-gray-300'}`
@@ -1005,7 +1005,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-6 sm:pb-8">
+            <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-4 sm:pb-6">
               <div className="flex-1 flex items-center justify-center">
                 <div className="max-w-md w-full">
                   <div className="text-center mb-4 sm:mb-6">
@@ -1019,10 +1019,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   </div>
 
                   {/* Stacked Questions */}
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-7 shadow-[1px_1px_0_#5C3106] space-y-6">
                     {/* Alcohol */}
                     <div>
-                      <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-relaxed px-2 mb-4" 
+                      <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2 mb-4" 
                           style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                         Do you drink alcohol? If yes, how often per week?
                       </h2>
@@ -1055,7 +1055,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     {/* Recreational Drugs */}
                     <div>
-                      <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-relaxed px-2 mb-4" 
+                      <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2 mb-4" 
                           style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                         Do you use recreational drugs? If yes, how often per week?
                       </h2>
@@ -1152,11 +1152,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 >
                   <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
                 </button>
-                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
                 <div className="w-8"></div>
               </div>
 
-              <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-6 sm:pb-8">
+              <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pt-2 sm:pt-4 pb-2 sm:pb-4">
                 <div className="max-w-md w-full">
                   {/* Title duplicated in video artwork; removing per design */}
                   <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
@@ -1237,7 +1236,6 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               >
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
-              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
               <div className="w-8"></div>
             </div>
  
@@ -1245,42 +1243,83 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-6 sm:pb-8">
               <div className="flex-1 flex items-center justify-center">
                 <div className="max-w-md w-full">
-                  {/* Title duplicated in video artwork; removing per design */}
-                  <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
-                    <video
-                      className="w-full h-full object-cover"
-                      src={VIDEOS.emotionalWellBeing}
-                      autoPlay
-                      muted
-                      playsInline
-                      loop={false}
-                      controls={false}
-                      preload="auto"
-                      onPlay={() => {
-                        setPhq9IntroTimerReady(false);
-                        setTimeout(() => setPhq9IntroTimerReady(true), 2500);
-                        // Hard fallback to enable continue even if onEnded doesn't fire
-                        setTimeout(() => setPhq9IntroEnded(true), 8000);
-                      }}
-                      onEnded={(e) => {
-                        setPhq9IntroEnded(true);
-                       }}
-                    />
-                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
-                      <Button
-                        onClick={() => setShowPhq9Intro(false)}
-                        disabled={!(phq9IntroEnded || phq9IntroTimerReady)}
-                        className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
-                          phq9IntroEnded || phq9IntroTimerReady ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        }`}
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        Continue
-                      </Button>
+                  <div className="text-center mb-4 sm:mb-6">
+                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
+                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                      Over the last 2 weeks, how often have you been bothered by any of the following?
+                    </h1>
+                  </div>
+
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] flow-narrow mx-auto">
+                    <div key={phq9CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
+                      {/* Question */}
+                      <div className="mb-4 sm:mb-5">
+                        <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                          {currentPhq9Question.question}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 sm:space-y-4">
+                      {scaleOptions.map((option) => {
+                        const isSelected = surveyData[currentPhq9Question.field] === option;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => {
+                              updateSurveyData(currentPhq9Question.field, option);
+                              if (isLastPhq9Question) {
+                                const allAnsweredAfterSelect = phq9Questions.every((q) => {
+                                  const val = q.field === currentPhq9Question.field ? option : surveyData[q.field];
+                                  return Boolean(val);
+                                });
+                                if (allAnsweredAfterSelect) {
+                                  setShowGad7Intro(true);
+                                  setGad7IntroEnded(false);
+                                  setCurrentStep('gad7');
+                                }
+                              } else {
+                                setTimeout(() => setPhq9CarouselIndex(phq9CarouselIndex + 1), 120);
+                              }
+                            }}
+                            className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
+                              isSelected
+                                ? 'bg-[#5C3106] text-white border border-[#5C3106]'
+                                : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Progress and back arrow inside box */}
+                    <div className="mt-6 sm:mt-8">
+                      <div className="flex items-center justify-center space-x-2 mb-2">
+                        <button
+                          onClick={() => phq9CarouselIndex > 0 ? setPhq9CarouselIndex(phq9CarouselIndex - 1) : setCurrentStep('alcohol_drugs')}
+                          className="p-2 rounded-full hover:bg-gray-100"
+                          aria-label="Previous"
+                        >
+                          <ArrowLeft className="w-5 h-5 text-gray-700" />
+                        </button>
+                        {phq9Questions.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`h-0.5 transition-all duration-300 ${
+                              index === phq9CarouselIndex ? 'w-8 bg-[#5C3106]' : 'w-6 bg-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Bottom Navigation removed to mirror GAD-7 layout */}
             </div>
           </div>
         );
@@ -1335,11 +1374,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                >
                  <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
                </button>
-               <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
                <div className="w-8"></div>
              </div>
 
-             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-6 sm:pb-8">
+             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pt-2 sm:pt-4 pb-2 sm:pb-4">
                <div className="max-w-md w-full">
                  {/* Title duplicated in video artwork; removing per design */}
                  <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
@@ -1419,7 +1457,6 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               >
                <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
              </button>
-             <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
              <div className="w-8"></div>
            </div>
 
@@ -1443,7 +1480,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                    <div key={gad7CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
-                       <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                       <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                          {currentGad7Question.question}
                        </p>
                      </div>
@@ -1554,8 +1591,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
            {/* Content */}
            <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 overflow-y-auto">
              <div className="flow-narrow mx-auto">
-               <div className="text-center mb-6 sm:mb-8 mt-4">
-                 <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+               <div className="text-center mb-6 sm:mb-8 mt-0">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                    <span className="text-3xl sm:text-4xl">🎉</span>
                  </div>
                  
