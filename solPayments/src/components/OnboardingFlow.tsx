@@ -735,7 +735,7 @@ export default function OnboardingFlow({
 
         {/* Content - truly centered with only preferred name */}
         <div className="flex-1 flex items-center justify-center px-6 pb-16">
-          <div className="max-w-md w-full -mt-16">
+          <div className="flow-narrow w-full -mt-16 mx-auto">
             <div className="text-center mb-12">
               <span className="text-5xl mb-6 block">👋</span>
               <h1 className="text-3xl md:text-4xl text-gray-800" 
@@ -822,7 +822,7 @@ export default function OnboardingFlow({
 
         {/* Content - truly centered in remaining space */}
         <div className="flex-1 flex items-center justify-center px-6 pb-16">
-          <div className="max-w-md w-full -mt-16">
+          <div className="flow-narrow w-full -mt-16 mx-auto">
             <div className="text-center mb-12">
               <span className="text-5xl mb-6 block">✉️</span>
               <h1 className="text-3xl md:text-4xl text-gray-800" 
@@ -915,8 +915,8 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content - truly centered in remaining space */}
-        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12 md:pb-16">
-          <div className="max-w-sm md:max-w-2xl w-full -mt-8 md:-mt-16">
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
+          <div className="flow-narrow w-full -mt-12 mx-auto">
             <div className="text-center mb-6 md:mb-8">
               <span className="text-3xl md:text-5xl mb-3 md:mb-4 block">🎉</span>
               <h1 className="text-2xl md:text-4xl mb-3 md:mb-4 text-gray-800" 
@@ -1395,7 +1395,7 @@ export default function OnboardingFlow({
 
         {/* Content */}
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
-          <div className="max-w-sm md:max-w-md w-full -mt-12">
+          <div className="flow-narrow w-full -mt-12 mx-auto">
             <div className="text-center mb-6">
               <h1 className="text-2xl md:text-3xl mb-3 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
@@ -1552,8 +1552,8 @@ export default function OnboardingFlow({
 
         {/* Content */}
         <div className="flex-1 flex items-center justify-center px-6 pb-16">
-          <div className="max-w-md w-full -mt-16">
-            <div className="text-center mb-8">
+          <div className="flow-narrow w-full -mt-16 mx-auto">
+            <div className="text-center mb-8 flow-narrow mx-auto">
               <h1 className="text-3xl md:text-4xl mb-4 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 Great, We're In Network!
@@ -1565,7 +1565,7 @@ export default function OnboardingFlow({
 
             {/* Form - Only show when in form or verifying state */}
             {(verificationStep === 'form' || verificationStep === 'verifying') && (
-              <div className="space-y-6 mb-8">
+              <div className="space-y-6 mb-8 flow-narrow mx-auto">
                 {/* Insurance Provider */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1587,40 +1587,43 @@ export default function OnboardingFlow({
                   </select>
                 </div>
 
-                {/* Legal First Name - Pre-filled from earlier */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Legal First Name*
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    disabled={verificationStep === 'verifying'}
-                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
-                    style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
-                    placeholder="John"
-                  />
-                </div>
+                {/* Legal Name Row (md+ two columns) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Legal First Name - Pre-filled from earlier */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Legal First Name*
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      disabled={verificationStep === 'verifying'}
+                      className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
+                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                      placeholder="John"
+                    />
+                  </div>
 
-                {/* Legal Last Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Legal Last Name*
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    disabled={verificationStep === 'verifying'}
-                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
-                    style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
-                    placeholder="Smith"
-                  />
+                  {/* Legal Last Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Legal Last Name*
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      disabled={verificationStep === 'verifying'}
+                      className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
+                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                      placeholder="Smith"
+                    />
+                  </div>
                 </div>
 
                 {/* Date of Birth */}
-                <div>
+                <div className="flow-narrow">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Date of Birth*
                   </label>
@@ -1635,7 +1638,7 @@ export default function OnboardingFlow({
                 </div>
 
                 {/* Member ID */}
-                <div>
+                <div className="flow-narrow">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Member ID*
                   </label>
@@ -1651,7 +1654,7 @@ export default function OnboardingFlow({
                 </div>
 
                 {/* Email - Pre-filled from earlier */}
-                <div>
+                <div className="flow-narrow">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Email*
                   </label>
@@ -1706,7 +1709,7 @@ export default function OnboardingFlow({
               <Button
                 onClick={handleInsuranceVerification}
                 disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId || !formData.email}
-                className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors ${
+                className={`flow-narrow mx-auto w-full py-5 px-8 rounded-full text-lg font-medium transition-colors ${
                   selectedProvider && formData.firstName && formData.lastName && formData.dateOfBirth && formData.memberId && formData.email
                     ? 'bg-amber-700 text-white hover:bg-amber-800' 
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'

@@ -112,4 +112,12 @@
     line-height: 1;
     letter-spacing: -0.02em;
   }
+
+  /* Narrow flow container: ~60% viewport on md+, full width on small */
+  .flow-narrow {
+    width: 100%;
+  }
+  @media (min-width: 768px) {
+    .flow-narrow { max-width: 60vw; }
+  }
 }

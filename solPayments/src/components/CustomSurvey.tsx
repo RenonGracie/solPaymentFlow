@@ -497,11 +497,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
-              <div className="max-w-md w-full -mt-8 sm:-mt-16">
-                                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
-                    <div className="text-center mb-6 sm:mb-8">
-                      <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-relaxed" 
-                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+              <div className="flow-narrow w-full -mt-8 sm:-mt-16 mx-auto">
+                <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
+                  <div className="text-center mb-6 sm:mb-8">
+                    <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-relaxed" 
+                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Over the past 2 weeks, have you been actively suicidal or homicidal OR have you been experiencing hallucinations or delusions?
                     </h1>
                     
@@ -579,7 +579,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
-              <div className="max-w-md w-full -mt-8 sm:-mt-16">
+              <div className="flow-narrow w-full -mt-8 sm:-mt-16 mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
                     <h1 className="text-3xl sm:text-4xl md:text-5xl mb-4 sm:mb-5 text-gray-800 leading-tight"
@@ -653,12 +653,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
-                             <div className="max-w-md w-full -mt-8 sm:-mt-16 border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent">
-                 <div className="text-center mb-6 sm:mb-8">
-                   <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
-                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                     Search for Your Therapist
-                   </h1>
+              <div className="flow-narrow w-full -mt-8 sm:-mt-16 mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent">
+                <div className="text-center mb-6 sm:mb-8">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
+                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                    Search for Your Therapist
+                  </h1>
                   <p className="text-gray-600 text-xs sm:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
                     {paymentType === 'cash_pay' 
                       ? 'Search our graduate therapists available for $30/session'
@@ -743,8 +743,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
             {/* Content */}
             <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 overflow-y-auto">
-              <div className="max-w-lg mx-auto">
-                <div className="text-center mb-4 sm:mb-6 mt-2">
+              <div className="flow-narrow mx-auto">
+                <div className="text-center mb-4 sm:mb-6 mt-2 flow-narrow mx-auto">
                   <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                     Therapist Preferences
@@ -955,8 +955,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 </div>
 
                 {/* Continue Button */}
-                <div className="pt-4">
-                                    <Button
+                <div className="pt-4 flow-narrow mx-auto">
+                  <Button
                      onClick={() => setCurrentStep('alcohol_drugs')}
                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-yellow-100 hover:bg-yellow-300 text-gray-800 rounded-full text-base sm:text-lg font-medium transition-all"
                      style={{ fontFamily: 'var(--font-inter)' }}
@@ -1243,84 +1243,37 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             {/* Content */}
             <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-6 sm:pb-8">
               <div className="flex-1 flex items-center justify-center">
-                                <div className="max-w-md w-full">
-                  <div className="text-center mb-4 sm:mb-6">
-                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
-                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                                             {showPhq9Intro ? 'Measuring Your Emotional Well-Being' : 'Over the last 2 weeks, how often have you been bothered by any of the following?'}
-                    </h1>
-                    {showPhq9Intro && (
-                      <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
-                        This may feel like a lot, but this snapshot will help us give you the best care.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
-                    <div key={phq9CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
-                      {/* Question */}
-                      <div className="mb-4 sm:mb-5">
-                        <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                          {currentPhq9Question.question}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 sm:space-y-4">
-                      {scaleOptions.map((option) => {
-                        const isSelected = surveyData[currentPhq9Question.field] === option;
-                        return (
-                          <button
-                            key={option}
-                            onClick={() => {
-                              updateSurveyData(currentPhq9Question.field, option);
-                              if (isLastPhq9Question) {
-                                const allAnsweredAfterSelect = phq9Questions.every((q) => {
-                                  const val = q.field === currentPhq9Question.field ? option : surveyData[q.field];
-                                  return Boolean(val);
-                                });
-                                if (allAnsweredAfterSelect) {
-                                  setCurrentStep('gad7');
-                                }
-                              } else {
-                                setTimeout(() => setPhq9CarouselIndex(phq9CarouselIndex + 1), 120);
-                              }
-                            }}
-                            className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
-                              isSelected
-                                ? 'bg-[#5C3106] text-white border border-[#5C3106]'
-                                : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Progress + Nav inside box */}
-                    <div className="mt-6 sm:mt-8">
-                      <div className="flex justify-center items-center space-x-2 mb-2">
-                        {phq9Questions.map((_, index) => (
-                          <div
-                            key={index}
-                            className={`h-0.5 transition-all duration-300 ${
-                              index === phq9CarouselIndex ? 'w-8 bg-[#5C3106]' : 'w-6 bg-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div>
-                          {phq9CarouselIndex > 0 && (
-                            <Button onClick={() => setPhq9CarouselIndex(phq9CarouselIndex - 1)} variant="outline" className="py-2 px-4 rounded-full text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
-                              <ArrowLeft className="w-4 h-4 mr-1" /> Back
-                            </Button>
-                          )}
-                        </div>
-                        <div />
-                      </div>
+                <div className="max-w-md w-full">
+                  {/* Title duplicated in video artwork; removing per design */}
+                  <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
+                    <video
+                      className="w-full h-full object-cover"
+                      src={VIDEOS.emotionalWellBeing}
+                      autoPlay
+                      muted
+                      playsInline
+                      loop={false}
+                      controls={false}
+                      preload="auto"
+                      onPlay={() => {
+                        setPhq9IntroTimerReady(false);
+                        setTimeout(() => setPhq9IntroTimerReady(true), 2500);
+                      }}
+                      onEnded={(e) => {
+                        setPhq9IntroEnded(true);
+                       }}
+                    />
+                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
+                      <Button
+                        onClick={() => setShowPhq9Intro(false)}
+                        disabled={!(phq9IntroEnded || phq9IntroTimerReady)}
+                        className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
+                          phq9IntroEnded || phq9IntroTimerReady ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        Continue
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1482,7 +1435,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                    )}
                  </div>
 
-                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
+                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] flow-narrow mx-auto">
                    <div key={gad7CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
@@ -1596,10 +1549,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
            {/* Content */}
            <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 overflow-y-auto">
-             <div className="max-w-lg mx-auto">
+             <div className="flow-narrow mx-auto">
                <div className="text-center mb-6 sm:mb-8 mt-4">
                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                   <span className="text-3xl sm:text-4xl">⚡</span>
+                   <span className="text-3xl sm:text-4xl">🎉</span>
                  </div>
                  
                  <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-6 text-gray-800" 
@@ -1952,7 +1905,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                *If you're in crisis or need immediate support, call 988 (Suicide and Crisis Lifeline), 911, or go to your nearest emergency room.
              </p>
 
-             <div className="pt-4">
+             <div className="pt-4 flow-narrow mx-auto">
                <Button
                  onClick={() => {
                    window.open('https://solhealth.co/resources', '_blank');
