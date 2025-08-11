@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, X, Check, Loader2 } from "lucide-react";
+import { VIDEOS } from "@/lib/videos";
 import { Button } from "@/components/ui/button";
 import { checkEligibility } from "../app/api/eligibility.js";
 
@@ -452,7 +453,7 @@ export default function OnboardingFlow({
             loop 
             playsInline
           >
-            <source src="/onboarding-video-9x16.mp4" type="video/mp4" />
+            <source src={VIDEOS.onboarding9x16} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 
@@ -481,7 +482,7 @@ export default function OnboardingFlow({
               loop 
               playsInline
             >
-              <source src="/onboarding-video-9x16.mp4" type="video/mp4" />
+              <source src={VIDEOS.onboarding9x16} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
@@ -525,8 +526,8 @@ export default function OnboardingFlow({
               loop 
               playsInline
             >
-              <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
+                           <source src={VIDEOS.onboarding16x9} type="video/mp4" />
+             Your browser does not support the video tag.
             </video>
           </div>
 
@@ -570,8 +571,8 @@ export default function OnboardingFlow({
             loop 
             playsInline
           >
-            <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
+                         <source src={VIDEOS.onboarding16x9} type="video/mp4" />
+             Your browser does not support the video tag.
           </video>
         </div>
 
@@ -866,43 +867,47 @@ export default function OnboardingFlow({
                       <ChevronRight className={`inline w-3 md:w-4 h-3 md:h-4 ml-1 transition-transform duration-300 ${expandedCard === 'insurance' ? 'rotate-90' : ''}`} />
                     </span>
                   </div>
-                  <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                    Associate-Level Therapists
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Associate Therapists
+                    </p>
+                    <span className="inline-block rounded-full bg-blue-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
+                      (~$20-40 average session cost)
+                    </span>
+                  </div>
                 </button>
                 
                 {/* Expanded Insurance Content */}
                 <div className={`bg-white border-l border-r border-b border-yellow-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
                   expandedCard === 'insurance' 
-                    ? 'max-h-96 opacity-100' 
+                    ? 'max-h-[1000px] opacity-100' 
                     : 'max-h-0 opacity-0'
                 }`}>
-                  <div className="p-5 space-y-4">
-                    <p className="text-sm text-gray-700">~$20-40 average session cost</p>
-                    
-                    <div>
-                      <p className="text-sm font-medium text-gray-800 mb-2">We currently accept:</p>
-                      <p className="text-sm text-gray-600">Aetna, Amerihealth, Horizon Blue Cross Blue Shield, Meritain Health</p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• 1-1 virtual sessions (55 min)</li>
-                        <li>• We'll auto-verify your benefits and estimate what you'll pay</li>
-                        <li>• You'll be matched with an Associate Therapist. Associate Therapists have graduated from their counseling programs, have a provisional license, and are working towards full licensure.</li>
-                      </ul>
-                    </div>
-                    
-                    <Button
-                      onClick={() => handlePaymentSelection("insurance")}
-                      className="w-full bg-blue-200 hover:bg-blue-300 text-gray-800 py-3"
-                    >
-                      Select Insurance Option
-                    </Button>
-                  </div>
-                </div>
-              </div>
+                  <div className="p-5 space-y-4 pb-6">
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">We currently accept:</p>
+                       <p className="text-sm text-gray-600">Aetna, Amerihealth, Horizon Blue Cross Blue Shield, Meritain Health</p>
+                     </div>
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
+                       <ul className="text-sm text-gray-600 space-y-1">
+                         <li>• 1-1 virtual sessions (55 min)</li>
+                         <li>• We'll automatically verify your benefits and estimate what you'll pay</li>
+                         <li>• You'll be matched with an Associate Therapist. Associate Therapists have graduated from their counseling programs, have a provisional license, and are working towards full licensure.</li>
+                       </ul>
+                     </div>
+                     
+                     <Button
+                       onClick={() => handlePaymentSelection("insurance")}
+                       className="w-full bg-blue-200 hover:bg-blue-300 text-gray-800 py-3"
+                     >
+                       Select Insurance Option
+                     </Button>
+                   </div>
+                 </div>
+               </div>
 
               {/* Cash Pay Card */}
               <div className="w-full overflow-hidden">
@@ -925,7 +930,7 @@ export default function OnboardingFlow({
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-base md:text-lg font-semibold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Pay $30 Out-of-Pocket
+                      Pay Out-of-Pocket
                     </h3>
                     <span className="text-xs md:text-sm text-gray-600 font-medium flex items-center transition-transform" 
                           style={{ fontFamily: 'var(--font-inter)' }}>
@@ -933,54 +938,58 @@ export default function OnboardingFlow({
                       <ChevronRight className={`inline w-3 md:w-4 h-3 md:h-4 ml-1 transition-transform duration-300 ${expandedCard === 'cash_pay' ? 'rotate-90' : ''}`} />
                     </span>
                   </div>
-                  <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                    Intern-Level Therapists
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Graduate Therapists
+                    </p>
+                    <span className="inline-block rounded-full bg-yellow-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
+                      ($30 per session)
+                    </span>
+                  </div>
                 </button>
                 
                 {/* Expanded Cash Pay Content */}
                 <div className={`bg-white border-l border-r border-b border-yellow-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
                   expandedCard === 'cash_pay' 
-                    ? 'max-h-96 opacity-100' 
+                    ? 'max-h-[1000px] opacity-100' 
                     : 'max-h-0 opacity-0'
                 }`}>
-                  <div className="p-5 space-y-4">
-                    <p className="text-sm text-gray-700">$30 per session</p>
-                    
-                    <div>
-                      <p className="text-sm font-medium text-gray-800 mb-2">States we currently serve:</p>
-                      <p className="text-sm text-gray-600">
-                        {featuredStates.map(stateCode => {
-                          const state = allStates.find(s => s.code === stateCode);
-                          return state?.name;
-                        }).join(', ')}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• 1-1 virtual sessions (45 min)</li>
-                        <li>• You pay $30 per session—no hidden fees.</li>
-                        <li>• You'll be matched with a Graduate Therapist. Graduate Therapists are in their counseling programs obtaining clinical hours under licensed supervision.</li>
-                      </ul>
-                    </div>
-                    
-                    <Button
-                      onClick={() => handlePaymentSelection("cash_pay")}
-                      className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-800 py-3"
-                    >
-                      Select Cash Pay Option
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+                  <div className="p-5 space-y-4 pb-6">
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">States we currently serve:</p>
+                       <p className="text-sm text-gray-600">
+                         {featuredStates.map(stateCode => {
+                           const state = allStates.find(s => s.code === stateCode);
+                           return state?.name;
+                         }).join(', ')}
+                       </p>
+                     </div>
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
+                       <ul className="text-sm text-gray-600 space-y-1">
+                         <li>• 1-1 virtual sessions (45 min)</li>
+                         <li>• You pay $30 per session—no hidden fees.</li>
+                         <li>• You'll be matched with a Graduate Therapist. Graduate Therapists are in their counseling programs obtaining clinical hours under licensed supervision.</li>
+                       </ul>
+                     </div>
+                     
+                     <Button
+                       onClick={() => handlePaymentSelection("cash_pay")}
+                       className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-800 py-3"
+                     >
+                       Select Cash Pay Option
+                     </Button>
+                   </div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+     );
+   }
 
   // Enhanced State Selection Screen
   if (currentStep === 4) {
@@ -1069,7 +1078,7 @@ export default function OnboardingFlow({
                         alt={state?.name}
                         className="w-6 h-6"
                         style={{
-                          filter: isSelected ? 'brightness(0) invert(1)' : 'brightness(0) sepia(1) saturate(1) hue-rotate(25deg) brightness(0.8)'
+                          filter: isSelected ? 'brightness(0) invert(1)' : 'none'
                         }}
                         onError={(e) => {
                           // Fallback to a generic icon if state icon fails to load
@@ -1322,7 +1331,7 @@ export default function OnboardingFlow({
                     alt="New Jersey"
                     className="w-6 h-6"
                     style={{
-                      filter: njInsurancePlan === 'yes' ? 'brightness(0) invert(1)' : 'brightness(0) sepia(1) saturate(1) hue-rotate(25deg) brightness(0.8)'
+                      filter: njInsurancePlan === 'yes' ? 'brightness(0) invert(1)' : 'none'
                     }}
                   />
                 </div>

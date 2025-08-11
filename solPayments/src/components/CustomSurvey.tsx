@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, ArrowRight, X, Plus } from "lucide-react";
+import { VIDEOS } from "@/lib/videos";
 
 interface SurveyData {
   // Safety Screening
@@ -294,7 +295,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 loop 
                 playsInline
               >
-                <source src="/how-it-works-9x16.mp4" type="video/mp4" />
+                <source src={VIDEOS.howItWorks9x16} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
 
@@ -323,7 +324,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   loop 
                   playsInline
                 >
-                  <source src="/how-it-works-9x16.mp4" type="video/mp4" />
+                  <source src={VIDEOS.howItWorks9x16} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
               </div>
@@ -366,7 +367,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   loop 
                   playsInline
                 >
-                  <source src="/how-it-works-16x9.mp4" type="video/mp4" />
+                  <source src={VIDEOS.howItWorks16x9} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
               </div>
@@ -411,7 +412,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 loop 
                 playsInline
               >
-                <source src="/how-it-works-16x9.mp4" type="video/mp4" />
+                <source src={VIDEOS.howItWorks16x9} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
             </div>
@@ -445,7 +446,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -517,9 +518,17 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
       case 'therapist_matching':
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+          <div
+            className="min-h-screen flex flex-col"
+            style={{
+              backgroundColor: '#FFFBF3',
+              backgroundImage:
+                "radial-gradient(rgba(0,0,0,0.04) 1px, transparent 1px)",
+              backgroundSize: '16px 16px'
+            }}
+          >
             {/* Header with sunset image */}
-            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -528,12 +537,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
-                    style={{ 
-                      fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
-                      fontWeight: 400,
-                      letterSpacing: '0.02em',
-                      lineHeight: '1.1'
-                    }}>
+                     style={{ 
+                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                       fontWeight: 400,
+                       letterSpacing: '0.02em',
+                       lineHeight: '1.1'
+                     }}>
                   CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
                 </p>
               </div>
@@ -550,37 +559,36 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
               <div className="max-w-md w-full -mt-8 sm:-mt-16">
-                                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
-                   <div className="text-center mb-6 sm:mb-8">
-                     <h1 className="text-lg sm:text-xl md:text-2xl mb-3 sm:mb-4 text-gray-800 leading-relaxed" 
+                <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
+                  <div className="text-center mb-6 sm:mb-8">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl mb-4 sm:mb-5 text-gray-800 leading-tight"
                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                        Would you like to be matched with a therapist, or are you requesting someone specific?
                      </h1>
-                    
-                    <button
-                      className="text-gray-500 text-xs sm:text-sm underline hover:text-gray-700 transition-colors"
-                      style={{ fontFamily: 'var(--font-inter)' }}
-                    >
-                      Browse our Clinical Team here.
-                    </button>
+                    <p className="text-gray-500 text-base sm:text-lg" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Browse our Clinical Team{' '}
+                      <a href="/therapists" className="underline" target="_blank" rel="noreferrer">
+                        here
+                      </a>.
+                    </p>
                   </div>
 
                   <div className="space-y-3 sm:space-y-4">
                     <button
                       onClick={() => handleMatchingPreference('match_me')}
-                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-colors flex items-center"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-lg sm:text-xl font-medium hover:bg-gray-50 transition-colors flex items-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
-                      <span className="mr-3">⚡</span>
+                      <span className="mr-3">🪄</span>
                       Match me to my best-fit therapist
                     </button>
 
                     <button
                       onClick={() => handleMatchingPreference('requesting_specific')}
-                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-gray-50 transition-colors flex items-center"
+                      className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-white border-2 border-gray-300 rounded-2xl text-gray-800 text-lg sm:text-xl font-medium hover:bg-gray-50 transition-colors flex items-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
-                      <span className="mr-3">😊</span>
+                      <span className="mr-3">🎯</span>
                       I'm requesting someone specific
                     </button>
                   </div>
@@ -594,7 +602,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -683,7 +691,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -715,7 +723,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             {/* Content */}
             <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 overflow-y-auto">
               <div className="max-w-lg mx-auto">
-                <div className="text-center mb-6 sm:mb-8 mt-4">
+                <div className="text-center mb-4 sm:mb-6 mt-2">
                   <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                     Therapist Preferences
@@ -727,7 +735,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that specializes in:
                   </h3>
-                  <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+                  <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
                     {[
                       { name: 'ADHD', emoji: '🌀' },
                       { name: 'Anxiety', emoji: '🌿' },
@@ -755,15 +763,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                         <button
                           key={specialization.name}
                           onClick={() => toggleSpecialization(specialization.name)}
-                          className={`h-11 sm:h-12 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm transition-colors inline-flex ${
+                          className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex ${
                             isSelected
                               ? 'bg-[#5C3106] text-white'
                               : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                           }`}
                           style={{ fontFamily: 'var(--font-inter)' }}
                         >
-                          <div className="grid grid-cols-[24px,auto,20px] items-center gap-2">
-                            <span className="text-base sm:text-lg leading-none">{specialization.emoji}</span>
+                          <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
+                            <span className="text-sm sm:text-base leading-none">{specialization.emoji}</span>
                             <span className="text-center truncate whitespace-nowrap leading-none">{specialization.name}</span>
                             <Plus 
                               className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
@@ -782,7 +790,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that identifies as:
                   </h3>
-                  <div className="space-y-2 sm:space-y-3">
+                  <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
                     {[
                       { name: 'Female', emoji: '👩' },
                       { name: 'Male', emoji: '👨' },
@@ -791,15 +799,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <button
                         key={gender.name}
                         onClick={() => updateSurveyData('therapist_gender_preference', gender.name)}
-                        className={`w-full h-11 sm:h-12 px-3 sm:px-4 rounded-xl transition-colors text-[13px] sm:text-sm ${
+                        className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl transition-colors text-[11px] sm:text-xs inline-flex ${
                           surveyData.therapist_gender_preference === gender.name
                             ? 'bg-[#5C3106] text-white'
                             : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                         }`}
                         style={{ fontFamily: 'var(--font-inter)' }}
                       >
-                        <div className="grid grid-cols-[24px,1fr,20px] items-center gap-2 w-full">
-                          <span className="text-base sm:text-lg leading-none">{gender.emoji}</span>
+                        <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
+                          <span className="text-sm sm:text-base leading-none">{gender.emoji}</span>
                           <span className="text-center leading-none">{gender.name}</span>
                           <span />
                         </div>
@@ -820,7 +828,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                         Family
                       </h4>
-                      <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+                      <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
                         {[
                           { name: 'Raised in a non-traditional family', emoji: '🌿' },
                           { name: 'Been in a caretaker role', emoji: '👤' },
@@ -831,15 +839,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`h-11 sm:h-12 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm transition-colors inline-flex ${
+                              className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <div className="grid grid-cols-[24px,auto,20px] items-center gap-2">
-                                <span className="text-base sm:text-lg leading-none">{experience.emoji}</span>
+                              <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
+                                <span className="text-sm sm:text-base leading-none">{experience.emoji}</span>
                                 <span className="text-center truncate whitespace-nowrap leading-none">{experience.name}</span>
                                 <Plus 
                                   className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
@@ -858,7 +866,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                         Upbringing
                       </h4>
-                      <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+                      <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
                         {[
                           { name: 'Raised in an individualist culture', emoji: '🧍' },
                           { name: 'Raised in a collectivist culture', emoji: '🤝' },
@@ -870,15 +878,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`h-11 sm:h-12 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm transition-colors inline-flex ${
+                              className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <div className="grid grid-cols-[24px,auto,20px] items-center gap-2">
-                                <span className="text-base sm:text-lg leading-none">{experience.emoji}</span>
+                              <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
+                                <span className="text-sm sm:text-base leading-none">{experience.emoji}</span>
                                 <span className="text-center truncate whitespace-nowrap leading-none">{experience.name}</span>
                                 <Plus 
                                   className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
@@ -897,7 +905,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
                         Identity and Experiences
                       </h4>
-                      <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+                      <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
                         {[
                           { name: 'Identifying as LGBTQ+', emoji: '🏳️‍🌈' },
                           { name: 'Negatively affected by social media', emoji: '📱' }
@@ -907,15 +915,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             <button
                               key={experience.name}
                               onClick={() => toggleLivedExperience(experience.name)}
-                              className={`h-11 sm:h-12 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm transition-colors inline-flex ${
+                              className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs transition-colors inline-flex ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white'
                                   : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <div className="grid grid-cols-[24px,auto,20px] items-center gap-2">
-                                <span className="text-base sm:text-lg leading-none">{experience.emoji}</span>
+                              <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
+                                <span className="text-sm sm:text-base leading-none">{experience.emoji}</span>
                                 <span className="text-center truncate whitespace-nowrap leading-none">{experience.name}</span>
                                 <Plus 
                                   className={`w-3 h-3 sm:w-4 sm:h-4 justify-self-end transition-transform duration-200 ${
@@ -950,7 +958,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1122,7 +1130,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         if (showPhq9Intro) {
           return (
             <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-              <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+              <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
                 <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               </div>
@@ -1143,7 +1151,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
                     <video
                       className="w-full h-full object-cover"
-                      src="/emotional-well-being.mp4"
+                      src={VIDEOS.emotionalWellBeing}
                       autoPlay
                       muted
                       playsInline
@@ -1183,7 +1191,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image - smaller for mobile */}
-            <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1348,7 +1356,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        if (showGad7Intro) {
          return (
            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-             <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+             <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
                <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
              </div>
@@ -1369,7 +1377,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                  <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
                    <video
                      className="w-full h-full object-cover"
-                     src="/measuring-anxiety.mp4"
+                     src={VIDEOS.measuringAnxiety}
                      autoPlay
                      muted
                      playsInline
@@ -1409,7 +1417,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        return (
          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
            {/* Header with sunset image - smaller for mobile */}
-           <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+           <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
              <img 
                src="/onboarding-banner.jpg" 
                alt="" 
@@ -1601,7 +1609,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        return (
          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
            {/* Header with sunset image */}
-           <div className="relative h-16 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+           <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
              <img 
                src="/onboarding-banner.jpg" 
                alt="" 
