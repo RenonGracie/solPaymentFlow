@@ -496,8 +496,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
-              <div className="flow-narrow w-full -mt-8 sm:-mt-16 mx-auto">
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-10 sm:pb-14">
+              <div className="flow-narrow w-full -mt-6 sm:-mt-12 mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
                     <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-relaxed" 
@@ -578,8 +578,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
-              <div className="flow-narrow w-full -mt-8 sm:-mt-16 mx-auto">
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-10 sm:pb-14">
+              <div className="flow-narrow w-full -mt-6 sm:-mt-12 mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
                     <h1 className="text-3xl sm:text-4xl md:text-5xl mb-4 sm:mb-5 text-gray-800 leading-tight"
@@ -652,8 +652,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
-              <div className="flow-narrow w-full -mt-8 sm:-mt-16 mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent">
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-10 sm:pb-14">
+              <div className="flow-narrow w-full -mt-6 sm:-mt-12 mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent">
                 <div className="text-center mb-6 sm:mb-8">
                   <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
@@ -737,13 +737,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               <button onClick={() => setCurrentStep('therapist_matching')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
-              <div className="w-2"></div>
               <div className="w-10"></div>
             </div>
 
             {/* Content */}
-            <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 overflow-y-auto">
-              <div className="flow-narrow mx-auto">
+            <div className="flex-1 px-4 sm:px-6 pb-10 sm:pb-14 overflow-y-auto">
+              <div className="flow-narrow mx-auto -mt-4">
                 <div className="text-center mb-4 sm:mb-6 mt-2 flow-narrow mx-auto">
                   <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>

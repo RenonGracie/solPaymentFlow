@@ -7,6 +7,13 @@
 @tailwind utilities;
 
 @layer base {
+  @font-face {
+    font-family: 'Very Vogue Text';
+    src: url('/VeryVogue-Text.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -72,6 +79,8 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-inter), 'Inter', sans-serif;
+    letter-spacing: -0.02em; /* -2% */
+    line-height: 1.2; /* 120% */
     overscroll-behavior: none;
     overscroll-behavior-y: none;
     overscroll-behavior-x: none;
@@ -92,7 +101,7 @@
     font-family: 'Very Vogue Text', 'Playfair Display', 'Times New Roman', serif;
     font-weight: 400;
     font-style: normal;
-    line-height: 0.9;
+    line-height: 1.1; /* 110% */
     letter-spacing: 0;
   }
 
@@ -101,7 +110,7 @@
     font-weight: 400;
     font-style: italic;
     font-size: 24px;
-    line-height: 100%;
+    line-height: 110%;
     letter-spacing: 0%;
     text-align: center;
   }
@@ -109,8 +118,8 @@
   .inter-light {
     font-family: 'Inter', sans-serif;
     font-weight: 300;
-    line-height: 1;
-    letter-spacing: -0.02em;
+    line-height: 1.2;
+    letter-spacing: -0.02em; /* -2% */
   }
 
   /* Narrow flow container: ~60% viewport on md+, full width on small */
