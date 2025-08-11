@@ -476,7 +476,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
               <div className="max-w-md w-full -mt-8 sm:-mt-16">
-                                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#1A1B1F]">
+                                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                     <div className="text-center mb-6 sm:mb-8">
                       <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-relaxed" 
                           style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
@@ -550,7 +550,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
               <div className="max-w-md w-full -mt-8 sm:-mt-16">
-                                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#1A1B1F]">
+                                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                    <div className="text-center mb-6 sm:mb-8">
                      <h1 className="text-lg sm:text-xl md:text-2xl mb-3 sm:mb-4 text-gray-800 leading-relaxed" 
                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
@@ -624,7 +624,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 sm:pb-16">
-                             <div className="max-w-md w-full -mt-8 sm:-mt-16 border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#1A1B1F] bg-transparent">
+                             <div className="max-w-md w-full -mt-8 sm:-mt-16 border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent">
                  <div className="text-center mb-6 sm:mb-8">
                    <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
@@ -997,7 +997,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   </div>
 
                   {/* Stacked Questions */}
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-6 shadow-[1px_1px_0_#1A1B1F] space-y-6">
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-6 shadow-[1px_1px_0_#5C3106] space-y-6">
                     {/* Alcohol */}
                     <div>
                       <h2 className="text-sm sm:text-base md:text-lg text-gray-800 leading-relaxed px-2 mb-3" 
@@ -1139,15 +1139,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
               <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-6 sm:pb-8">
                 <div className="max-w-md w-full">
-                  <div className="text-center mb-4 sm:mb-6">
-                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                      Measuring Your Emotional Well-Being
-                    </h1>
-                    <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
-                      This may feel like a lot, but this snapshot will help us give you the best care.
-                    </p>
-                  </div>
-
+                  {/* Title duplicated in video artwork; removing per design */}
                   <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
                     <video
                       className="w-full h-full object-cover"
@@ -1247,24 +1239,24 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     )}
                   </div>
 
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-6 shadow-[1px_1px_0_#1A1B1F]">
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-4 sm:p-5 shadow-[1px_1px_0_#5C3106]">
                     <div className="text-center mb-5 sm:mb-6">
                       {/* Question */}
                      <div className="mb-4 sm:mb-5">
-                       <p className="text-sm sm:text-base text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                       <p className="text-xs sm:text-sm text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
                          {currentPhq9Question.question}
                        </p>
                      </div>
                    </div>
 
-                   <div className="space-y-2 sm:space-y-3">
+                   <div className="space-y-2">
                      {scaleOptions.map((option) => {
                        const isSelected = surveyData[currentPhq9Question.field] === option;
                        return (
                          <button
                            key={option}
                            onClick={() => updateSurveyData(currentPhq9Question.field, option)}
-                           className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
+                           className={`w-full py-2 px-3 rounded-2xl text-xs sm:text-sm font-medium transition-colors ${
                              isSelected
                                ? 'bg-[#5C3106] text-white'
                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
@@ -1373,49 +1365,41 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
              <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-6 sm:pb-8">
                <div className="max-w-md w-full">
-                 <div className="text-center mb-4 sm:mb-6">
-                   <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                     Measuring Anxiety
-                   </h1>
-                   <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
-                     This may feel like a lot, but this snapshot will help us give you the best care.
-                   </p>
-                 </div>
-
+                 {/* Title duplicated in video artwork; removing per design */}
                  <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
-                                       <video
-                      className="w-full h-full object-cover"
-                      src="/measuring-anxiety.mp4"
-                      autoPlay
-                      muted
-                      playsInline
-                      loop={false}
-                      controls={false}
-                      preload="auto"
-                      onEnded={(e) => {
-                        setGad7IntroEnded(true);
-                        const v = e.currentTarget;
-                        try {
-                          v.pause();
-                          if (!isNaN(v.duration)) {
-                            v.currentTime = Math.max(0, v.duration - 0.01);
-                          }
-                        } catch {}
-                                            }}
-                    />
-                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
-                      <Button
-                        onClick={() => setShowGad7Intro(false)}
-                        disabled={!gad7IntroEnded}
-                        className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
-                          gad7IntroEnded ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        }`}
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        Continue
-                      </Button>
-                    </div>
-                  </div>
+                   <video
+                     className="w-full h-full object-cover"
+                     src="/measuring-anxiety.mp4"
+                     autoPlay
+                     muted
+                     playsInline
+                     loop={false}
+                     controls={false}
+                     preload="auto"
+                     onEnded={(e) => {
+                       setGad7IntroEnded(true);
+                       const v = e.currentTarget;
+                       try {
+                         v.pause();
+                         if (!isNaN(v.duration)) {
+                           v.currentTime = Math.max(0, v.duration - 0.01);
+                         }
+                       } catch {}
+                                             }}
+                   />
+                   <div className="absolute inset-x-0 bottom-3 flex justify-center">
+                     <Button
+                       onClick={() => setShowGad7Intro(false)}
+                       disabled={!gad7IntroEnded}
+                       className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
+                         gad7IntroEnded ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                       }`}
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     >
+                       Continue
+                     </Button>
+                   </div>
+                 </div>
                </div>
              </div>
            </div>
@@ -1481,17 +1465,17 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                    )}
                  </div>
 
-                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-6 shadow-[1px_1px_0_#1A1B1F]">
+                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-4 sm:p-5 shadow-[1px_1px_0_#5C3106]">
                    <div className="text-center mb-5 sm:mb-6">
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
-                       <p className="text-sm sm:text-base text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                       <p className="text-xs sm:text-sm text-gray-800 leading-relaxed px-2" style={{ fontFamily: 'var(--font-inter)' }}>
                          {currentGad7Question.question}
                        </p>
                      </div>
                    </div>
 
-                   <div className="space-y-2 sm:space-y-3">
+                   <div className="space-y-2">
                      {scaleOptions.map((option) => {
                        const isSelected = surveyData[currentGad7Question.field] === option;
                        return (
@@ -1507,7 +1491,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                                setTimeout(() => setGad7CarouselIndex(gad7CarouselIndex + 1), 120);
                              }
                            }}
-                           className={`w-full py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl text-sm sm:text-base font-medium transition-colors ${
+                           className={`w-full py-2 px-3 rounded-2xl text-xs sm:text-sm font-medium transition-colors ${
                              isSelected
                                ? 'bg-[#5C3106] text-white'
                                : 'bg-white border-2 border-gray-300 text-gray-800 hover:bg-gray-50'
