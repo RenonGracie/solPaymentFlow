@@ -128,7 +128,15 @@ export default function MatchedTherapist({
       url.searchParams.set("year", String(currentYear));
       url.searchParams.set("month", String(currentMonth + 1));
       url.searchParams.set("timezone", timezone);
-      url.searchParams.set("session_minutes", "45");
+      // Determine payment type for session duration rules (cash_pay=45, insurance=55)
+      let paymentType: 'insurance' | 'cash_pay' = 'insurance';
+      try {
+        const fromLs = typeof window !== 'undefined' ? window.localStorage.getItem('sol_payment_type') : null;
+        if (fromLs === 'cash_pay' || fromLs === 'insurance') paymentType = fromLs;
+      } catch {}
+      const qp = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('payment_type') : null;
+      if (qp === 'cash_pay' || qp === 'insurance') paymentType = qp;
+      url.searchParams.set("payment_type", paymentType);
       url.searchParams.set("work_start", "01:00");
       url.searchParams.set("work_end", "23:00");
       try {
