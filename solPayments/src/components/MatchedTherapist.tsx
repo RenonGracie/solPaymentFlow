@@ -98,7 +98,7 @@ export default function MatchedTherapist({
     slotsRequest
       .makeRequest({ params: { email } })
       .then((res: SlotsResponse) => {
-        const avail = (res as any)?.available_slots || [];
+        const avail = res?.available_slots || [];
         setFetchedSlots(prev => ({ ...prev, [email]: avail }));
       })
       .catch(() => {
@@ -223,6 +223,7 @@ export default function MatchedTherapist({
     setImageError(prev => ({ ...prev, [therapistId]: true }));
   };
 
+  // Ensure all hooks above are called consistently before early exit
   if (!therapist) return null;
 
   // Sanitize labels to remove JSON artifacts like curly braces or stray quotes
@@ -348,8 +349,6 @@ export default function MatchedTherapist({
    *  Prefer backend availability.sessions (fully-free session windows),
    *  else fallback to legacy fetchedSlots (ISO strings). */
   const emailForSlots = therapist?.calendar_email || therapist?.email || '';
-  const calendarAvailableSlotsLegacy = fetchedSlots[emailForSlots] || therapist.available_slots || [];
-
   const slotsForDay = useMemo(() => {
     if (!selectedDateObj) return [];
 
@@ -368,11 +367,12 @@ export default function MatchedTherapist({
     }
 
     // Fallback to legacy ISO list if no availability
+    const calendarAvailableSlotsLegacy = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
     return (calendarAvailableSlotsLegacy || [])
       .map((iso: string) => new Date(iso))
       .filter((dt: Date) => isSameDay(dt, selectedDateObj))
       .sort((a: Date, b: Date) => a.getTime() - b.getTime());
-  }, [availability?.days, calendarAvailableSlotsLegacy, selectedDateObj]);
+  }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, therapist?.available_slots]);
 
   const formatTimeLabel = (date: Date) =>
     date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
