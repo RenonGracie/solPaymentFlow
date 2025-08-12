@@ -528,10 +528,12 @@ export default function OnboardingFlow({
             className="absolute inset-0 w-full h-full object-cover object-bottom"
             autoPlay 
             muted 
-            loop 
             playsInline
+            loop={false}
+            controls={false}
             preload="auto"
             onCanPlayThrough={() => setInitialVideoReady(true)}
+            onEnded={handleContinue}
           >
             <source src="/onboarding-video-9x16.mp4" type="video/mp4" />
             Your browser does not support the video tag.
@@ -545,151 +547,68 @@ export default function OnboardingFlow({
               </div>
             </div>
           )}
-
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)' }}>
-            <Button
-              onClick={handleContinue}
-              className="w-full py-5 px-8 bg-white/95 backdrop-blur-sm rounded-2xl text-gray-800 text-lg font-medium hover:bg-white transition-all"
-              style={{ fontFamily: 'var(--font-inter)' }}
-            >
-              Continue
-            </Button>
-          </div>
         </div>
       );
     }
 
-    // iPad/Tablet portrait - side by side with 9:16 video
+    // iPad/Tablet portrait - show only 16x9 video, auto-advance
     if (screenType === 'tablet') {
       return (
-        <div className="min-h-screen flex flex-row" style={{ backgroundColor: '#FFFAEE' }}>
-          <div className="relative overflow-hidden" style={{ width: '56.25vh', backgroundColor: '#FFFAEE' }}>
-            <video 
-              className="absolute inset-0 w-full h-full object-cover"
-              autoPlay 
-              muted 
-              loop 
-              playsInline
-              preload="auto"
-            >
-              <source src="/onboarding-video-9x16.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-
-          <div className="flex-1 flex flex-col justify-center items-center px-8 py-12">
-            <div className="max-w-md w-full space-y-8">
-              <h2 
-                className="text-center text-4xl lg:text-5xl text-gray-800"
-                style={{ 
-                  fontFamily: 'var(--font-very-vogue), Georgia, serif',
-                  lineHeight: '1.1'
-                }}
-              >
-                We're so happy you're here
-              </h2>
-              
-              <Button
-                onClick={handleContinue}
-                className="w-full py-5 px-8 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-lg font-medium hover:bg-gray-50 transition-colors"
-                style={{ fontFamily: 'var(--font-inter)' }}
-              >
-                Continue
-              </Button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Desktop landscape - ALL desktop sizes get 75/25 split
-    // For very narrow desktop windows (< 1024px width), use vertical stack
-    if (isWideScreen === false && screenType === 'desktop') {
-      return (
-        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFAEE' }}>
-          {/* Video on top - takes up most of the screen */}
-          <div className="flex-[3] relative overflow-hidden flex items-center justify-center" style={{ backgroundColor: '#FFFAEE' }}>
-            <video 
-              className="w-full h-full object-cover"
-              autoPlay 
-              muted 
-              loop 
-              playsInline
-              preload="auto"
-            >
-              <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-
-          {/* Content below - minimal space */}
-          <div className="flex-1 flex flex-col justify-center items-center px-8 py-8 lg:py-10 min-h-[200px] max-h-[300px]">
-            <div className="max-w-2xl w-full space-y-6">
-              <h2 
-                className="text-center text-3xl lg:text-4xl xl:text-5xl text-gray-800"
-                style={{ 
-                  fontFamily: 'var(--font-very-vogue), Georgia, serif',
-                  lineHeight: '1.1'
-                }}
-              >
-                We're so happy you're here
-              </h2>
-              
-              <div className="max-w-md mx-auto w-full">
-                <Button
-                  onClick={handleContinue}
-                  className="w-full py-4 lg:py-5 px-8 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-lg font-medium hover:bg-gray-50 transition-colors"
-                  style={{ fontFamily: 'var(--font-inter)' }}
-                >
-                  Continue
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Desktop landscape - wide screens get 75/25 horizontal split
-    return (
-      <div className="min-h-screen flex flex-row" style={{ backgroundColor: '#FFFAEE' }}>
-        {/* Video section - takes 75% of width */}
-        <div className="w-3/4 relative overflow-hidden" style={{ backgroundColor: '#FFFAEE' }}>
-          <video 
-            className="absolute inset-0 w-full h-full object-cover"
-            autoPlay 
-            muted 
-            loop 
+        <div className="relative bg-black min-h-screen w-full overflow-hidden">
+          <video
+            className="absolute inset-0 w-full h-full object-contain bg-black"
+            autoPlay
+            muted
             playsInline
+            loop={false}
+            controls={false}
             preload="auto"
+            onEnded={handleContinue}
           >
             <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>
+      );
+    }
 
-        {/* Content section - takes 25% of width */}
-        <div className="w-1/4 flex flex-col justify-center items-center px-8 py-12">
-          <div className="w-full max-w-sm space-y-6">
-            <h2 
-              className="text-center text-3xl lg:text-4xl text-gray-800"
-              style={{ 
-                fontFamily: 'var(--font-very-vogue), Georgia, serif',
-                lineHeight: '1.1'
-              }}
-            >
-              We're so happy you're here
-            </h2>
-            
-            <Button
-              onClick={handleContinue}
-              className="w-full py-4 px-6 bg-white border-2 border-gray-200 rounded-lg text-gray-800 text-base font-medium hover:bg-gray-50 transition-colors"
-              style={{ fontFamily: 'var(--font-inter)' }}
-            >
-              Continue
-            </Button>
-          </div>
+    // Desktop landscape (narrow) - full-screen 16x9 video, auto-advance
+    if (isWideScreen === false && screenType === 'desktop') {
+      return (
+        <div className="relative bg-black min-h-screen w-full overflow-hidden">
+          <video 
+            className="absolute inset-0 w-full h-full object-contain bg-black"
+            autoPlay 
+            muted 
+            playsInline
+            loop={false}
+            controls={false}
+            preload="auto"
+            onEnded={handleContinue}
+          >
+            <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
+      );
+    }
+
+    // Desktop landscape - wide screens: full-screen 16x9 video, auto-advance
+    return (
+      <div className="relative bg-black min-h-screen w-full overflow-hidden">
+        <video 
+          className="absolute inset-0 w-full h-full object-contain bg-black"
+          autoPlay 
+          muted 
+          playsInline
+          loop={false}
+          controls={false}
+          preload="auto"
+          onEnded={handleContinue}
+        >
+          <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       </div>
     );
   }

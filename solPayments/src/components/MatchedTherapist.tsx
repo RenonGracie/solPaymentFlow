@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Calendar, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { TMatchedTherapistData } from "@/api/types/therapist.types";
+import type { SlotsResponse } from "@/api/services";
+import { useTherapistsService } from "@/api/services";
 
 interface MatchedTherapistProps {
   therapistsList: TMatchedTherapistData[];
@@ -34,10 +36,14 @@ export default function MatchedTherapist({
   const [viewedTherapistIds, setViewedTherapistIds] = useState<Set<string>>(new Set());
   const [showVideo, setShowVideo] = useState(false);
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
+  const [fetchedSlots, setFetchedSlots] = useState<Record<string, string[]>>({});
+  const [fetchingSlots, setFetchingSlots] = useState<Record<string, boolean>>({});
   
   const currentTherapistData = therapistsList[currentIndex];
   const therapist = currentTherapistData?.therapist;
-  const matchedSpecialties = currentTherapistData?.matched_diagnoses_specialities || [];
+  const matchedSpecialtiesRaw = currentTherapistData?.matched_diagnoses_specialities || [];
+  
+  const { slots: slotsRequest } = useTherapistsService();
   
   // Track viewed therapists
   useEffect(() => {
@@ -45,6 +51,26 @@ export default function MatchedTherapist({
       setViewedTherapistIds(prev => new Set([...prev, therapist.id]));
     }
   }, [therapist?.id]);
+  
+  // Fetch Google Calendar-backed slots when therapist changes (by calendar/email)
+  useEffect(() => {
+    const email = therapist?.calendar_email || therapist?.email;
+    if (!email) return;
+    // Avoid refetch if already fetched
+    if (fetchedSlots[email] || fetchingSlots[email]) return;
+    setFetchingSlots(prev => ({ ...prev, [email]: true }));
+    slotsRequest
+      .makeRequest({ params: { email } })
+      .then((res: SlotsResponse) => {
+        const avail = res?.available_slots || [];
+        setFetchedSlots(prev => ({ ...prev, [email]: avail }));
+      })
+      .catch(() => {
+        // Swallow errors; fallback to any slots in the match payload
+      })
+      .finally(() => setFetchingSlots(prev => ({ ...prev, [email]: false })));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [therapist?.calendar_email, therapist?.email]);
   
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
@@ -117,12 +143,62 @@ export default function MatchedTherapist({
 
   if (!therapist) return null;
 
+  // Sanitize labels to remove JSON artifacts like curly braces or stray quotes
+  const sanitizeLabel = (value: unknown): string => {
+    if (typeof value !== 'string') return '';
+    return value
+      .replace(/[{}\[\]"']/g, '') // remove curly/square braces and quotes (single/double)
+      .replace(/\s+/g, ' ') // collapse whitespace
+      .trim();
+  };
+ 
+  // Normalize arbitrary inputs (string | string[] | JSON-like) to a clean string[]
+  const toStringArray = (input: unknown): string[] => {
+    if (!input) return [];
+    if (Array.isArray(input)) return input.map((v) => sanitizeLabel(typeof v === 'string' ? v : String(v))).filter(Boolean);
+    if (typeof input === 'string') {
+      const raw = input.trim();
+      if (!raw) return [];
+      // Try parse JSON array first
+      if ((raw.startsWith('[') && raw.endsWith(']')) || (raw.startsWith('"[') && raw.endsWith(']"'))) {
+        try {
+          const parsed = JSON.parse(raw.replace(/^"|"$/g, ''));
+          if (Array.isArray(parsed)) {
+            return parsed.map((v) => sanitizeLabel(typeof v === 'string' ? v : String(v))).filter(Boolean);
+          }
+        } catch {}
+      }
+      // Remove wrapping braces if present like {a, b}
+      const noBraces = raw.replace(/^[{\[]|[}\]]$/g, '');
+      // Split by common delimiters
+      const parts = noBraces.split(/[,;\|]/g).map((s) => sanitizeLabel(s));
+      return parts.filter(Boolean);
+    }
+    // Fallback
+    try {
+      return [sanitizeLabel(String(input))].filter(Boolean);
+    } catch {
+      return [];
+    }
+  };
+
+  const cleanList = (list?: unknown[]): string[] => {
+    if (!Array.isArray(list)) return [];
+    return list
+      .map(sanitizeLabel)
+      .filter((label) => /[A-Za-z0-9]/.test(label)); // ensure there is meaningful content
+  };
+ 
+  const matchedSpecialties = cleanList(matchedSpecialtiesRaw);
+ 
   // Combine all specialties and diagnoses
-  const allSpecialties = [
-    ...(therapist.specialities || []),
-    ...(therapist.diagnoses || []),
-    ...(therapist.diagnoses_specialities || [])
-  ].filter(Boolean);
+  const allSpecialtiesRaw = [
+    ...toStringArray(therapist.specialities),
+    ...toStringArray(therapist.diagnoses),
+    ...toStringArray(therapist.diagnoses_specialities),
+    ...toStringArray(therapist.diagnoses_specialties_array),
+  ];
+  const allSpecialties = cleanList(allSpecialtiesRaw);
   
   // Remove duplicates and sort by match
   const uniqueSpecialties = Array.from(new Set(allSpecialties));
@@ -130,6 +206,13 @@ export default function MatchedTherapist({
     ...uniqueSpecialties.filter(s => matchedSpecialties.includes(s)),
     ...uniqueSpecialties.filter(s => !matchedSpecialties.includes(s))
   ];
+ 
+  // Combine internal and external therapeutic orientation fields
+  const therapeuticOrientationCombined = [
+    ...toStringArray(therapist.therapeutic_orientation),
+    ...toStringArray(therapist.internal_therapeutic_orientation),
+  ];
+  const therapeuticOrientation = Array.from(new Set(cleanList(therapeuticOrientationCombined)));
 
   // Check if video URL is valid
   const hasValidVideo = therapist.welcome_video_link && 
@@ -162,7 +245,9 @@ export default function MatchedTherapist({
   const goNextMonth = () => setCalendarDate(new Date(currentYear, currentMonth + 1, 1));
 
   // Build time slots from therapist.available_slots for the selected day
-  const slotsForDay = (therapist.available_slots || [])
+  const emailForSlots = therapist?.calendar_email || therapist?.email || '';
+  const calendarAvailableSlots = fetchedSlots[emailForSlots] || therapist.available_slots || [];
+  const slotsForDay = (calendarAvailableSlots || [])
     .map((iso: string) => new Date(iso))
     .filter((dt: Date) => selectedDateObj && isSameDay(dt, selectedDateObj))
     .sort((a: Date, b: Date) => a.getTime() - b.getTime());
@@ -324,11 +409,11 @@ export default function MatchedTherapist({
                     </div>
 
                     {/* Therapeutic orientation */}
-                    {therapist.therapeutic_orientation && therapist.therapeutic_orientation.length > 0 && (
+                    {therapeuticOrientation && therapeuticOrientation.length > 0 && (
                       <div>
                         <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Therapeutic orientation</p>
                         <div className="flex flex-wrap gap-2">
-                          {therapist.therapeutic_orientation.map((orientation, i) => (
+                          {therapeuticOrientation.map((orientation, i) => (
                             <span key={`orientation-${i}`} className="px-3 py-1 bg-white border border-gray-300 rounded-full text-xs shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
                               {orientation}
                             </span>

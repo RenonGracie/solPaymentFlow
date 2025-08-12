@@ -37,6 +37,7 @@ export type MatchResponse = {
       diagnoses?: string[];  // Add this
       specialities?: string[];  // Add this
       diagnoses_specialities?: string[];
+      diagnoses_specialties_array?: string[];
       ethnicity?: string[];
       gender?: string;
       identities_as?: string;
@@ -56,6 +57,7 @@ export type MatchResponse = {
       negative_affect_by_social_media?: boolean;
       states?: string[];
       therapeutic_orientation?: string[];
+      internal_therapeutic_orientation?: string[] | string;
       family_household?: string;
       welcome_video_link?: string;
       greetings_video_link?: string;
