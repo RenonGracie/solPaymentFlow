@@ -496,7 +496,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-10 sm:pb-14">
+            <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
               <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
@@ -578,7 +578,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-10 sm:pb-14">
+            <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
               <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
@@ -652,7 +652,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-10 sm:pb-14">
+            <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
               <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent">
                 <div className="text-center mb-6 sm:mb-8">
                   <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
@@ -1155,7 +1155,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 <div className="w-8"></div>
               </div>
 
-              <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pt-2 sm:pt-4 pb-2 sm:pb-4">
+              <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12 pb-2 sm:pb-4">
                 <div className="max-w-md w-full">
                   {/* Title duplicated in video artwork; removing per design */}
                   <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
@@ -1240,8 +1240,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             </div>
  
             {/* Content */}
-            <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-6 sm:pb-8">
-              <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pt-4 sm:pt-8 pb-6 sm:pb-8">
+              <div className="flex-1 flex items-start justify-center">
                 <div className="max-w-md w-full">
                   <div className="text-center mb-4 sm:mb-6">
                     <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
@@ -1379,7 +1379,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                <div className="w-8"></div>
              </div>
 
-             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pt-2 sm:pt-4 pb-2 sm:pb-4">
+             <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12 pb-2 sm:pb-4">
                <div className="max-w-md w-full">
                  {/* Title duplicated in video artwork; removing per design */}
                  <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
@@ -1463,8 +1463,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
            </div>
 
            {/* Content */}
-           <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-6 sm:pb-8">
-             <div className="flex-1 flex items-center justify-center">
+           <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pt-4 sm:pt-8 pb-6 sm:pb-8">
+             <div className="flex-1 flex items-start justify-center">
                <div className="max-w-md w-full">
                  <div className="text-center mb-4 sm:mb-6">
                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 

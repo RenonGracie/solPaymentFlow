@@ -210,6 +210,13 @@ export default function MatchedTherapist({
     return '';
   };
 
+  // Map program/cohort to display category
+  const getTherapistCategory = (t: { program?: string; cohort?: string } | undefined): string => {
+    const hay = `${t?.program ?? ''} ${t?.cohort ?? ''}`.toLowerCase();
+    const gradHints = ['graduate', 'grad', 'intern', 'practicum', 'student', 'trainee'];
+    return gradHints.some(k => hay.includes(k)) ? 'Graduate Therapist' : 'Associate Therapist';
+  };
+
   // Function to extract YouTube video ID from URL
   const extractYouTubeId = (url: string): string => {
     const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
@@ -332,19 +339,48 @@ export default function MatchedTherapist({
   };
 
   /** Helper: calendar cell color based on free_ratio */
-  const dayColor = (ratio: number): "red" | "blue" | "green" => {
-    if (ratio <= 0) return "red";
-    if (ratio < 0.5) return "blue";
-    return "green";
+  const dayColor = (ratio: number): "red" | "yellow" | "green" => {
+    if (ratio <= 0) return "red";         // no availability
+    if (ratio < 1) return "yellow";       // some availability
+    return "green";                        // fully free
   };
 
   /** Pull availability for this therapist + month (if fetched) */
   const availability = availabilityCache[avKey];
 
+  // Email used for legacy slots lookups
+  const emailForSlots = therapist?.calendar_email || therapist?.email || '';
+
+  /** Fallback: derive per-day available slot counts from legacy ISO slots if no availability JSON */
+  const legacyDayCount = useMemo(() => {
+    const map: Record<number, number> = {};
+    const isoList = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
+    for (const iso of isoList) {
+      const dt = new Date(iso);
+      if (dt.getFullYear() === currentYear && dt.getMonth() === currentMonth) {
+        const day = dt.getDate();
+        map[day] = (map[day] ?? 0) + 1;
+      }
+    }
+    return map;
+  }, [fetchedSlots, therapist?.available_slots, emailForSlots, currentYear, currentMonth]);
+
+  /** Count available slots for a particular day (API sessions preferred, else free slots, else legacy) */
+  const getDayAvailableCount = (date: Date): number => {
+    const dayNum = date.getDate();
+    if (availability?.days && availability.days[dayNum]) {
+      const payload = availability.days[dayNum];
+      const sessions = payload.sessions ?? [];
+      if (sessions.length > 0) return sessions.length;
+      const freeSlots = (payload.slots || []).filter(s => s.is_free);
+      return freeSlots.length;
+    }
+    return legacyDayCount[dayNum] ?? 0;
+  };
+
   /** Build time slots for the selected day:
    *  Prefer backend availability.sessions (fully-free session windows),
    *  else fallback to legacy fetchedSlots (ISO strings). */
-  const emailForSlots = therapist?.calendar_email || therapist?.email || '';
   const slotsForDay = useMemo(() => {
     if (!selectedDateObj) return [];
 
@@ -377,42 +413,34 @@ export default function MatchedTherapist({
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-      {/* Header - Fixed height */}
-      <div className="relative overflow-hidden h-[160px] flex-shrink-0">
+      {/* Header - reduced height to match app flow */}
+      <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
         <Image
           src="/onboarding-banner.jpg"
           alt="Onboarding Banner"
           width={1440}
-          height={160}
+          height={96}
           priority
           className="w-full h-full object-cover"
         />
-        
-        <div className="absolute inset-0 flex flex-col justify-between p-6">
-          <div className="flex items-center">
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="mr-4 p-2 rounded-full hover:bg-white/20 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-800" />
-              </button>
-            )}
-            <Image
-              src="/sol-health-logo.svg"
-              alt="Sol Health"
-              width={120}
-              height={20}
-              className="h-5 w-auto"
-            />
-          </div>
-
-          <div className="text-center">
-            <h2 className="very-vogue-title text-3xl text-gray-800">
-              We Found the <em>Best Therapist</em> for You
-            </h2>
-          </div>
+        <div className="absolute inset-0 flex items-center justify-start p-3 sm:p-4">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="mr-2 p-2 rounded-full hover:bg-white/20 transition-colors"
+              aria-label="Back"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-800" />
+            </button>
+          )}
         </div>
+      </div>
+
+      {/* Heading below banner */}
+      <div className="px-4 md:px-6 py-3">
+        <h2 className="very-vogue-title text-2xl sm:text-3xl text-gray-800">
+          We Found the <em>Best Therapist</em> for You
+        </h2>
       </div>
 
       {/* Main Content */}
@@ -425,7 +453,7 @@ export default function MatchedTherapist({
                 {hasValidVideo && (
                   <button
                     onClick={() => setShowVideo(!showVideo)}
-                    className="absolute top-3 right-3 md:top-4 md:right-4 w-28 h-16 md:w-32 md:h-20 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors relative overflow-hidden shadow-[1px_1px_0_#5C3106] z-10"
+                    className="absolute top-3 right-3 md:top-4 md:right-4 w-28 h-16 md:w-32 md:h-20 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106] z-10"
                   >
                     {therapist.image_link && !imageError[therapist.id] && (
                       <img
@@ -460,7 +488,7 @@ export default function MatchedTherapist({
                     
                     <div className="flex-1 w-full">
                       <h2 className="very-vogue-title text-3xl text-gray-800">{therapist.intern_name}</h2>
-                      <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>{therapist.program}</p>
+                      <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>{getTherapistCategory(therapist)}</p>
                       {/* Matched specialties */}
                       <div className="flex flex-wrap gap-2 mt-3">
                         {matchedSpecialties.slice(0, 3).map((specialty, i) => (
@@ -621,16 +649,15 @@ export default function MatchedTherapist({
                         {calendarCells.map((cell) => {
                           const selected = selectedDateObj ? isSameDay(cell.date, selectedDateObj) : false;
 
-                          // Availability-based coloring for in-month cells
+                          // Availability-based coloring for in-month cells using count thresholds
                           let bgClass = 'bg-white';
-                          if (cell.inMonth && availability?.days) {
-                            const dayNum = cell.date.getDate();
-                            const ratio = availability.days[dayNum]?.summary?.free_ratio ?? 0;
-                            const color = dayColor(ratio); // red | blue | green
+                          if (cell.inMonth) {
+                            const count = getDayAvailableCount(cell.date);
+                            const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
                             bgClass =
-                              color === "red" ? "bg-red-100" :
-                              color === "blue" ? "bg-blue-100" :
-                              "bg-green-100";
+                              color === 'red' ? 'bg-red-100' :
+                              color === 'yellow' ? 'bg-yellow-100' :
+                              'bg-green-100';
                           }
 
                           return (
@@ -638,14 +665,10 @@ export default function MatchedTherapist({
                               key={cell.key}
                               onClick={() => cell.inMonth && setSelectedDateObj(cell.date)}
                               disabled={!cell.inMonth}
-                              title={
-                                cell.inMonth && availability?.days
-                                  ? `Free: ${Math.round((availability.days[cell.date.getDate()]?.summary?.free_ratio ?? 0) * 100)}%`
-                                  : undefined
-                              }
+                              title={cell.inMonth ? `Available slots: ${getDayAvailableCount(cell.date)}` : undefined}
                               className={`py-2 rounded-lg transition-colors border ${
                                 selected
-                                  ? 'bg-yellow-400 text-white border-yellow-400'
+                                  ? 'bg-blue-500 text-white border-blue-500'
                                   : cell.inMonth
                                     ? `${bgClass} hover:bg-yellow-50 border-transparent`
                                     : 'bg-white text-gray-300 cursor-not-allowed opacity-60 border-transparent'
