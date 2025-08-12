@@ -223,18 +223,15 @@ export default function MatchedTherapist({
     setImageError(prev => ({ ...prev, [therapistId]: true }));
   };
 
-  // Ensure all hooks above are called consistently before early exit
-  if (!therapist) return null;
-
   // Sanitize labels to remove JSON artifacts like curly braces or stray quotes
   const sanitizeLabel = (value: unknown): string => {
     if (typeof value !== 'string') return '';
     return value
-      .replace(/[{}\[\]"']/g, '') // remove curly/square braces and quotes (single/double)
-      .replace(/\s+/g, ' ') // collapse whitespace
+      .replace(/[{}\[\]"']/g, '')
+      .replace(/\s+/g, ' ')
       .trim();
   };
- 
+
   // Normalize arbitrary inputs (string | string[] | JSON-like) to a clean string[]
   const toStringArray = (input: unknown): string[] => {
     if (!input) return [];
@@ -276,10 +273,10 @@ export default function MatchedTherapist({
  
   // Combine all specialties and diagnoses
   const allSpecialtiesRaw = [
-    ...toStringArray(therapist.specialities),
-    ...toStringArray(therapist.diagnoses),
-    ...toStringArray(therapist.diagnoses_specialities),
-    ...toStringArray(therapist.diagnoses_specialties_array),
+    ...toStringArray(therapist?.specialities),
+    ...toStringArray(therapist?.diagnoses),
+    ...toStringArray(therapist?.diagnoses_specialities),
+    ...toStringArray(therapist?.diagnoses_specialties_array),
   ];
   const allSpecialties = cleanList(allSpecialtiesRaw);
   
@@ -292,16 +289,15 @@ export default function MatchedTherapist({
  
   // Combine internal and external therapeutic orientation fields
   const therapeuticOrientationCombined = [
-    ...toStringArray(therapist.therapeutic_orientation),
-    ...toStringArray(therapist.internal_therapeutic_orientation),
+    ...toStringArray(therapist?.therapeutic_orientation),
+    ...toStringArray(therapist?.internal_therapeutic_orientation),
   ];
   const therapeuticOrientation = Array.from(new Set(cleanList(therapeuticOrientationCombined)));
-  const religions = toStringArray(therapist.religion);
+  const religions = toStringArray(therapist?.religion);
 
   // Check if video URL is valid
-  const hasValidVideo = therapist.welcome_video_link && 
-    (therapist.welcome_video_link.startsWith('http://') || 
-     therapist.welcome_video_link.startsWith('https://'));
+  const welcomeVideoLink = therapist?.welcome_video_link ?? '';
+  const hasValidVideo = welcomeVideoLink.startsWith('http://') || welcomeVideoLink.startsWith('https://');
 
   // Calendar computations (Monday-start week)
   const monthLabel = calendarDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
@@ -376,6 +372,8 @@ export default function MatchedTherapist({
 
   const formatTimeLabel = (date: Date) =>
     date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+  if (!therapist) return null;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
