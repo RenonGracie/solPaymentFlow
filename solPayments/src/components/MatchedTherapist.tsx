@@ -1,12 +1,39 @@
 // solPayments/src/components/MatchedTherapist.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Calendar, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { TMatchedTherapistData } from "@/api/types/therapist.types";
 import type { SlotsResponse } from "@/api/services";
 import { useTherapistsService } from "@/api/services";
+
+/** ---- Availability types (from new backend endpoint) ---- */
+type AvSlot = { start: string; end: string; free_ratio: number; is_free: boolean };
+type AvDay = {
+  summary: {
+    free_ratio: number;
+    free_secs: number;
+    busy_secs: number;
+    day_start: string;
+    day_end: string;
+    segments: { start: string; end: string; seconds: number }[];
+  };
+  slots: AvSlot[];
+  sessions?: { start: string; end: string }[];
+};
+type Availability = {
+  meta: {
+    calendar_id: string;
+    year: number;
+    month: number;
+    timezone: string;
+    work_start: string;
+    work_end: string;
+    slot_minutes: number;
+  };
+  days: Record<number, AvDay>;
+};
 
 interface MatchedTherapistProps {
   therapistsList: TMatchedTherapistData[];
@@ -38,12 +65,22 @@ export default function MatchedTherapist({
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
   const [fetchedSlots, setFetchedSlots] = useState<Record<string, string[]>>({});
   const [fetchingSlots, setFetchingSlots] = useState<Record<string, boolean>>({});
-  
+  const [showAllSpecialties, setShowAllSpecialties] = useState(false);
+
+  /** New: cache monthly availability by therapist + month + tz */
+  const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
+
   const currentTherapistData = therapistsList[currentIndex];
   const therapist = currentTherapistData?.therapist;
   const matchedSpecialtiesRaw = currentTherapistData?.matched_diagnoses_specialities || [];
   
   const { slots: slotsRequest } = useTherapistsService();
+
+  /** Browser timezone */
+  const timezone = useMemo(() => {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; }
+    catch { return "America/New_York"; }
+  }, []);
   
   // Track viewed therapists
   useEffect(() => {
@@ -52,26 +89,75 @@ export default function MatchedTherapist({
     }
   }, [therapist?.id]);
   
-  // Fetch Google Calendar-backed slots when therapist changes (by calendar/email)
+  // Legacy: Fetch Google Calendar-backed slots (ISO strings) if service is available
   useEffect(() => {
     const email = therapist?.calendar_email || therapist?.email;
     if (!email) return;
-    // Avoid refetch if already fetched
     if (fetchedSlots[email] || fetchingSlots[email]) return;
     setFetchingSlots(prev => ({ ...prev, [email]: true }));
     slotsRequest
       .makeRequest({ params: { email } })
       .then((res: SlotsResponse) => {
-        const avail = res?.available_slots || [];
+        const avail = (res as any)?.available_slots || [];
         setFetchedSlots(prev => ({ ...prev, [email]: avail }));
       })
       .catch(() => {
-        // Swallow errors; fallback to any slots in the match payload
+        // Swallow errors; fallback occurs to availability endpoint below / or to mock slots
       })
       .finally(() => setFetchingSlots(prev => ({ ...prev, [email]: false })));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [therapist?.calendar_email, therapist?.email]);
-  
+
+  /** New: Fetch monthly availability JSON (colors + sessions/slots) when therapist or month changes */
+  const currentYear = calendarDate.getFullYear();
+  const currentMonth = calendarDate.getMonth(); // 0-based
+  const avKey = useMemo(() => {
+    const email = therapist?.calendar_email || therapist?.email;
+    if (!email) return "";
+    return `${email}:${currentYear}:${currentMonth + 1}:${timezone}`;
+  }, [therapist?.calendar_email, therapist?.email, currentYear, currentMonth, timezone]);
+
+  useEffect(() => {
+    const email = therapist?.calendar_email || therapist?.email;
+    if (!email || !avKey) return;
+    if (availabilityCache[avKey]) return; // cache hit
+
+    const controller = new AbortController();
+    const fetchAvailability = async () => {
+      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, window.location.origin);
+      url.searchParams.set("year", String(currentYear));
+      url.searchParams.set("month", String(currentMonth + 1));
+      url.searchParams.set("timezone", timezone);
+      url.searchParams.set("session_minutes", "45");
+      url.searchParams.set("work_start", "01:00");
+      url.searchParams.set("work_end", "23:00");
+      try {
+        const r = await fetch(url.toString(), { signal: controller.signal });
+        if (!r.ok) throw new Error(`Availability fetch failed: ${r.status}`);
+        const data: Availability = await r.json();
+
+        // Build and log per-day available sessions (for testing)
+        const byDay: Record<string, string[]> = {};
+        Object.entries(data.days || {}).forEach(([dayStr, payload]) => {
+          const day = Number(dayStr);
+          const sessions = (payload.sessions ?? payload.slots.filter(s => s.is_free).map(s => ({ start: s.start, end: s.end })));
+          byDay[dayStr] = sessions.map(s => s.start);
+        });
+        // Helpful console payload
+        // Example: { "1": ["2025-08-01T14:00:00-04:00", ...], "2": [] , ...}
+        console.log(`[availability] ${email} ${currentYear}-${String(currentMonth+1).padStart(2,"0")} (${timezone})`, byDay);
+
+        setAvailabilityCache(prev => ({ ...prev, [avKey]: data }));
+      } catch (e) {
+        // Non-fatal; UI will fall back to legacy slots
+        console.warn("Availability fetch error", e);
+      }
+    };
+    fetchAvailability();
+    return () => controller.abort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [avKey]);
+
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
     viewedTherapistIds.has(t.therapist.id) && t.therapist.id !== therapist?.id
@@ -117,13 +203,9 @@ export default function MatchedTherapist({
   // Function to handle image URL - S3 presigned URLs should be used directly
   const getImageUrl = (imageLink: string | null | undefined): string => {
     if (!imageLink) return '';
-    
-    // If it's already a full URL (S3 presigned URL), use it directly
     if (imageLink.startsWith('http://') || imageLink.startsWith('https://')) {
       return imageLink;
     }
-    
-    // This shouldn't happen with proper S3 presigned URLs, but as a fallback
     console.warn('Image link is not a full URL:', imageLink);
     return '';
   };
@@ -213,6 +295,7 @@ export default function MatchedTherapist({
     ...toStringArray(therapist.internal_therapeutic_orientation),
   ];
   const therapeuticOrientation = Array.from(new Set(cleanList(therapeuticOrientationCombined)));
+  const religions = toStringArray(therapist.religion);
 
   // Check if video URL is valid
   const hasValidVideo = therapist.welcome_video_link && 
@@ -220,8 +303,6 @@ export default function MatchedTherapist({
      therapist.welcome_video_link.startsWith('https://'));
 
   // Calendar computations (Monday-start week)
-  const currentYear = calendarDate.getFullYear();
-  const currentMonth = calendarDate.getMonth();
   const monthLabel = calendarDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const jsFirstDay = new Date(currentYear, currentMonth, 1).getDay(); // 0 Sun .. 6 Sat
   const firstWeekdayIndex = (jsFirstDay + 6) % 7; // 0 Mon .. 6 Sun
@@ -241,16 +322,57 @@ export default function MatchedTherapist({
   });
 
   const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
-  const goPrevMonth = () => setCalendarDate(new Date(currentYear, currentMonth - 1, 1));
-  const goNextMonth = () => setCalendarDate(new Date(currentYear, currentMonth + 1, 1));
+  const goPrevMonth = () => {
+    const next = new Date(currentYear, currentMonth - 1, 1);
+    setCalendarDate(next);
+    // optional: reset selected day to 1st
+    setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
+  };
+  const goNextMonth = () => {
+    const next = new Date(currentYear, currentMonth + 1, 1);
+    setCalendarDate(next);
+    setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
+  };
 
-  // Build time slots from therapist.available_slots for the selected day
+  /** Helper: calendar cell color based on free_ratio */
+  const dayColor = (ratio: number): "red" | "blue" | "green" => {
+    if (ratio <= 0) return "red";
+    if (ratio < 0.5) return "blue";
+    return "green";
+  };
+
+  /** Pull availability for this therapist + month (if fetched) */
+  const availability = availabilityCache[avKey];
+
+  /** Build time slots for the selected day:
+   *  Prefer backend availability.sessions (fully-free session windows),
+   *  else fallback to legacy fetchedSlots (ISO strings). */
   const emailForSlots = therapist?.calendar_email || therapist?.email || '';
-  const calendarAvailableSlots = fetchedSlots[emailForSlots] || therapist.available_slots || [];
-  const slotsForDay = (calendarAvailableSlots || [])
-    .map((iso: string) => new Date(iso))
-    .filter((dt: Date) => selectedDateObj && isSameDay(dt, selectedDateObj))
-    .sort((a: Date, b: Date) => a.getTime() - b.getTime());
+  const calendarAvailableSlotsLegacy = fetchedSlots[emailForSlots] || therapist.available_slots || [];
+
+  const slotsForDay = useMemo(() => {
+    if (!selectedDateObj) return [];
+
+    // Prefer new availability JSON
+    if (availability?.days) {
+      const dayNum = selectedDateObj.getDate();
+      const payload = availability.days[dayNum];
+      if (payload) {
+        const sessions = (payload.sessions && payload.sessions.length > 0)
+          ? payload.sessions.map(s => new Date(s.start))
+          : payload.slots.filter(s => s.is_free).map(s => new Date(s.start));
+        return sessions
+          .filter(dt => isSameDay(dt, selectedDateObj))
+          .sort((a, b) => a.getTime() - b.getTime());
+      }
+    }
+
+    // Fallback to legacy ISO list if no availability
+    return (calendarAvailableSlotsLegacy || [])
+      .map((iso: string) => new Date(iso))
+      .filter((dt: Date) => isSameDay(dt, selectedDateObj))
+      .sort((a: Date, b: Date) => a.getTime() - b.getTime());
+  }, [availability?.days, calendarAvailableSlotsLegacy, selectedDateObj]);
 
   const formatTimeLabel = (date: Date) =>
     date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -301,7 +423,23 @@ export default function MatchedTherapist({
           <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 min-h-0">
             {/* Left Column - Therapist Details */}
             <div className="col-span-1 md:col-span-7 flex flex-col min-h-0">
-              <Card className="md:flex-1 overflow-visible md:overflow-hidden bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
+              <Card className="md:flex-1 overflow-visible md:overflow-hidden bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106] relative">
+                {hasValidVideo && (
+                  <button
+                    onClick={() => setShowVideo(!showVideo)}
+                    className="absolute top-3 right-3 md:top-4 md:right-4 w-28 h-16 md:w-32 md:h-20 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors relative overflow-hidden shadow-[1px_1px_0_#5C3106] z-10"
+                  >
+                    {therapist.image_link && !imageError[therapist.id] && (
+                      <img
+                        src={getImageUrl(therapist.image_link)}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover opacity-50"
+                        onError={() => {}}
+                      />
+                    )}
+                    <Play className="w-7 h-7 md:w-8 md:h-8 text-white relative z-10" />
+                  </button>
+                )}
                 <CardContent className="p-4 md:p-6 md:h-full md:overflow-y-auto">
                   {/* Therapist Header */}
                   <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
@@ -333,30 +471,12 @@ export default function MatchedTherapist({
                           </span>
                         ))}
                         {matchedSpecialties.length > 3 && (
-                          <button className="text-blue-700 text-sm underline" style={{ fontFamily: 'var(--font-inter)' }}>
-                            +{matchedSpecialties.length - 3} more
-                          </button>
+                          <span className="px-3 py-1 bg-white text-blue-700 rounded-full text-xs border border-gray-300 shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
+                            +{matchedSpecialties.length - 3} more matches
+                          </span>
                         )}
                       </div>
                     </div>
-
-                    {/* Video button */}
-                    {hasValidVideo && (
-                      <button
-                        onClick={() => setShowVideo(!showVideo)}
-                        className="mt-2 md:mt-0 w-full md:w-32 h-20 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors relative overflow-hidden shadow-[1px_1px_0_#5C3106]"
-                      >
-                        {therapist.image_link && !imageError[therapist.id] && (
-                          <img
-                            src={getImageUrl(therapist.image_link)}
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-cover opacity-50"
-                            onError={() => {}}
-                          />
-                        )}
-                        <Play className="w-8 h-8 text-white relative z-10" />
-                      </button>
-                    )}
                   </div>
 
                   {/* Demographics */}
@@ -371,7 +491,7 @@ export default function MatchedTherapist({
                     </div>
                     <div>
                       <p className="text-gray-500">Works in States</p>
-                      <p className="font-medium">{therapist.states?.join(', ') || 'Not specified'}</p>
+                      <p className="font-medium">{Array.isArray(therapist.states) ? therapist.states.join(', ') : (therapist.states || 'Not specified')}</p>
                     </div>
                   </div>
 
@@ -392,19 +512,54 @@ export default function MatchedTherapist({
                     <div>
                       <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Specializes in</p>
                       <div className="flex flex-wrap gap-2">
-                        {sortedSpecialties.map((specialty, i) => (
+                        {/* Highlighted (matched) first */}
+                        {matchedSpecialties.map((specialty, i) => (
                           <span 
-                            key={`specialty-${i}`}
-                            className={`px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] ${
-                              matchedSpecialties.includes(specialty)
-                                ? 'bg-yellow-100 border-[#5C3106] text-gray-800'
-                                : 'bg-white border-gray-300 text-gray-700'
-                            }`}
+                            key={`matched-specialty-${i}`}
+                            className="px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] bg-yellow-100 border-[#5C3106] text-gray-800"
                             style={{ fontFamily: 'var(--font-inter)' }}
                           >
                             {specialty}
                           </span>
                         ))}
+
+                        {/* First 3 non-highlighted (or all if expanded) */}
+                        {(() => {
+                          const nonMatched = sortedSpecialties.filter((s) => !matchedSpecialties.includes(s));
+                          const visible = showAllSpecialties ? nonMatched : nonMatched.slice(0, 3);
+                          const remaining = nonMatched.length - visible.length;
+                          return (
+                            <>
+                              {visible.map((specialty, i) => (
+                                <span 
+                                  key={`nonmatched-specialty-${i}`}
+                                  className="px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] bg-white border-gray-300 text-gray-700"
+                                  style={{ fontFamily: 'var(--font-inter)' }}
+                                >
+                                  {specialty}
+                                </span>
+                              ))}
+                              {!showAllSpecialties && remaining > 0 && (
+                                <button
+                                  onClick={() => setShowAllSpecialties(true)}
+                                  className="px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] bg-white border-gray-300 text-blue-700"
+                                  style={{ fontFamily: 'var(--font-inter)' }}
+                                >
+                                  Show {remaining}+ more
+                                </button>
+                              )}
+                              {showAllSpecialties && nonMatched.length > 3 && (
+                                <button
+                                  onClick={() => setShowAllSpecialties(false)}
+                                  className="px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] bg-white border-gray-300 text-blue-700"
+                                  style={{ fontFamily: 'var(--font-inter)' }}
+                                >
+                                  Show less
+                                </button>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
 
@@ -421,6 +576,20 @@ export default function MatchedTherapist({
                         </div>
                       </div>
                     )}
+
+                    {/* Religion experience */}
+                    {religions && religions.length > 0 && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Has experience working with religions</p>
+                        <div className="flex flex-wrap gap-2">
+                          {religions.map((r, i) => (
+                            <span key={`religion-${i}`} className="px-3 py-1 bg-white border border-gray-300 rounded-full text-xs shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
+                              {r}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -431,7 +600,9 @@ export default function MatchedTherapist({
               <Card className="md:flex-1 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106] md:sticky md:top-4">
                 <CardContent className="p-4 md:p-6 flex flex-col">
                   <h3 className="very-vogue-title text-2xl text-gray-800 mb-1">Book Your First Session</h3>
-                  <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>Local Timezone (Central Time)</p>
+                  <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                    Local Timezone ({timezone})
+                  </p>
 
                   {/* Calendar */}
                   <div className="mb-6">
@@ -451,16 +622,34 @@ export default function MatchedTherapist({
                       <div className="grid grid-cols-7 gap-1 text-center text-sm">
                         {calendarCells.map((cell) => {
                           const selected = selectedDateObj ? isSameDay(cell.date, selectedDateObj) : false;
+
+                          // Availability-based coloring for in-month cells
+                          let bgClass = 'bg-white';
+                          if (cell.inMonth && availability?.days) {
+                            const dayNum = cell.date.getDate();
+                            const ratio = availability.days[dayNum]?.summary?.free_ratio ?? 0;
+                            const color = dayColor(ratio); // red | blue | green
+                            bgClass =
+                              color === "red" ? "bg-red-100" :
+                              color === "blue" ? "bg-blue-100" :
+                              "bg-green-100";
+                          }
+
                           return (
                             <button
                               key={cell.key}
                               onClick={() => cell.inMonth && setSelectedDateObj(cell.date)}
                               disabled={!cell.inMonth}
+                              title={
+                                cell.inMonth && availability?.days
+                                  ? `Free: ${Math.round((availability.days[cell.date.getDate()]?.summary?.free_ratio ?? 0) * 100)}%`
+                                  : undefined
+                              }
                               className={`py-2 rounded-lg transition-colors border ${
                                 selected
                                   ? 'bg-yellow-400 text-white border-yellow-400'
                                   : cell.inMonth
-                                    ? 'bg-white hover:bg-yellow-50 border-transparent'
+                                    ? `${bgClass} hover:bg-yellow-50 border-transparent`
                                     : 'bg-white text-gray-300 cursor-not-allowed opacity-60 border-transparent'
                               }`}
                             >

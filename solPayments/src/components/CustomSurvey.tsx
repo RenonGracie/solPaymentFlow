@@ -1254,7 +1254,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     <div key={phq9CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
                       {/* Question */}
                       <div className="mb-4 sm:mb-5">
-                        <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                        <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-inter)' }}>
                           {currentPhq9Question.question}
                         </p>
                       </div>
@@ -1282,10 +1282,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                                 setTimeout(() => setPhq9CarouselIndex(phq9CarouselIndex + 1), 120);
                               }
                             }}
-                            className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
+                            onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+                            onTouchEnd={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+                            className={`w-full max-w-sm mx-auto py-2.5 sm:py-3 px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                               isSelected
                                 ? 'bg-[#5C3106] text-white border border-[#5C3106]'
-                                : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
+                                : 'bg-white border border-[#5C3106] text-gray-800 md:hover:bg-[#F5E8D1]'
                             }`}
                             style={{ fontFamily: 'var(--font-inter)' }}
                           >
@@ -1480,7 +1482,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                    <div key={gad7CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
-                       <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                       <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-inter)' }}>
                          {currentGad7Question.question}
                        </p>
                      </div>
@@ -1506,10 +1508,12 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                                setTimeout(() => setGad7CarouselIndex(gad7CarouselIndex + 1), 120);
                              }
                            }}
-                           className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
+                           onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+                           onTouchEnd={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+                           className={`w-full max-w-sm mx-auto py-2.5 sm:py-3 px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                              isSelected
                                ? 'bg-[#5C3106] text-white border border-[#5C3106]'
-                               : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
+                               : 'bg-white border border-[#5C3106] text-gray-800 md:hover:bg-[#F5E8D1]'
                            }`}
                            style={{ fontFamily: 'var(--font-inter)' }}
                          >
