@@ -145,7 +145,8 @@ export default function MatchedTherapist({
 
     const controller = new AbortController();
     const fetchAvailability = async () => {
-      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, window.location.origin);
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? window.location.origin;
+      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, API_BASE);
       url.searchParams.set("year", String(currentYear));
       url.searchParams.set("month", String(currentMonth + 1));
       url.searchParams.set("timezone", timezone);
