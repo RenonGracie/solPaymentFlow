@@ -39,7 +39,7 @@ export default function ClientBody({
     };
   }, []);
 
-  // Expose and listen for global scroll-to-top; also auto-reset on keyboard dismiss
+  // Expose global scroll-to-top; pages can call on transitions/submit
   useEffect(() => {
     const scrollTop = (smooth = true) => {
       const el = containerRef.current;
@@ -54,20 +54,8 @@ export default function ClientBody({
     window.__appScrollToTop = scrollTop;
     const onReset = () => scrollTop(true);
     window.addEventListener("app:reset-scroll", onReset as EventListener);
-
-    const onFocusOut = () => {
-      // When focus leaves an input, gently scroll back to top after keyboard hides
-      const active = document.activeElement as HTMLElement | null;
-      const isInput = !!active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT' || active.isContentEditable);
-      if (!isInput) {
-        setTimeout(() => scrollTop(true), 120);
-      }
-    };
-    document.addEventListener("focusout", onFocusOut);
-
     return () => {
       window.removeEventListener("app:reset-scroll", onReset as EventListener);
-      document.removeEventListener("focusout", onFocusOut);
     };
   }, []);
 
