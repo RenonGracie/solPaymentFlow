@@ -474,7 +474,7 @@ export default function MatchedTherapist({
                 {hasValidVideo && (
                   <button
                     onClick={() => setShowVideo(!showVideo)}
-                    className="absolute top-3 right-3 md:top-4 md:right-4 w-28 h-16 md:w-32 md:h-20 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106] z-10"
+                    className="absolute top-3 right-3 md:top-4 md:right-4 w-56 h-32 md:w-64 md:h-40 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106] z-10"
                   >
                     {therapist.image_link && !imageError[therapist.id] && (
                       <img
