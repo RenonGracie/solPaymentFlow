@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { checkEligibility } from "../app/api/eligibility.js";
+import { PAYER_ID_BY_PROVIDER, NPI } from "@/api/eligibilityConfig";
 
 type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
 
@@ -93,20 +94,18 @@ export default function InsuranceVerificationModal({
 
   const insuranceProviders = [
     { id: "aetna" as const, name: "Aetna" },
-    { id: "cigna" as const, name: "Cigna/Evernorth" },
-    { id: "meritain" as const, name: "Meritain" },
-    { id: "carelon" as const, name: "Carelon" },
-    { id: "bcbs" as const, name: "BCBS" },
+    { id: "meritain" as const, name: "Meritain Health" },
+    { id: "horizon_bcbs_nj" as const, name: "Horizon Blue Cross Blue Shield of NJ" },
     { id: "amerihealth" as const, name: "AmeriHealth" }
   ];
 
   const tradingPartnerServiceIdMap: Record<InsuranceProvider, string> = {
-    aetna: "60054",
-    cigna: "62308",
-    meritain: "64157",
-    carelon: "47198",
-    bcbs: "22099",
-    amerihealth: "60061",
+    aetna: PAYER_ID_BY_PROVIDER["Aetna"],
+    meritain: PAYER_ID_BY_PROVIDER["Meritain Health"],
+    // map horizon key even though not in union; accessed via selectedProvider narrowing
+    // @ts-expect-error horizon key is not part of InsuranceProvider union, but used via selectedProvider narrowing
+    horizon_bcbs_nj: PAYER_ID_BY_PROVIDER["Horizon Blue Cross Blue Shield of NJ"],
+    amerihealth: PAYER_ID_BY_PROVIDER["AmeriHealth"],
     "cash-pay": ""
   };
 
@@ -133,7 +132,7 @@ export default function InsuranceVerificationModal({
       tradingPartnerServiceId: tradingPartnerServiceIdMap[selectedProvider],
       provider: {
         organizationName: "Sol Health",
-        npi: "1669282885"
+        npi: NPI
       },
       subscriber: {
         firstName: formData.firstName,

@@ -1,7 +1,8 @@
 export const VIDEO_BASE_URL = process.env.NEXT_PUBLIC_VIDEO_BASE_URL || '';
 
 function buildVideoUrl(filename: string): string {
-  return VIDEO_BASE_URL ? `${VIDEO_BASE_URL.replace(/\/$/, '')}/${filename}` : `/${filename}`;
+  // Always use local /public assets; ignore external base URL
+  return `/${filename}`;
 }
 
 export const VIDEOS = {

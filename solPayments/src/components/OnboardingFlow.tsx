@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, X, Check, Loader2 } from "lucide-react";
 import { VIDEOS } from "@/lib/videos";
 import { Button } from "@/components/ui/button";
 import { checkEligibility } from "../app/api/eligibility.js";
+import { PAYER_ID_BY_PROVIDER, NPI, getSessionCostForPayer } from "@/api/eligibilityConfig";
 
 interface EligibilityBenefits {
   copay: string;
@@ -45,8 +46,8 @@ interface OnboardingFlowProps {
   initialStep?: number;
 }
 
-// Benefits display logic function
-function getBenefitsDisplay(benefits: EligibilityBenefits) {
+// Benefits display logic function (session rate can vary by payer)
+function getBenefitsDisplay(benefits: EligibilityBenefits, payerIdOverride?: string) {
   // Parse numeric values from string amounts
   const parseAmount = (amount: string): number => {
     return parseFloat(amount.replace(/[$,]/g, '')) || 0;
@@ -59,8 +60,8 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
   const coinsurance = parseFloat(benefits.coinsurance.replace('%', '')) || 0;
   const benefitStructure = benefits.benefitStructure || '';
   
-  // Assume session rate for 90791 - this should come from the API response
-  const sessionRate90791 = 200; // Default value, should be from API
+  // Session rate (allowed amount) varies by payer; default fallback=200
+  const sessionRate90791 = getSessionCostForPayer(payerIdOverride, 200);
 
   // Determine if this is a range display (has coinsurance component)
   const hasCoinsurance = benefitStructure.toLowerCase().includes('coinsurance') || 
@@ -180,22 +181,13 @@ export default function OnboardingFlow({
   // Insurance providers
   const insuranceProviders = [
     { id: "aetna", name: "Aetna" },
-    { id: "cigna", name: "Cigna/Evernorth" },
-    { id: "meritain", name: "Meritain" },
-    { id: "carelon", name: "Carelon" },
-    { id: "bcbs", name: "BCBS" },
+    { id: "meritain", name: "Meritain Health" },
+    { id: "horizon_bcbs_nj", name: "Horizon Blue Cross Blue Shield of NJ" },
     { id: "amerihealth", name: "AmeriHealth" }
   ];
 
   // Trading partner service ID mapping
-  const tradingPartnerServiceIdMap: Record<string, string> = {
-    "Aetna": "60054",
-    "Cigna/Evernorth": "62308",
-    "Meritain": "64157",
-    "Carelon": "47198",
-    "BCBS": "22099",
-    "AmeriHealth": "60061"
-  };
+  const tradingPartnerServiceIdMap: Record<string, string> = PAYER_ID_BY_PROVIDER;
 
   // All US states
   const allStates = [
@@ -388,7 +380,7 @@ export default function OnboardingFlow({
       tradingPartnerServiceId: tradingPartnerServiceIdMap[selectedProvider],
       provider: {
         organizationName: "Sol Health",
-        npi: "1669282885"
+        npi: NPI
       },
       subscriber: {
         firstName: formData.firstName,
@@ -1666,20 +1658,20 @@ export default function OnboardingFlow({
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                         <div className="text-green-800">
                           <p className="font-medium text-base mb-2">
-                            {getBenefitsDisplay(verificationResponse.benefits).largeText}
+                            {getBenefitsDisplay(verificationResponse.benefits, tradingPartnerServiceIdMap[selectedProvider as keyof typeof tradingPartnerServiceIdMap]).largeText}
                           </p>
                           <p className="text-sm text-green-700">
-                            {getBenefitsDisplay(verificationResponse.benefits).smallText}
+                            {getBenefitsDisplay(verificationResponse.benefits, tradingPartnerServiceIdMap[selectedProvider as keyof typeof tradingPartnerServiceIdMap]).smallText}
                           </p>
                         </div>
                       </div>
 
                       {/* Yellow Box - Additional Details (if applicable) */}
-                      {getBenefitsDisplay(verificationResponse.benefits).additionalDetails && (
+                      {getBenefitsDisplay(verificationResponse.benefits, tradingPartnerServiceIdMap[selectedProvider as keyof typeof tradingPartnerServiceIdMap]).additionalDetails && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                           <div className="text-yellow-800">
                             <p className="text-sm leading-relaxed whitespace-pre-line">
-                              {getBenefitsDisplay(verificationResponse.benefits).additionalDetails}
+                              {getBenefitsDisplay(verificationResponse.benefits, tradingPartnerServiceIdMap[selectedProvider as keyof typeof tradingPartnerServiceIdMap]).additionalDetails}
                             </p>
                           </div>
                         </div>

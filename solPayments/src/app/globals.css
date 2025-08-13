@@ -99,6 +99,11 @@
     overflow-y: hidden;            /* Lock vertical scroll at the app root */
     overflow-x: hidden;            /* No horizontal scroll */
     position: relative;
+    /* Beige texture background */
+    background-image: url("/beige texture 2048.svg");
+    background-repeat: repeat;
+    background-position: top center;
+    background-size: 1024px 1024px; /* scale texture for subtle tiling */
   }
 
   /* Prevent pull-to-refresh/overscroll in mobile browsers (Chrome/Safari/Firefox) */
