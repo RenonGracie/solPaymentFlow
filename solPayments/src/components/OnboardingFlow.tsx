@@ -270,7 +270,7 @@ export default function OnboardingFlow({
       setIsWideScreen(width > 1024); // Changed from 1400 to 1024 to match the logic
       
       // Prefer width threshold for mobile to ensure vertical video on phones
-      if (width < 768) {
+      if (width < 1200) {
         setScreenType('mobile');
       } else if (aspectRatio > 1) {
         setScreenType('tablet');

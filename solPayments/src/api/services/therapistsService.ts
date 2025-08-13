@@ -75,6 +75,8 @@ export type MatchResponse = {
 
 type SlotsParams = {
   email: string;
+  state?: string;
+  response_id?: string;
 };
 
 export type SlotsResponse = {

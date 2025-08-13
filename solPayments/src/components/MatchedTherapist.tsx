@@ -110,7 +110,14 @@ export default function MatchedTherapist({
     if (fetchedSlots[email] || fetchingSlots[email]) return;
     setFetchingSlots(prev => ({ ...prev, [email]: true }));
     slotsRequest
-      .makeRequest({ params: { email } })
+      .makeRequest({ params: {
+        email,
+        // Prefer response_id from clientData, else use client's state if present
+        response_id: (clientData?.response_id as string) || undefined,
+        state: (!clientData?.response_id && typeof (clientData as { state?: unknown })?.state === 'string'
+          ? (clientData as { state?: string }).state
+          : undefined)
+      } })
       .then((res: SlotsResponse) => {
         const avail = res?.available_slots || [];
         setFetchedSlots(prev => ({ ...prev, [email]: avail }));
