@@ -20,13 +20,11 @@ export default function ClientBody({
     document.body.className = "antialiased";
   }, []);
 
-  // Track visual viewport height to account for mobile URL bar and keyboard
+  // Track visual viewport height if needed later (kept lightweight; no style writes that cause jumps)
   useEffect(() => {
     const updateVh = () => {
       const vv: VisualViewport | null | undefined = window.visualViewport;
       const height = vv?.height ? vv.height : window.innerHeight;
-      const unit = height * 0.01; // 1% of viewport height
-      document.documentElement.style.setProperty("--vvh", `${unit}px`);
       setVh(height);
     };
 
@@ -65,8 +63,9 @@ export default function ClientBody({
       ref={containerRef}
       className="antialiased overflow-y-auto overflow-x-hidden overscroll-contain"
       style={{
-        height: "calc(var(--vvh, 1vh) * 100)",
-        maxHeight: "calc(var(--vvh, 1vh) * 100)",
+        height: "100svh",
+        maxHeight: "100svh",
+        scrollBehavior: "smooth",
       }}
     >
       {children}
