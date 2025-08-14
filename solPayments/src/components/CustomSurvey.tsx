@@ -595,7 +595,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      </h1>
                     <p className="text-gray-500 text-base sm:text-lg" style={{ fontFamily: 'var(--font-inter)' }}>
                       Browse our Clinical Team{' '}
-                      <a href="/therapists" className="underline" target="_blank" rel="noreferrer">
+                      <a href="https://www.solhealth.co/providers" className="underline" target="_blank" rel="noreferrer">
                         here
                       </a>.
                     </p>
@@ -604,7 +604,9 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <div className="space-y-3 sm:space-y-4">
                     <button
                       onClick={() => handleMatchingPreference('match_me')}
-                      className="relative w-full py-3 sm:py-4 px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106] flex items-center justify-center"
+                      onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+                      onTouchEnd={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+                      className="relative w-full py-3 sm:py-4 px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base sm:text-lg font-medium md:hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106] flex items-center justify-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       <span className="absolute left-4 sm:left-5">🪄</span>
@@ -613,7 +615,9 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     <button
                       onClick={() => handleMatchingPreference('requesting_specific')}
-                      className="relative w-full py-3 sm:py-4 px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base sm:text-lg font-medium hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106] flex items-center justify-center"
+                      onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+                      onTouchEnd={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+                      className="relative w-full py-3 sm:py-4 px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base sm:text-lg font-medium md:hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106] flex items-center justify-center"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       <span className="absolute left-4 sm:left-5">🎯</span>
