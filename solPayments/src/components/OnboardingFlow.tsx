@@ -316,9 +316,9 @@ export default function OnboardingFlow({
 
   const handlePaymentSelection = (type: "insurance" | "cash_pay") => {
     if (type === "cash_pay") {
-      setCurrentStep(4); // Go to state selection
+      setCurrentStep(5); // Go to state selection
     } else {
-      setCurrentStep(5); // Go to NJ insurance plan verification first
+      setCurrentStep(6); // Go to NJ insurance plan verification first
     }
   };
 
@@ -837,7 +837,517 @@ export default function OnboardingFlow({
     );
   }
 
-  // NJ Insurance Plan Verification Screen (Step 5)
+  // Email Input Screen (Step 3)
+  if (currentStep === 3) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+        {/* Header with sunset image */}
+        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+          <img 
+            src="/onboarding-banner.jpg" 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                style={{ 
+                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontWeight: 400,
+                  letterSpacing: '0.02em',
+                  lineHeight: '1.1'
+                }}>
+              CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+            </p>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+          <button onClick={handleBack} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ChevronLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <div className="flex items-center">
+            <img
+              src="/sol-health-logo.svg"
+              alt="Sol Health"
+              className="h-5 w-auto"
+            />
+          </div>
+          <div className="w-10"></div>
+        </div>
+
+        {/* Content - Email Input */}
+        <div className="flex-1 flex items-center justify-center px-6 pb-16">
+          <div className="flow-narrow w-full -mt-16 mx-auto">
+            <div className="text-center mb-12">
+              <span className="text-5xl mb-6 block">📧</span>
+              <h1 className="text-3xl md:text-4xl text-gray-800" 
+                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                What's Your Email?
+              </h1>
+            </div>
+
+            {/* Email Input */}
+            <div className="mb-8">
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                onFocus={() => setShowKeyboard(true)}
+                onBlur={() => setShowKeyboard(false)}
+                placeholder="well@being.com"
+                className="w-full text-2xl md:text-3xl font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
+                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                autoComplete="email"
+                autoCorrect="off"
+                autoCapitalize="off"
+              />
+            </div>
+
+            <Button
+              onClick={handleContinue}
+              disabled={!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)}
+              className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors duration-200 ${
+                formData.email.trim() && /\S+@\S+\.\S+/.test(formData.email)
+                  ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              Continue
+              <ChevronRight className="inline w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Payment Selection Screen (Step 4)
+  if (currentStep === 4) {
+    // Capitalize first letter of name
+    const displayName = formData.preferredName 
+      ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase()
+      : formData.firstName 
+        ? formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1).toLowerCase()
+        : 'there';
+
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+        {/* Header - fixed height */}
+        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+          <img 
+            src="/onboarding-banner.jpg" 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                style={{ 
+                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontWeight: 400,
+                  letterSpacing: '0.02em',
+                  lineHeight: '1.1'
+                }}>
+              CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+            </p>
+          </div>
+        </div>
+
+        {/* Navigation - fixed height */}
+        <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+          <button onClick={handleBack} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ChevronLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <div 
+            className={`flex items-center transition-all duration-1000 ease-in-out ${
+              expandedCard ? 'transform -translate-y-8 scale-0 opacity-0' : ''
+            }`}
+          >
+            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-inter)' }}>
+              Sol Health
+            </h2>
+            <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+          </div>
+          <div className="w-10"></div>
+        </div>
+
+        {/* Content - truly centered in remaining space */}
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
+          <div className="flow-narrow w-full -mt-12 mx-auto">
+            <div className="text-center mb-6 md:mb-8">
+              <span className="text-3xl md:text-5xl mb-3 md:mb-4 block">🎉</span>
+              <h1 className="text-2xl md:text-4xl mb-3 md:mb-4 text-gray-800" 
+                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                Welcome {displayName}
+              </h1>
+              <p className="text-gray-600 text-sm md:text-base px-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                Learn about our accessible offerings and choose what's most relevant for you.
+              </p>
+            </div>
+
+            {/* Option Cards */}
+            <div className="space-y-3 md:space-y-4">
+              {/* Insurance Card */}
+              <div className="w-full overflow-hidden">
+                <button
+                  onClick={() => {
+                    if (expandedCard === 'insurance') {
+                      setExpandedCard(null);
+                    } else {
+                      setExpandedCard('insurance');
+                    }
+                  }}
+                  className={`w-full text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors duration-700 ease-in-out ${
+                    expandedCard === 'insurance' 
+                      ? 'rounded-t-2xl border-b-0' 
+                      : 'rounded-2xl'
+                  }`}
+                  style={{
+                    padding: expandedCard === 'insurance' ? '16px 20px 12px 20px' : '16px 20px'
+                  }}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Use My Insurance (NJ Only)
+                    </h3>
+                    <span className="text-xs md:text-sm text-gray-600 font-medium flex items-center transition-transform" 
+                          style={{ fontFamily: 'var(--font-inter)' }}>
+                      {expandedCard === 'insurance' ? 'Show Less' : 'Learn More'}
+                      <ChevronRight className={`inline w-3 md:w-4 h-3 md:h-4 ml-1 transition-transform duration-300 ${expandedCard === 'insurance' ? 'rotate-90' : ''}`} />
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Associate Therapists
+                    </p>
+                    <span className="inline-block rounded-full bg-blue-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
+                      ~$20-40 average session cost
+                    </span>
+                  </div>
+                </button>
+                
+                {/* Expanded Insurance Content */}
+                <div className={`bg-white border-l border-r border-b border-blue-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
+                  expandedCard === 'insurance' 
+                    ? 'max-h-[1000px] opacity-100' 
+                    : 'max-h-0 opacity-0'
+                }`}>
+                  <div className="p-5 space-y-4 pb-6">
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">We currently accept:</p>
+                       <p className="text-sm text-gray-600">Aetna, Amerihealth, Horizon Blue Cross Blue Shield, Meritain Health</p>
+                     </div>
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
+                       <ul className="text-sm text-gray-600 space-y-1">
+                         <li>• 1-1 virtual sessions (55 min)</li>
+                         <li>• We'll automatically verify your benefits and estimate what you'll pay</li>
+                         <li>• You'll be matched with an Associate Therapist. Associate Therapists have graduated from their counseling programs, have a provisional license, and are working towards full licensure.</li>
+                       </ul>
+                     </div>
+                     
+                     <Button
+                       onClick={() => handlePaymentSelection("insurance")}
+                       className="w-full bg-blue-200 hover:bg-blue-300 text-gray-800 py-3"
+                     >
+                       Select Insurance Option
+                     </Button>
+                   </div>
+                 </div>
+               </div>
+
+              {/* Cash Pay Card */}
+              <div className="w-full overflow-hidden">
+                <button
+                  onClick={() => {
+                    if (expandedCard === 'cash_pay') {
+                      setExpandedCard(null);
+                    } else {
+                      setExpandedCard('cash_pay');
+                    }
+                  }}
+                  className={`w-full text-left bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-colors duration-700 ease-in-out ${
+                    expandedCard === 'cash_pay' 
+                      ? 'rounded-t-2xl border-b-0' 
+                      : 'rounded-2xl'
+                  }`}
+                  style={{
+                    padding: expandedCard === 'cash_pay' ? '16px 20px 12px 20px' : '16px 20px'
+                  }}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Pay Out-of-Pocket
+                    </h3>
+                    <span className="text-xs md:text-sm text-gray-600 font-medium flex items-center transition-transform" 
+                          style={{ fontFamily: 'var(--font-inter)' }}>
+                      {expandedCard === 'cash_pay' ? 'Show Less' : 'Learn More'}
+                      <ChevronRight className={`inline w-3 md:w-4 h-3 md:h-4 ml-1 transition-transform duration-300 ${expandedCard === 'cash_pay' ? 'rotate-90' : ''}`} />
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Graduate Therapists
+                    </p>
+                    <span className="inline-block rounded-full bg-yellow-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
+                      $30 per session
+                    </span>
+                  </div>
+                </button>
+                
+                {/* Expanded Cash Pay Content */}
+                <div className={`bg-white border-l border-r border-b border-yellow-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
+                  expandedCard === 'cash_pay' 
+                    ? 'max-h-[1000px] opacity-100' 
+                    : 'max-h-0 opacity-0'
+                }`}>
+                  <div className="p-5 space-y-4 pb-6">
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">States we currently serve:</p>
+                       <p className="text-sm text-gray-600">
+                         {featuredStates.map(stateCode => {
+                           const state = allStates.find(s => s.code === stateCode);
+                           return state?.name;
+                         }).join(', ')}
+                       </p>
+                     </div>
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
+                       <ul className="text-sm text-gray-600 space-y-1">
+                         <li>• 1-1 virtual sessions (45 min)</li>
+                         <li>• You pay $30 per session—no hidden fees.</li>
+                         <li>• You'll be matched with a Graduate Therapist. Graduate Therapists are in their counseling programs obtaining clinical hours under licensed supervision.</li>
+                       </ul>
+                     </div>
+                     
+                     <Button
+                       onClick={() => handlePaymentSelection("cash_pay")}
+                       className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-800 py-3"
+                     >
+                       Select Cash Pay Option
+                     </Button>
+                   </div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+     );
+  }
+
+  // State Selection Screen (Step 4)
+  if (currentStep === 5) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+        {/* Header with image */}
+        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+          <img 
+            src="/onboarding-banner.jpg" 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+                style={{ 
+                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontWeight: 400,
+                  letterSpacing: '0.02em',
+                  lineHeight: '1.1'
+                }}>
+              CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
+            </p>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
+          <button onClick={handleBack} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ChevronLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <div className="flex items-center">
+            <img
+              src="/sol-health-logo.svg"
+              alt="Sol Health"
+              className="h-5 w-auto"
+            />
+          </div>
+          <div className="w-10"></div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
+          <div className="flow-narrow w-full -mt-12 mx-auto">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl md:text-3xl mb-3 text-gray-800" 
+                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                What State Are You In?
+              </h1>
+            </div>
+
+            {/* Featured States */}
+            <div className="space-y-3 mb-6">
+              {featuredStates.map((stateCode) => {
+                const stateName = allStates.find(s => s.code === stateCode)?.name || stateCode;
+                return (
+                  <button
+                    key={stateCode}
+                    onClick={() => handleStateSelection(stateCode)}
+                    className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
+                      selectedState === stateCode
+                        ? 'border-[#5C3106] text-white shadow-lg' 
+                        : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                    }`}
+                    style={{
+                      backgroundColor: selectedState === stateCode ? '#5C3106' : 'white'
+                    }}
+                  >
+                    <div className={`w-8 h-8 flex items-center justify-center ${selectedState === stateCode ? '' : 'opacity-60'}`}>
+                      <img 
+                        src={`/state-icons/${stateCode.toLowerCase()}.svg`}
+                        alt={stateName}
+                        className="w-6 h-6"
+                        style={{
+                          filter: selectedState === stateCode ? 'brightness(0) invert(1)' : 'none'
+                        }}
+                        onError={(e) => {
+                          e.currentTarget.src = '/state-icons/default.svg';
+                        }}
+                      />
+                    </div>
+                    
+                    <span className={`text-base font-medium flex-1 text-center ${selectedState === stateCode ? 'text-white' : 'text-gray-800'}`}>
+                      {stateName}
+                    </span>
+                    
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      {selectedState === stateCode && (
+                        <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
+                          <Check className="w-4 h-4" style={{ color: '#5C3106' }} />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* Other State Option */}
+              <button
+                onClick={() => setShowOtherStateInput(!showOtherStateInput)}
+                className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
+                  showOtherStateInput
+                    ? 'border-[#5C3106] bg-[#5C3106] text-white shadow-lg' 
+                    : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                }`}
+              >
+                <div className="w-8 h-8"></div>
+                
+                <span className={`text-base font-medium flex-1 text-center ${showOtherStateInput ? 'text-white' : 'text-gray-800'}`}>
+                  Other State
+                </span>
+                
+                <div className="w-8 h-8 flex items-center justify-center">
+                  {showOtherStateInput && (
+                    <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
+                      <Check className="w-4 h-4" style={{ color: '#5C3106' }} />
+                    </div>
+                  )}
+                </div>
+              </button>
+            </div>
+
+            {/* Other State Input */}
+            {showOtherStateInput && (
+              <div className="mb-6 space-y-3 border-2 border-dashed border-gray-300 rounded-lg p-4">
+                <input
+                  type="text"
+                  value={otherStateSearch}
+                  onChange={(e) => setOtherStateSearch(e.target.value)}
+                  onFocus={() => setIsOtherInputFocused(true)}
+                  onBlur={() => setIsOtherInputFocused(false)}
+                  placeholder="Start typing your state..."
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center"
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                />
+                
+                {otherStateSearch && filteredStates.length > 0 && (
+                  <div className="max-h-32 overflow-y-auto space-y-1">
+                    {filteredStates.slice(0, 5).map((state) => (
+                      <button
+                        key={state.code}
+                        onClick={() => handleStateSelection(state.code)}
+                        className={`w-full text-left p-2 rounded hover:bg-gray-100 text-sm ${
+                          selectedState === state.code ? 'bg-blue-100 text-blue-800' : 'text-gray-700'
+                        }`}
+                      >
+                        {state.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Continue Button */}
+            {selectedState && (
+              <Button
+                onClick={handleStateConfirm}
+                className="w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 bg-blue-100 text-gray-800 hover:bg-blue-200"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Continue
+                <ChevronRight className="inline w-4 h-4 ml-2" />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Waitlist Popup */}
+        {showWaitlistPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <div className="text-center">
+                <h3 className="text-xl font-bold mb-4">We're expanding to {waitlistState}!</h3>
+                <p className="text-gray-600 mb-6">
+                  We're not yet available in {waitlistState}, but we're expanding quickly. 
+                  Join our waitlist to be notified when we launch in your state.
+                </p>
+                <div className="flex space-x-3">
+                  <Button
+                    onClick={() => setShowWaitlistPopup(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      // Handle waitlist signup
+                      window.open('https://solhealth.co/waitlist', '_blank');
+                      setShowWaitlistPopup(false);
+                    }}
+                    className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    Join Waitlist
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // NJ Insurance Plan Verification Screen (Step 6)
   if (currentStep === 6) {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
@@ -864,7 +1374,7 @@ export default function OnboardingFlow({
 
         {/* Navigation */}
         <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-          <button onClick={() => setCurrentStep(4)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={() => setCurrentStep(5)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
@@ -983,7 +1493,7 @@ export default function OnboardingFlow({
                 <Button
                   onClick={() => {
                     // Switch to cash pay flow
-                    setCurrentStep(4); // Go to state selection
+                    setCurrentStep(5); // Go to state selection
                   }}
                   className="w-full py-3 px-4 md:px-6 rounded-full text-sm md:text-base font-medium transition-colors duration-200 bg-yellow-100 text-gray-800 hover:bg-yellow-200"
                   style={{ fontFamily: 'var(--font-inter)' }}
@@ -1283,7 +1793,7 @@ export default function OnboardingFlow({
                     Try Again
                   </Button>
                   <Button
-                    onClick={() => setCurrentStep(5)} // Go to cash pay flow
+                    onClick={() => setCurrentStep(5)} // Go to cash pay flow (state selection)
                     className="flex-1 py-3 px-4 rounded-full bg-yellow-100 text-gray-800 hover:bg-yellow-200"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >

@@ -985,14 +985,16 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 </div>
 
                 {/* Continue Button */}
-                <div className="pt-4 flow-narrow mx-auto">
-                  <Button
-                     onClick={() => setCurrentStep('alcohol_drugs')}
-                     className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-yellow-100 hover:bg-yellow-300 text-gray-800 rounded-full text-base sm:text-lg font-medium transition-all"
-                     style={{ fontFamily: 'var(--font-inter)' }}
-                   >
-                     Continue →
-                   </Button>
+                <div className="pointer-events-none">
+                  <div className="fixed bottom-4 left-1/2 -translate-x-1/2 transform z-20">
+                    <Button
+                      onClick={() => setCurrentStep('alcohol_drugs')}
+                      className="pointer-events-auto bg-yellow-100 hover:bg-yellow-300 text-gray-800 rounded-full text-sm md:text-base font-medium transition-all px-5 md:px-6 py-2 md:py-2.5 shadow-[1px_1px_0_#5C3106] border border-[#5C3106]"
+                      style={{ fontFamily: 'var(--font-inter)' }}
+                    >
+                      Continue →
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
