@@ -546,8 +546,19 @@ export default function OnboardingFlow({
             Your browser does not support the video tag.
           </video>
 
+          {/* Bottom Continue button (match CustomSurvey) */}
+          <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8">
+            <Button
+              onClick={handleContinue}
+              className="w-full py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              Continue
+            </Button>
+          </div>
+
           {!initialVideoReady && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/30">
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/30 pointer-events-none">
               <div className="flex items-center space-x-2 text-white">
                 <Loader2 className="w-6 h-6 animate-spin" />
                 <span className="text-sm">Loading…</span>
@@ -575,6 +586,17 @@ export default function OnboardingFlow({
             <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
+
+          {/* Bottom Continue button (match CustomSurvey) */}
+          <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8">
+            <Button
+              onClick={handleContinue}
+              className="w-full py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              Continue
+            </Button>
+          </div>
         </div>
       );
     }
@@ -596,6 +618,17 @@ export default function OnboardingFlow({
             <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
+
+          {/* Bottom Continue button (match CustomSurvey) */}
+          <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8">
+            <Button
+              onClick={handleContinue}
+              className="w-full py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              Continue
+            </Button>
+          </div>
         </div>
       );
     }
@@ -616,6 +649,17 @@ export default function OnboardingFlow({
           <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
+
+        {/* Bottom Continue button (match CustomSurvey) */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8">
+          <Button
+            onClick={handleContinue}
+            className="w-full py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all"
+            style={{ fontFamily: 'var(--font-inter)' }}
+          >
+            Continue
+          </Button>
+        </div>
       </div>
     );
   }
@@ -654,7 +698,7 @@ export default function OnboardingFlow({
               <img
               src="/sol-health-logo.svg"
               alt="Sol Health"
-              className="h-8 w-auto"
+              className="h-5 w-auto"
             />
           </div>
           <div className="w-10"></div>
@@ -739,10 +783,11 @@ export default function OnboardingFlow({
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
-            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-inter)' }}>
-              Sol Health
-            </h2>
-            <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+          <img
+              src="/sol-health-logo.svg"
+              alt="Sol Health"
+              className="h-5 w-auto"
+            />
           </div>
           <div className="w-10"></div>
         </div>
@@ -833,10 +878,11 @@ export default function OnboardingFlow({
               expandedCard ? 'transform -translate-y-8 scale-0 opacity-0' : ''
             }`}
           >
-            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-inter)' }}>
-              Sol Health
-            </h2>
-            <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+             <img
+              src="/sol-health-logo.svg"
+              alt="Sol Health"
+              className="h-5 w-auto"
+            />
           </div>
           <div className="w-10"></div>
         </div>
@@ -1041,10 +1087,11 @@ export default function OnboardingFlow({
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
-            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-inter)' }}>
-              Sol Health
-            </h2>
-            <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+          <img
+              src="/sol-health-logo.svg"
+              alt="Sol Health"
+              className="h-5 w-auto"
+            />
           </div>
           <div className="w-10"></div>
         </div>
@@ -1312,10 +1359,11 @@ export default function OnboardingFlow({
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
-            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-inter)' }}>
-              Sol Health
-            </h2>
-            <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+          <img
+              src="/sol-health-logo.svg"
+              alt="Sol Health"
+              className="h-5 w-auto"
+            />
           </div>
           <div className="w-10"></div>
         </div>

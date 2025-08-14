@@ -765,25 +765,25 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                   <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
                     {[
                       { name: 'ADHD', emoji: '🌀' },
-                      { name: 'Anxiety', emoji: '🌿' },
+                      { name: 'Anxiety', emoji: '🌊' },
                       { name: 'Body image', emoji: '🪞' },
                       { name: 'Building confidence', emoji: '🌱' },
                       { name: 'Career/academic stress', emoji: '📚' },
-                      { name: 'Depression', emoji: '🌧️' },
+                      { name: 'Depression', emoji: '☁️' },
                       { name: 'Eating disorders', emoji: '🌾' },
                       { name: 'Emotional regulation', emoji: '🌊' },
                       { name: 'Family life', emoji: '🏡' },
-                      { name: 'Grief and loss', emoji: '🦋' },
+                      { name: 'Grief and loss', emoji: '🍂' },
                       { name: 'LGBTQ+ identity', emoji: '🏳️‍🌈' },
-                      { name: 'Life transitions', emoji: '🌟' },
+                      { name: 'Life transitions', emoji: '🦋' },
                       { name: 'Loneliness', emoji: '🌙' },
                       { name: 'OCD', emoji: '🐾' },
-                      { name: 'Panic attacks', emoji: '⭕' },
+                      { name: 'Panic attacks', emoji: '🫧' },
                       { name: 'Phobias', emoji: '⛰️' },
-                      { name: 'PTSD', emoji: '🔎' },
+                      { name: 'PTSD', emoji: '🌫️' },
                       { name: 'Relationship challenges', emoji: '🌻' },
-                      { name: 'Stress and burnout', emoji: '🧯' },
-                      { name: 'Trauma', emoji: '🌸' }
+                      { name: 'Stress and burnout', emoji: '🪫' },
+                      { name: 'Trauma', emoji: '🕊️' }
                     ].map((specialization) => {
                       const isSelected = surveyData.therapist_specialization.includes(specialization.name);
                       return (
@@ -1188,14 +1188,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     <div className="absolute inset-x-0 bottom-3 flex justify-center">
                       <Button
                         onClick={() => setShowPhq9Intro(false)}
-                        disabled={!(phq9IntroEnded || phq9IntroTimerReady)}
-                        className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
-                          phq9IntroEnded || phq9IntroTimerReady ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        }`}
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        Continue
-                      </Button>
+                        className="py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base bg-white/90 hover:bg-white text-gray-800"
+                         style={{ fontFamily: 'var(--font-inter)' }}
+                       >
+                         Continue
+                       </Button>
                     </div>
                   </div>
                 </div>
@@ -1411,14 +1408,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
                      <Button
                        onClick={() => setShowGad7Intro(false)}
-                       disabled={!(gad7IntroEnded || gad7IntroTimerReady)}
-                       className={`py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base ${
-                         gad7IntroEnded || gad7IntroTimerReady ? 'bg-white/90 hover:bg-white text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                       }`}
-                       style={{ fontFamily: 'var(--font-inter)' }}
-                     >
-                       Continue
-                     </Button>
+                       className="py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base bg-white/90 hover:bg-white text-gray-800"
+                         style={{ fontFamily: 'var(--font-inter)' }}
+                       >
+                         Continue
+                       </Button>
                    </div>
                  </div>
                </div>
