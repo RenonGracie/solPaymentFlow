@@ -1,7 +1,7 @@
 // OnboardingFlow.tsx
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X, Check, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Check, Loader2, ArrowRight } from "lucide-react";
 import { VIDEOS } from "@/lib/videos";
 import { Button } from "@/components/ui/button";
 import { checkEligibility } from "../app/api/eligibility.js";
@@ -40,6 +40,7 @@ interface OnboardingFlowProps {
     memberId?: string;
     dateOfBirth?: string;
     paymentType?: string;
+    whatBringsYou?: string;
     verificationData?: VerificationResponse;
   }) => void;
   onSelectPaymentType: (type: "insurance" | "cash_pay") => void;
@@ -149,7 +150,8 @@ export default function OnboardingFlow({
     state: '',
     provider: '',
     memberId: '',
-    dateOfBirth: ''
+    dateOfBirth: '',
+    whatBringsYou: ''
   });
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
@@ -291,16 +293,11 @@ export default function OnboardingFlow({
     if (currentStep === 0) {
       setCurrentStep(1);
     } else if (currentStep === 1 && formData.preferredName) {
-      // Auto-populate firstName with capitalized preferred name for legal name fields
-      const capitalizedPreferredName = formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase();
-      setFormData(prev => ({
-        ...prev,
-        firstName: capitalizedPreferredName,
-        preferredName: capitalizedPreferredName
-      }));
       setCurrentStep(2);
-    } else if (currentStep === 2 && formData.email) {
+    } else if (currentStep === 2 && formData.whatBringsYou) {
       setCurrentStep(3);
+    } else if (currentStep === 3 && formData.email) {
+      setCurrentStep(4);
     }
   };
 
@@ -310,7 +307,7 @@ export default function OnboardingFlow({
     }
   };
 
-  const handleInputChange = (field: 'firstName' | 'lastName' | 'preferredName' | 'email' | 'provider' | 'memberId' | 'dateOfBirth', value: string) => {
+  const handleInputChange = (field: 'firstName' | 'lastName' | 'preferredName' | 'email' | 'provider' | 'memberId' | 'dateOfBirth' | 'whatBringsYou', value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -352,7 +349,8 @@ export default function OnboardingFlow({
           email: formData.email,
           preferredName: capitalizedPreferredName,
           state: selectedState,
-          paymentType: 'cash_pay'
+          paymentType: 'cash_pay',
+          whatBringsYou: formData.whatBringsYou
         });
         onSelectPaymentType("cash_pay");
       }
@@ -439,6 +437,7 @@ export default function OnboardingFlow({
       memberId: formData.memberId,
       dateOfBirth: formData.dateOfBirth,
       paymentType: 'insurance',
+      whatBringsYou: formData.whatBringsYou,
       verificationData: verificationResponse || undefined // Include verification response
     });
     onSelectPaymentType("insurance");
@@ -752,584 +751,94 @@ export default function OnboardingFlow({
     );
   }
 
-  // Email Input Screen
+  // What brings you here today? (New screen)
   if (currentStep === 2) {
+    // What brings you here today? (New screen)
+    const options = [
+      {
+        title: "I'm navigating a life change",
+        desc: "Big or small, life shifts. Find your footing, your new life rhythm, and yourself amidst transition and uncertainty.",
+        color: 'bg-blue-50 border-blue-200'
+      },
+      {
+        title: "I want help with something specific",
+        desc: "Care for anxiety, depression, trauma, relationships, and patterns that feel hard to change. Get matched to a therapist who specializes in what you're looking for.",
+        color: 'bg-amber-100/60 border-amber-300'
+      },
+      {
+        title: "I'm feeling really overwhelmed",
+        desc: "Stress, burnout, auto-pilot, too much on your shoulders. Build coping tools and find space for you and what you truly want.",
+        color: 'bg-yellow-100 border-yellow-300'
+      },
+      {
+        title: "I'm not sure how to put it into words",
+        desc: "You just know you want to feel better. We'll explore it together and make sure you feel seen, heard, and moving towards a goal.",
+        color: 'bg-gray-100 border-gray-300'
+      }
+    ];
+
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-        {/* Header with sunset image - fixed height */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
-          <img 
-            src="/onboarding-banner.jpg" 
-            alt="" 
-            className="w-full h-full object-cover"
-          />
+          <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
-                style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
-                  fontWeight: 400,
-                  letterSpacing: '0.02em',
-                  lineHeight: '1.1'
-                }}>
-              CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-            </p>
-          </div>
         </div>
 
-        {/* Navigation - fixed height */}
         <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
           <button onClick={handleBack} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
-          <img
-              src="/sol-health-logo.svg"
-              alt="Sol Health"
-              className="h-5 w-auto"
-            />
+            <img src="/sol-health-logo.svg" alt="Sol Health" className="h-5 w-auto" />
           </div>
           <div className="w-10"></div>
         </div>
 
-        {/* Content - truly centered in remaining space */}
-        <div className="flex-1 flex items-center justify-center px-6 pb-16">
-          <div className="flow-narrow w-full -mt-16 mx-auto">
-            <div className="text-center mb-12">
-              <span className="text-5xl mb-6 block">✉️</span>
-              <h1 className="text-3xl md:text-4xl text-gray-800" 
-                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
-                What's Your Email?
-              </h1>
-            </div>
-
-            <div className="mb-8">
-                              <input
-                 type="email"
-                 value={formData.email}
-                 onChange={(e) => handleInputChange('email', e.target.value)}
-                 onFocus={() => setShowKeyboard(true)}
-                 onBlur={() => setShowKeyboard(false)}
-                 placeholder="well@being.com"
-                 className="w-full text-lg md:text-xl border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 placeholder-gray-400 text-center"
-                 style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
-                 autoComplete="email"
-                 autoCorrect="off"
-                 autoCapitalize="off"
-               />
-            </div>
-
-            <Button
-              onClick={handleContinue}
-              disabled={!formData.email.includes('@')}
-              className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors ${
-                formData.email.includes('@')
-                  ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-              style={{ fontFamily: 'var(--font-inter)' }}
-            >
-              Continue
-              <ChevronRight className="inline w-5 h-5 ml-2" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Welcome Screen (Payment Selection)
-  if (currentStep === 3) {
-    // Capitalize first letter of name
-    const displayName = formData.firstName 
-      ? formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1).toLowerCase()
-      : 'Melinda';
-
-    return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-        {/* Header - fixed height */}
-        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
-          <img 
-            src="/onboarding-banner.jpg" 
-            alt="" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
-                style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
-                  fontWeight: 400,
-                  letterSpacing: '0.02em',
-                  lineHeight: '1.1'
-                }}>
-              CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-            </p>
-          </div>
-        </div>
-
-        {/* Navigation - fixed height */}
-        <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-          <button onClick={handleBack} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
-          </button>
-          <div 
-            className={`flex items-center transition-all duration-1000 ease-in-out ${
-              expandedCard ? 'transform -translate-y-8 scale-0 opacity-0' : ''
-            }`}
-          >
-             <img
-              src="/sol-health-logo.svg"
-              alt="Sol Health"
-              className="h-5 w-auto"
-            />
-          </div>
-          <div className="w-10"></div>
-        </div>
-
-        {/* Content - truly centered in remaining space */}
-        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
-          <div className="flow-narrow w-full -mt-12 mx-auto">
-            <div className="text-center mb-6 md:mb-8">
-              <span className="text-3xl md:text-5xl mb-3 md:mb-4 block">🎉</span>
-              <h1 className="text-2xl md:text-4xl mb-3 md:mb-4 text-gray-800" 
-                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
-                Welcome {displayName}
-              </h1>
-              <p className="text-gray-600 text-sm md:text-base px-2" style={{ fontFamily: 'var(--font-inter)' }}>
-                Learn about our accessible offerings and choose what's most relevant for you.
-              </p>
-            </div>
-
-            {/* Option Cards */}
-            <div className="space-y-3 md:space-y-4">
-              {/* Insurance Card */}
-              <div className="w-full overflow-hidden">
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-10">
+          <div className="flow-narrow mx-auto w-full">
+            <h1 className="text-3xl md:text-4xl mb-5 text-gray-800 text-center" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+               What brings you here today?
+             </h1>
+ 
+            <div className="space-y-2 max-w-md mx-auto w-full">
+              {options.map((opt) => (
                 <button
+                  key={opt.title}
                   onClick={() => {
-                    if (expandedCard === 'insurance') {
-                      setExpandedCard(null);
-                    } else {
-                      setExpandedCard('insurance');
-                    }
+                    setFormData((prev) => ({ ...prev, whatBringsYou: opt.title }));
+                    setCurrentStep(3); // go straight to email step
                   }}
-                  className={`w-full text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors duration-700 ease-in-out ${
-                    expandedCard === 'insurance' 
-                      ? 'rounded-t-2xl border-b-0' 
-                      : 'rounded-2xl'
-                  }`}
-                  style={{
-                    padding: expandedCard === 'insurance' ? '16px 20px 12px 20px' : '16px 20px'
-                  }}
+                  className={`relative max-w-sm mx-auto w-full text-left ${opt.color} border-2 rounded-xl pt-2.5 pb-3 px-3 md:pt-3 md:pb-3.5 md:px-4 shadow-[2px_2px_0_#5C3106] hover:brightness-95 transition-colors`}
+                  style={{ fontFamily: 'var(--font-inter)' }}
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-base md:text-lg font-semibold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Use My Insurance (NJ Only)
-                    </h3>
-                    <span className="text-xs md:text-sm text-gray-600 font-medium flex items-center transition-transform" 
-                          style={{ fontFamily: 'var(--font-inter)' }}>
-                      {expandedCard === 'insurance' ? 'Show Less' : 'Learn More'}
-                      <ChevronRight className={`inline w-3 md:w-4 h-3 md:h-4 ml-1 transition-transform duration-300 ${expandedCard === 'insurance' ? 'rotate-90' : ''}`} />
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Associate Therapists
-                    </p>
-                    <span className="inline-block rounded-full bg-blue-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
-                      ~$20-40 average session cost
-                    </span>
-                  </div>
+                  <p className="very-vogue-title text-lg md:text-xl text-gray-800 mb-0.5">{opt.title}</p>
+                  <p className="text-gray-700 text-[12px] md:text-[13px] leading-snug">{opt.desc}</p>
+                  <ArrowRight className="absolute bottom-2.5 right-2.5 w-4 h-4 md:w-5 md:h-5 text-gray-700" />
                 </button>
-                
-                {/* Expanded Insurance Content */}
-                <div className={`bg-white border-l border-r border-b border-blue-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
-                  expandedCard === 'insurance' 
-                    ? 'max-h-[1000px] opacity-100' 
-                    : 'max-h-0 opacity-0'
-                }`}>
-                  <div className="p-5 space-y-4 pb-6">
-                     
-                     <div>
-                       <p className="text-sm font-medium text-gray-800 mb-2">We currently accept:</p>
-                       <p className="text-sm text-gray-600">Aetna, Amerihealth, Horizon Blue Cross Blue Shield, Meritain Health</p>
-                     </div>
-                     
-                     <div>
-                       <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
-                       <ul className="text-sm text-gray-600 space-y-1">
-                         <li>• 1-1 virtual sessions (55 min)</li>
-                         <li>• We'll automatically verify your benefits and estimate what you'll pay</li>
-                         <li>• You'll be matched with an Associate Therapist. Associate Therapists have graduated from their counseling programs, have a provisional license, and are working towards full licensure.</li>
-                       </ul>
-                     </div>
-                     
-                     <Button
-                       onClick={() => handlePaymentSelection("insurance")}
-                       className="w-full bg-blue-200 hover:bg-blue-300 text-gray-800 py-3"
-                     >
-                       Select Insurance Option
-                     </Button>
-                   </div>
-                 </div>
-               </div>
-
-              {/* Cash Pay Card */}
-              <div className="w-full overflow-hidden">
-                <button
-                  onClick={() => {
-                    if (expandedCard === 'cash_pay') {
-                      setExpandedCard(null);
-                    } else {
-                      setExpandedCard('cash_pay');
-                    }
-                  }}
-                  className={`w-full text-left bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-colors duration-700 ease-in-out ${
-                    expandedCard === 'cash_pay' 
-                      ? 'rounded-t-2xl border-b-0' 
-                      : 'rounded-2xl'
-                  }`}
-                  style={{
-                    padding: expandedCard === 'cash_pay' ? '16px 20px 12px 20px' : '16px 20px'
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-base md:text-lg font-semibold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Pay Out-of-Pocket
-                    </h3>
-                    <span className="text-xs md:text-sm text-gray-600 font-medium flex items-center transition-transform" 
-                          style={{ fontFamily: 'var(--font-inter)' }}>
-                      {expandedCard === 'cash_pay' ? 'Show Less' : 'Learn More'}
-                      <ChevronRight className={`inline w-3 md:w-4 h-3 md:h-4 ml-1 transition-transform duration-300 ${expandedCard === 'cash_pay' ? 'rotate-90' : ''}`} />
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Graduate Therapists
-                    </p>
-                    <span className="inline-block rounded-full bg-yellow-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
-                      $30 per session
-                    </span>
-                  </div>
-                </button>
-                
-                {/* Expanded Cash Pay Content */}
-                <div className={`bg-white border-l border-r border-b border-yellow-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
-                  expandedCard === 'cash_pay' 
-                    ? 'max-h-[1000px] opacity-100' 
-                    : 'max-h-0 opacity-0'
-                }`}>
-                  <div className="p-5 space-y-4 pb-6">
-                     
-                     <div>
-                       <p className="text-sm font-medium text-gray-800 mb-2">States we currently serve:</p>
-                       <p className="text-sm text-gray-600">
-                         {featuredStates.map(stateCode => {
-                           const state = allStates.find(s => s.code === stateCode);
-                           return state?.name;
-                         }).join(', ')}
-                       </p>
-                     </div>
-                     
-                     <div>
-                       <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
-                       <ul className="text-sm text-gray-600 space-y-1">
-                         <li>• 1-1 virtual sessions (45 min)</li>
-                         <li>• You pay $30 per session—no hidden fees.</li>
-                         <li>• You'll be matched with a Graduate Therapist. Graduate Therapists are in their counseling programs obtaining clinical hours under licensed supervision.</li>
-                       </ul>
-                     </div>
-                     
-                     <Button
-                       onClick={() => handlePaymentSelection("cash_pay")}
-                       className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-800 py-3"
-                     >
-                       Select Cash Pay Option
-                     </Button>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
-       </div>
-     );
-   }
-
-  // Enhanced State Selection Screen
-  if (currentStep === 4) {
-    return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-        {/* Header with image */}
-        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
-          <img 
-            src="/onboarding-banner.jpg" 
-            alt="" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
-                style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
-                  fontWeight: 400,
-                  letterSpacing: '0.02em',
-                  lineHeight: '1.1'
-                }}>
-              YOU ARE EXACTLY WHERE<br/>YOU NEED TO BE
-            </p>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-          <button onClick={() => setCurrentStep(3)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
-          </button>
-          <div className="flex items-center">
-          <img
-              src="/sol-health-logo.svg"
-              alt="Sol Health"
-              className="h-5 w-auto"
-            />
-          </div>
-          <div className="w-10"></div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex items-center justify-center px-6 pb-12">
-          <div className="max-w-xs w-full -mt-12">
-            {/* Yellow badge */}
-            <div className="flex justify-center mb-8">
-              <div className="bg-yellow-100 border border-yellow-400 rounded-full px-4 py-2 flex items-center animate-in fade-in-0 slide-in-from-top-4 duration-500">
-                <span className="mr-1 text-base">💰</span>
-                <span className="text-gray-800 font-medium text-sm">$30 / Session Out-of-Pocket Selected</span>
-              </div>
+              ))}
             </div>
 
-            <div className="text-center mb-6">
-              <h1 className="text-2xl md:text-3xl mb-3 text-gray-800" 
-                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
-                What State Are You Based In?
-              </h1>
-              <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                Don't see your state? We're expanding and we'll be there soon—join the waitlist and we'll reach out as soon as we've landed.
-              </p>
-            </div>
-
-            {/* State Options */}
-            <div className="space-y-3 mb-6">
-              {/* Featured States */}
-              {featuredStates.map((stateCode, index) => {
-                const state = allStates.find(s => s.code === stateCode);
-                const isSelected = selectedState === stateCode;
-                return (
-                  <button
-                    key={stateCode}
-                    onClick={() => handleStateSelection(stateCode)}
-                    className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
-                      isSelected 
-                        ? 'border-[#5C3106] text-white shadow-lg' 
-                        : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
-                    }`}
-                    style={{
-                      backgroundColor: isSelected ? '#5C3106' : 'white',
-                      animationDelay: `${index * 50}ms`,
-                      animation: 'fadeInUp 0.5s ease-out forwards'
-                    }}
-                  >
-                    <div className={`w-8 h-8 flex items-center justify-center ${isSelected ? '' : 'opacity-60'}`}>
-                      <img 
-                        src={`/state-icons/${stateCode.toLowerCase()}.svg`}
-                        alt={state?.name}
-                        className="w-6 h-6"
-                        style={{
-                          filter: isSelected ? 'brightness(0) invert(1)' : 'none'
-                        }}
-                        onError={(e) => {
-                          // Fallback to a generic icon if state icon fails to load
-                          (e.target as HTMLImageElement).src = '/state-icons/default.svg';
-                        }}
-                      />
-                    </div>
-                    
-                    <span className={`text-base font-medium flex-1 text-center ${isSelected ? 'text-white' : 'text-gray-800'}`}>
-                      {state?.name}
-                    </span>
-                    
-                    <div className="w-8 h-8 flex items-center justify-center">
-                      {isSelected && (
-                        <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
-                          <Check className="w-4 h-4" style={{ color: '#5C3106' }} />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-
-              {/* Other State Option - Improved input field */}
-              <div className="relative">
-                <div 
-                  className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-center ${
-                    selectedState && !featuredStates.includes(selectedState)
-                      ? 'border-[#5C3106] text-white shadow-lg'
-                    : showOtherStateInput
-                      ? 'border-amber-500 shadow-lg shadow-amber-100 bg-white' 
-                      : 'border-gray-300 hover:border-gray-400 bg-white'
-                  }`}
-                  style={{
-                    backgroundColor: selectedState && !featuredStates.includes(selectedState) ? '#5C3106' : 'white'
-                  }}
-                >
-                  {!showOtherStateInput ? (
-                    <button
-                      onClick={() => {
-                        // Clear any selected featured state when opening "Other"
-                        if (featuredStates.includes(selectedState)) {
-                          setSelectedState('');
-                        }
-                        setShowOtherStateInput(true);
-                        setTimeout(() => {
-                          document.getElementById('state-search-input')?.focus();
-                        }, 100);
-                      }}
-                      className="w-full flex items-center justify-between"
-                    >
-                      <div className="w-8 h-8"></div>
-                      
-                      <div className="flex-1 flex items-center justify-center">
-                        <span className={`text-base font-medium ${selectedState && !featuredStates.includes(selectedState) ? 'text-white' : 'text-gray-800'}`}>
-                          {selectedState && !featuredStates.includes(selectedState) 
-                            ? allStates.find(s => s.code === selectedState)?.name || 'Other'
-                            : 'Other'
-                          }
-                        </span>
-                        {!(selectedState && !featuredStates.includes(selectedState)) && (
-                          <span className="ml-2 text-base text-gray-400">
-                            Select your state
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="w-8 h-8 flex items-center justify-center">
-                        {selectedState && !featuredStates.includes(selectedState) && (
-                          <div className="bg-white rounded-full p-1">
-                            <Check className="w-4 h-4" style={{ color: '#5C3106' }} />
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  ) : (
-                    <div className="w-full flex items-center justify-between">
-                      <div className="w-8 h-8"></div>
-                      <input
-                        id="state-search-input"
-                        type="text"
-                        value={otherStateSearch}
-                        onChange={(e) => setOtherStateSearch(e.target.value)}
-                        onFocus={() => setIsOtherInputFocused(true)}
-                        onBlur={() => setIsOtherInputFocused(false)}
-                        placeholder="Start typing your state..."
-                        className="flex-1 text-base font-light border-0 focus:outline-none text-center placeholder-gray-400 bg-transparent"
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                        autoFocus
-                      />
-                      <div className="w-8 h-8"></div>
-                    </div>
-                  )}
-                </div>
-                
-                                {/* Dropdown for filtered states */}
-                {showOtherStateInput && filteredStates.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto z-10 animate-in fade-in-0 slide-in-from-top-2 duration-200">
-                    {filteredStates.map(state => (
-                      <button
-                        key={state.code}
-                        onClick={() => {
-                          handleStateSelection(state.code);
-                          setOtherStateSearch('');
-                          setShowOtherStateInput(false);
-                        }}
-                        className="w-full p-3 text-center hover:bg-amber-50 transition-colors border-b border-gray-100 last:border-b-0"
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        {state.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Continue Button */}
-            <Button
-              onClick={handleStateConfirm}
-              disabled={!selectedState}
-              className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 ${
-                selectedState 
-                  ? 'bg-blue-100 text-gray-800 hover:bg-blue-200' 
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              Continue
-              <ChevronRight className="inline w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Waitlist Popup */}
-        {showWaitlistPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-in fade-in-0 duration-200">
-            <div className="bg-white rounded-2xl p-8 max-w-md w-full relative animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            <div className="pt-4 text-center">
               <button
+                type="button"
                 onClick={() => {
-                  setShowWaitlistPopup(false);
-                  setSelectedState('');
+                  setFormData((prev) => ({ ...prev, whatBringsYou: 'Other' }));
+                  setCurrentStep(3); // go to email step
                 }}
-                className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="text-sm md:text-base font-medium underline text-gray-700 hover:text-gray-900"
+                style={{ fontFamily: 'var(--font-inter)' }}
               >
-                <X className="w-5 h-5" />
+                (Other)
               </button>
-              
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-4">
-                  You're on the list! We'll be in your inbox as soon as we've landed in {waitlistState}.
-                </h2>
-                
-                <Button
-                  onClick={() => {
-                    setShowWaitlistPopup(false);
-                    setSelectedState('');
-                  }}
-                  className="w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 py-4 rounded-full font-medium"
-                >
-                  Done
-                </Button>
-              </div>
             </div>
           </div>
-        )}
-
-        {/* Add CSS animation keyframes */}
-        <style jsx>{`
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(10px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `}</style>
+        </div>
       </div>
     );
   }
 
   // NJ Insurance Plan Verification Screen (Step 5)
-  if (currentStep === 5) {
+  if (currentStep === 6) {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
         {/* Header with image */}
@@ -1355,7 +864,7 @@ export default function OnboardingFlow({
 
         {/* Navigation */}
         <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-          <button onClick={() => setCurrentStep(3)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={() => setCurrentStep(4)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
@@ -1450,7 +959,7 @@ export default function OnboardingFlow({
                 onClick={() => {
                   // Set state to NJ and go to insurance form
                   setFormData(prev => ({ ...prev, state: 'NJ' }));
-                  setCurrentStep(6);
+                  setCurrentStep(7);
                 }}
                 className="w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 bg-blue-100 text-gray-800 hover:bg-blue-200"
                 style={{ fontFamily: 'var(--font-inter)' }}
@@ -1492,7 +1001,7 @@ export default function OnboardingFlow({
   }
 
   // Insurance Form Screen (Step 6)
-  if (currentStep === 6) {
+  if (currentStep === 7) {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
         {/* Header with image */}
@@ -1518,7 +1027,7 @@ export default function OnboardingFlow({
 
         {/* Navigation */}
         <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-          <button onClick={() => setCurrentStep(5)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={() => setCurrentStep(6)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="w-10"></div>
@@ -1575,7 +1084,7 @@ export default function OnboardingFlow({
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
                       disabled={verificationStep === 'verifying'}
                       className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
-                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                      style={{ fontFamily: 'var(--font-inter)', fontSize: '16px' }}
                       placeholder="John"
                     />
                   </div>
@@ -1591,7 +1100,7 @@ export default function OnboardingFlow({
                       onChange={(e) => handleInputChange('lastName', e.target.value)}
                       disabled={verificationStep === 'verifying'}
                       className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
-                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                      style={{ fontFamily: 'var(--font-inter)', fontSize: '16px' }}
                       placeholder="Smith"
                     />
                   </div>
@@ -1639,7 +1148,7 @@ export default function OnboardingFlow({
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     disabled={verificationStep === 'verifying'}
                     className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
-                    style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                    style={{ fontFamily: 'var(--font-inter)', fontSize: '16px' }}
                     placeholder="melinda@gmail.com"
                   />
                 </div>
@@ -1774,7 +1283,7 @@ export default function OnboardingFlow({
                     Try Again
                   </Button>
                   <Button
-                    onClick={() => setCurrentStep(4)} // Go to cash pay flow
+                    onClick={() => setCurrentStep(5)} // Go to cash pay flow
                     className="flex-1 py-3 px-4 rounded-full bg-yellow-100 text-gray-800 hover:bg-yellow-200"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >

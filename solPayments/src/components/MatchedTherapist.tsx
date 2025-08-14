@@ -69,7 +69,7 @@ export default function MatchedTherapist({
 
   /** New: cache monthly availability by therapist + month + tz */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
-
+  
   const currentTherapistData = therapistsList[currentIndex];
   const therapist = currentTherapistData?.therapist;
   const matchedSpecialtiesRaw = currentTherapistData?.matched_diagnoses_specialities || [];
@@ -181,7 +181,7 @@ export default function MatchedTherapist({
     return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avKey]);
-
+  
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
     viewedTherapistIds.has(t.therapist.id) && t.therapist.id !== therapist?.id
@@ -267,7 +267,7 @@ export default function MatchedTherapist({
       .replace(/\s+/g, ' ')
       .trim();
   };
-
+ 
   // Normalize arbitrary inputs (string | string[] | JSON-like) to a clean string[]
   const toStringArray = (input: unknown): string[] => {
     if (!input) return [];
@@ -430,9 +430,9 @@ export default function MatchedTherapist({
     // Fallback to legacy ISO list if no availability
     const calendarAvailableSlotsLegacy = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
     return (calendarAvailableSlotsLegacy || [])
-      .map((iso: string) => new Date(iso))
+    .map((iso: string) => new Date(iso))
       .filter((dt: Date) => isSameDay(dt, selectedDateObj))
-      .sort((a: Date, b: Date) => a.getTime() - b.getTime());
+    .sort((a: Date, b: Date) => a.getTime() - b.getTime());
   }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, therapist?.available_slots]);
 
   const formatTimeLabel = (date: Date) =>
@@ -453,15 +453,15 @@ export default function MatchedTherapist({
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-start p-3 sm:p-4">
-          {onBack && (
-            <button
-              onClick={onBack}
+            {onBack && (
+              <button
+                onClick={onBack}
               className="mr-2 p-2 rounded-full hover:bg-white/20 transition-colors"
               aria-label="Back"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-800" />
-            </button>
-          )}
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-800" />
+              </button>
+            )}
         </div>
       </div>
 

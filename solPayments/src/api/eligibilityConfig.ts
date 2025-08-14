@@ -12,13 +12,13 @@ export const NPI: string = process.env.NEXT_PUBLIC_NPI || "1356936132";
 
 // Override session cost estimates (allowed amount proxy) by payer ID
 export const SESSION_COST_BY_PAYER_ID: Record<string, number> = {
-	"60061": 102, // AmeriHealth
-	"22099": 137, // Horizon BCBS of NJ
-	"64157": 127, // Meritain Health
-	"60054": 127, // Aetna
+	"60061": 102.19, // AmeriHealth
+	"22099": 137.26, // Horizon BCBS of NJ
+	"64157": 127.86, // Meritain Health
+	"60054": 127.86, // Aetna
 };
 
-export function getSessionCostForPayer(payerId?: string, fallback = 200): number {
+export function getSessionCostForPayer(payerId?: string, fallback = 123): number {
 	if (!payerId) return fallback;
 	const cost = SESSION_COST_BY_PAYER_ID[payerId];
 	return typeof cost === "number" ? cost : fallback;

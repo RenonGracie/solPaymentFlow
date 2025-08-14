@@ -8,6 +8,7 @@ interface SearchedTherapist {
   email: string;
   program: string;
   states: string[];
+  accepting_new_clients?: boolean;
 }
 
 interface UseTherapistSearchProps {
@@ -41,13 +42,19 @@ export const useTherapistSearch = ({ paymentType, clientState }: UseTherapistSea
         params: {
           q: query,
           payment_type: paymentType,
-          state: clientState // Pass the client's state
+          state: clientState, // Pass the client's state
+          accepting_new_clients: true,
         }
       });
 
-      setSearchResults(response.data.therapists || []);
+      const therapists: SearchedTherapist[] = response.data.therapists || [];
+
+      // Extra safety: enforce accepting filter client-side too if API doesn't apply it
+      const filtered = therapists.filter((t) => t.accepting_new_clients !== false);
+
+      setSearchResults(filtered);
       
-      if (response.data.therapists?.length === 0) {
+      if (filtered.length === 0) {
         setSearchError(`No therapists found matching "${query}" in ${clientState}`);
       }
     } catch (error) {

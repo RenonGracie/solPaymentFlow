@@ -376,11 +376,17 @@ export default function InsuranceVerificationModal({
                           <strong>Coinsurance: {verificationResponse.benefits.coinsurance}</strong><br />
                         </>
                       )}
-                      {verificationResponse.benefits.memberObligation !== "$0.00" && (
-                        <>
-                          <strong>Your cost per session: {verificationResponse.benefits.memberObligation}</strong><br />
-                        </>
-                      )}
+                      {(() => {
+                        const mo = verificationResponse.benefits.memberObligation;
+                        // Parse like "$137.26" -> 137.26
+                        const amt = typeof mo === 'string' ? parseFloat(mo.replace(/[$,]/g, '')) : NaN;
+                        const display = !isNaN(amt) && amt > 100 ? `$${Math.floor(amt).toFixed(0)}` : mo;
+                        return (
+                          <>
+                            <strong>Your cost per session: {display}</strong><br />
+                          </>
+                        );
+                      })()}
                       {/* Estimated allowed amount based on payer config */}
                       <span className="block mt-2 text-gray-700 font-normal">
                         Estimated allowed amount we use for calculations: ${getSessionCostForPayer(tradingPartnerServiceIdMap[selectedProvider ?? "cash-pay"]) }

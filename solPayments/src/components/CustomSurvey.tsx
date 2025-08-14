@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Plus } from "lucide-react";
 import { VIDEOS } from "@/lib/videos";
+import { useTherapistSearch } from "@/api/hooks/useTherapistSearch";
 
 interface SurveyData {
   // Safety Screening
@@ -107,6 +108,17 @@ const SURVEY_STEPS = [
 
 type SurveyStep = typeof SURVEY_STEPS[number];
 
+// Banner slogans (kept small-size via CSS on each usage)
+const SLOGANS = [
+  "CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN",
+  "YOU ARE EXACTLY WHERE YOU NEED TO BE",
+];
+function getSlogan(key: string): string {
+  let sum = 0;
+  for (let i = 0; i < key.length; i++) sum = (sum + key.charCodeAt(i)) % 997;
+  return SLOGANS[sum % SLOGANS.length];
+}
+
 export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }: CustomSurveyProps) {
   const [currentStep, setCurrentStep] = useState<SurveyStep>('video');
   const [isPortrait, setIsPortrait] = useState(false);
@@ -118,8 +130,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
   const [showWhyWeAskModal, setShowWhyWeAskModal] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   
-  // Therapist search state
-  const [therapistSearchQuery, setTherapistSearchQuery] = useState('');
+  // Therapist search (debounced autocomplete)
+  const {
+    searchQuery: therapistSearchQuery,
+    setSearchQuery: setTherapistSearchQuery,
+    searchResults: therapistSearchResults,
+    isSearching: isSearchingTherapists,
+    searchError: therapistSearchError,
+  } = useTherapistSearch({ paymentType, clientState: formData.state || '' });
   
   // Alcohol and drugs section (no carousel)
   
@@ -474,7 +492,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -482,15 +500,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+                <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                     style={{ 
                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                       fontWeight: 400,
                       letterSpacing: '0.02em',
                       lineHeight: '1.1'
-                    }}>
-                  CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-                </p>
+                    }}
+                    dangerouslySetInnerHTML={{ __html: getSlogan('safety_screening') }}
+                />
               </div>
             </div>
 
@@ -556,7 +574,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             }}
           >
             {/* Header with sunset image */}
-            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -634,7 +652,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -642,15 +660,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+                <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                     style={{ 
                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                       fontWeight: 400,
                       letterSpacing: '0.02em',
                       lineHeight: '1.1'
-                    }}>
-                  CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-                </p>
+                    }}
+                    dangerouslySetInnerHTML={{ __html: getSlogan('therapist_search') }}
+                />
               </div>
             </div>
 
@@ -693,12 +711,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 {/* Search Results */}
                 {therapistSearchQuery && (
                   <div className="bg-white border-2 border-gray-200 rounded-lg max-h-48 overflow-y-auto">
-                    {/* Mock search results - replace with actual therapist data */}
-                    {[
-                      { id: 'sarah_johnson', name: 'Dr. Sarah Johnson' },
-                      { id: 'michael_chen', name: 'Dr. Michael Chen' }
-                    ].map((therapist) => (
-                      <div 
+                    {isSearchingTherapists && (
+                      <div className="p-3 text-sm text-gray-500">Searching…</div>
+                    )}
+                    {therapistSearchError && !isSearchingTherapists && (
+                      <div className="p-3 text-sm text-red-600">{therapistSearchError}</div>
+                    )}
+                    {!isSearchingTherapists && !therapistSearchError && therapistSearchResults.map((therapist) => (
+                      <div
                         key={therapist.id}
                         onClick={() => {
                           updateSurveyData('selected_therapist', therapist.name);
@@ -723,7 +743,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -731,15 +751,15 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+                <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                     style={{ 
                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                       fontWeight: 400,
                       letterSpacing: '0.02em',
                       lineHeight: '1.1'
-                    }}>
-                  CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-                </p>
+                    }}
+                    dangerouslySetInnerHTML={{ __html: getSlogan('therapist_preferences') }}
+                />
               </div>
             </div>
 
@@ -983,7 +1003,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image */}
-            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1152,7 +1172,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         if (showPhq9Intro) {
           return (
             <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-              <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+              <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
                 <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               </div>
@@ -1208,7 +1228,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
             {/* Header with sunset image - smaller for mobile */}
-            <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1222,9 +1242,9 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                       fontWeight: 400,
                       letterSpacing: '0.02em',
                       lineHeight: '1.1'
-                    }}>
-                  CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-                </p>
+                    }}
+                    dangerouslySetInnerHTML={{ __html: getSlogan('phq9') }}
+                />
               </div>
             </div>
  
@@ -1373,7 +1393,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        if (showGad7Intro) {
          return (
            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-             <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+             <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
                <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
              </div>
@@ -1428,7 +1448,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        return (
          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
            {/* Header with sunset image - smaller for mobile */}
-           <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+           <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
              <img 
                src="/onboarding-banner.jpg" 
                alt="" 
@@ -1442,9 +1462,9 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      fontWeight: 400,
                      letterSpacing: '0.02em',
                      lineHeight: '1.1'
-                   }}>
-                 CHANGE CAN BE SUNSHINE<br/>IF YOU LET IT IN
-               </p>
+                   }}
+                   dangerouslySetInnerHTML={{ __html: getSlogan('gad7') }}
+               />
              </div>
            </div>
 
@@ -1569,7 +1589,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
        return (
          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
            {/* Header with sunset image */}
-           <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+           <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
              <img 
                src="/onboarding-banner.jpg" 
                alt="" 
