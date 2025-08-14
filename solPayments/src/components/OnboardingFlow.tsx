@@ -155,8 +155,16 @@ export default function OnboardingFlow({
   const [isPortrait, setIsPortrait] = useState(false);
   const [screenType, setScreenType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [isWideScreen, setIsWideScreen] = useState(false);
+  const [screenReady, setScreenReady] = useState(false);
   // Initial video loading state
   const [initialVideoReady, setInitialVideoReady] = useState(false);
+
+  // Scroll to top on step changes to prevent inheriting previous viewport offset
+  useEffect(() => {
+    if (typeof window !== 'undefined' && typeof window.__appScrollToTop === 'function') {
+      window.__appScrollToTop(false);
+    }
+  }, [currentStep]);
 
   // State selection variables
   const [selectedState, setSelectedState] = useState('');
@@ -269,6 +277,7 @@ export default function OnboardingFlow({
       } else {
         setScreenType('desktop');
       }
+      setScreenReady(true);
     };
 
     checkOrientation();
@@ -513,6 +522,11 @@ export default function OnboardingFlow({
 
   // Splash Screen with Video
   if (currentStep === 0) {
+    if (!screenReady) {
+      return (
+        <div className="relative bg-black min-h-screen w-full overflow-hidden" />
+      );
+    }
     // Mobile portrait layout - 9:16 video full screen
     if (screenType === 'mobile') {
       return (

@@ -112,6 +112,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
   const [isPortrait, setIsPortrait] = useState(false);
   const [screenType, setScreenType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [isWideScreen, setIsWideScreen] = useState(false);
+  const [screenReady, setScreenReady] = useState(false);
   
   // Safety screening modal states
   const [showWhyWeAskModal, setShowWhyWeAskModal] = useState(false);
@@ -206,6 +207,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
       } else {
         setScreenType('desktop');
       }
+      setScreenReady(true);
     };
 
     checkOrientation();
@@ -301,6 +303,11 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
   const renderStepContent = () => {
     switch (currentStep) {
       case 'video':
+        if (!screenReady) {
+          return (
+            <div className="h-[100svh] relative overflow-hidden bg-black" />
+          );
+        }
         // Mobile portrait layout - 9:16 video full screen
         if (screenType === 'mobile') {
           return (

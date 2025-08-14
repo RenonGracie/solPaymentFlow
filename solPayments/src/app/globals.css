@@ -94,8 +94,8 @@
   /* Ensure rubber-band overscroll shows app beige, not white */
   html, body {
     background-color: #FFFBF3 !important;
-    height: 100dvh;               /* Use dynamic viewport height to match visible area */
-    max-height: 100dvh;
+    height: 100svh;               /* Use small viewport height to match visible area with browser UI */
+    max-height: 100svh;
     overflow-y: hidden;            /* Lock vertical scroll at the app root */
     overflow-x: hidden;            /* No horizontal scroll */
     position: relative;
