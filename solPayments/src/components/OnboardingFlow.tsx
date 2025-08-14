@@ -651,10 +651,11 @@ export default function OnboardingFlow({
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
-            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-              Sol Health
-            </h2>
-            <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
+              <img
+              src="/sol-health-logo.svg"
+              alt="Sol Health"
+              className="h-8 w-auto"
+            />
           </div>
           <div className="w-10"></div>
         </div>
@@ -738,7 +739,7 @@ export default function OnboardingFlow({
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
-            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-inter)' }}>
               Sol Health
             </h2>
             <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
@@ -764,7 +765,7 @@ export default function OnboardingFlow({
                  onChange={(e) => handleInputChange('email', e.target.value)}
                  onFocus={() => setShowKeyboard(true)}
                  onBlur={() => setShowKeyboard(false)}
-                 placeholder="well@being.co"
+                 placeholder="well@being.com"
                  className="w-full text-lg md:text-xl border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-700 placeholder-gray-400 text-center"
                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
                  autoComplete="email"
@@ -832,7 +833,7 @@ export default function OnboardingFlow({
               expandedCard ? 'transform -translate-y-8 scale-0 opacity-0' : ''
             }`}
           >
-            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-inter)' }}>
               Sol Health
             </h2>
             <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
@@ -1040,7 +1041,7 @@ export default function OnboardingFlow({
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
-            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-inter)' }}>
               Sol Health
             </h2>
             <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
@@ -1311,7 +1312,7 @@ export default function OnboardingFlow({
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
-            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+            <h2 className="text-lg md:text-xl lg:text-2xl" style={{ fontFamily: 'var(--font-inter)' }}>
               Sol Health
             </h2>
             <div className="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-full ml-2"></div>
