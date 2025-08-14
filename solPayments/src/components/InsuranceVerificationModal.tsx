@@ -5,9 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { checkEligibility } from "../app/api/eligibility.js";
-import { PAYER_ID_BY_PROVIDER, NPI } from "@/api/eligibilityConfig";
+import { PAYER_ID_BY_PROVIDER, NPI, getSessionCostForPayer } from "@/api/eligibilityConfig";
 
-type InsuranceProvider = "aetna" | "cigna" | "meritain" | "carelon" | "bcbs" | "amerihealth" | "cash-pay";
+type InsuranceProvider = "aetna" | "meritain" | "horizon_bcbs_nj" | "amerihealth" | "cash-pay";
 
 type ModalState =
   | "insurance-form"
@@ -102,8 +102,6 @@ export default function InsuranceVerificationModal({
   const tradingPartnerServiceIdMap: Record<InsuranceProvider, string> = {
     aetna: PAYER_ID_BY_PROVIDER["Aetna"],
     meritain: PAYER_ID_BY_PROVIDER["Meritain Health"],
-    // map horizon key even though not in union; accessed via selectedProvider narrowing
-    // @ts-expect-error horizon key is not part of InsuranceProvider union, but used via selectedProvider narrowing
     horizon_bcbs_nj: PAYER_ID_BY_PROVIDER["Horizon Blue Cross Blue Shield of NJ"],
     amerihealth: PAYER_ID_BY_PROVIDER["AmeriHealth"],
     "cash-pay": ""
@@ -127,12 +125,22 @@ export default function InsuranceVerificationModal({
       return;
     }
 
+    const payerId = tradingPartnerServiceIdMap[selectedProvider];
+    if (!payerId) {
+      console.warn("Missing payerId for provider", selectedProvider);
+      setModalState("verification-failed");
+      return;
+    }
+    const sessionCostCents = Math.round(getSessionCostForPayer(payerId, 200) * 100);
+
     const payload = {
       controlNumber: "987654321",
-      tradingPartnerServiceId: tradingPartnerServiceIdMap[selectedProvider],
+      tradingPartnerServiceId: payerId,
+      cptCode: "90837",
       provider: {
         organizationName: "Sol Health",
-        npi: NPI
+        npi: NPI,
+        sessionCost: sessionCostCents
       },
       subscriber: {
         firstName: formData.firstName,
@@ -373,6 +381,10 @@ export default function InsuranceVerificationModal({
                           <strong>Your cost per session: {verificationResponse.benefits.memberObligation}</strong><br />
                         </>
                       )}
+                      {/* Estimated allowed amount based on payer config */}
+                      <span className="block mt-2 text-gray-700 font-normal">
+                        Estimated allowed amount we use for calculations: ${getSessionCostForPayer(tradingPartnerServiceIdMap[selectedProvider ?? "cash-pay"]) }
+                      </span>
                     </>
                   ) : (
                     <>Given our estimates, you'll pay <strong>$50</strong> for your first session and <strong>$25</strong> for all follow-up sessions.</>
