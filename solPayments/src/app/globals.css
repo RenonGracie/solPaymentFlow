@@ -112,6 +112,45 @@
     touch-action: manipulation;
   }
 
+  /* Prevent zoom on input focus (iOS) */
+  input, textarea, select {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  /* When keyboard is visible, adjust layout */
+  [data-keyboard-visible="true"] {
+    /* Prevent overscroll bounce when keyboard is visible */
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: auto !important;
+  }
+
+  /* Improve input interactions */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    /* Add your focus styles here */
+  }
+
+  /* Prevent rubber-band scrolling on iOS */
+  .no-bounce {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* Safe area handling for modern devices */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   .very-vogue-title {
     font-family: 'Very Vogue Text', 'Playfair Display', 'Times New Roman', serif;
     font-weight: 400;

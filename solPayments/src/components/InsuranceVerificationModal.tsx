@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { checkEligibility } from "../app/api/eligibility.js";
 import { PAYER_ID_BY_PROVIDER, NPI, getSessionCostForPayer } from "@/api/eligibilityConfig";
+import { useInputFocus } from "@/hooks/useInputFocus";
 
 type InsuranceProvider = "aetna" | "meritain" | "horizon_bcbs_nj" | "amerihealth" | "cash-pay";
 
@@ -74,6 +75,13 @@ export default function InsuranceVerificationModal({
     email: ""
   });
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
+
+  // Input focus hooks for better mobile keyboard handling
+  const firstNameInputRef = useInputFocus({ scrollOffset: 100 });
+  const lastNameInputRef = useInputFocus({ scrollOffset: 100 });
+  const dobInputRef = useInputFocus({ scrollOffset: 100 });
+  const memberIdInputRef = useInputFocus({ scrollOffset: 100 });
+  const emailInputRef = useInputFocus({ scrollOffset: 100 });
 
   // Reset modal state when it opens
   useEffect(() => {
@@ -266,11 +274,13 @@ export default function InsuranceVerificationModal({
                     Date of Birth*
                   </label>
                   <input
+                    ref={dobInputRef}
                     type="date"
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
                     className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
                     style={{ fontSize: '16px' }}
+                    autoComplete="bday"
                   />
                 </div>
 
@@ -279,12 +289,17 @@ export default function InsuranceVerificationModal({
                     Member ID*
                   </label>
                   <input
+                    ref={memberIdInputRef}
                     type="text"
                     value={formData.memberId}
                     onChange={(e) => handleInputChange("memberId", e.target.value)}
                     className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
                     placeholder="Enter your member ID"
                     style={{ fontSize: '16px' }}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    inputMode="text"
                   />
                 </div>
 
@@ -293,12 +308,17 @@ export default function InsuranceVerificationModal({
                     Email*
                   </label>
                   <input
+                    ref={emailInputRef}
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
                     placeholder="Enter your email address"
                     style={{ fontSize: '16px' }}
+                    autoComplete="email"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    inputMode="email"
                   />
                 </div>
               </div>
@@ -490,12 +510,17 @@ export default function InsuranceVerificationModal({
                     First Name*
                   </label>
                   <input
+                    ref={firstNameInputRef}
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange("firstName", e.target.value)}
                     className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 font-inter"
                     placeholder="Enter your first name"
                     style={{ fontSize: '16px' }}
+                    autoComplete="given-name"
+                    autoCorrect="off"
+                    autoCapitalize="words"
+                    inputMode="text"
                   />
                 </div>
 
@@ -504,12 +529,17 @@ export default function InsuranceVerificationModal({
                     Last Name*
                   </label>
                   <input
+                    ref={lastNameInputRef}
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange("lastName", e.target.value)}
                     className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 font-inter"
                     placeholder="Enter your last name"
                     style={{ fontSize: '16px' }}
+                    autoComplete="family-name"
+                    autoCorrect="off"
+                    autoCapitalize="words"
+                    inputMode="text"
                   />
                 </div>
 

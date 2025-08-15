@@ -680,9 +680,11 @@ export default function MatchedTherapist({
 
                           // Availability-based coloring for in-month cells using count thresholds
                           let bgClass = 'bg-white';
+                          let isUnavailable = false;
                           if (cell.inMonth) {
                             const count = getDayAvailableCount(cell.date);
                             const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
+                            isUnavailable = color === 'red';
                             bgClass =
                               color === 'red' ? 'bg-red-100' :
                               color === 'yellow' ? 'bg-yellow-100' :
@@ -692,18 +694,27 @@ export default function MatchedTherapist({
                           return (
                             <button
                               key={cell.key}
-                              onClick={() => cell.inMonth && setSelectedDateObj(cell.date)}
-                              disabled={!cell.inMonth}
+                              onClick={() => cell.inMonth && !isUnavailable && setSelectedDateObj(cell.date)}
+                              disabled={!cell.inMonth || isUnavailable}
                               title={cell.inMonth ? `Available slots: ${getDayAvailableCount(cell.date)}` : undefined}
-                              className={`py-2 rounded-lg transition-colors border ${
+                              className={`py-2 rounded-lg transition-colors border relative ${
                                 selected
                                   ? 'bg-blue-500 text-white border-blue-500'
                                   : cell.inMonth
-                                    ? `${bgClass} hover:bg-yellow-50 border-transparent`
+                                    ? isUnavailable
+                                      ? `${bgClass} cursor-not-allowed opacity-75 border-transparent`
+                                      : `${bgClass} hover:bg-yellow-50 border-transparent`
                                     : 'bg-white text-gray-300 cursor-not-allowed opacity-60 border-transparent'
                               }`}
                             >
-                              {cell.day}
+                              <span className={isUnavailable && cell.inMonth ? 'relative' : ''}>
+                                {cell.day}
+                                {isUnavailable && cell.inMonth && (
+                                  <span className="absolute inset-0 flex items-center justify-center">
+                                    <span className="block w-full h-0.5 bg-red-500 transform rotate-45 absolute"></span>
+                                  </span>
+                                )}
+                              </span>
                             </button>
                           );
                         })}

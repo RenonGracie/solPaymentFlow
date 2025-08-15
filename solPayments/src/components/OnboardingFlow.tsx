@@ -6,6 +6,7 @@ import { VIDEOS } from "@/lib/videos";
 import { Button } from "@/components/ui/button";
 import { checkEligibility } from "../app/api/eligibility.js";
 import { PAYER_ID_BY_PROVIDER, NPI, getSessionCostForPayer } from "@/api/eligibilityConfig";
+import { useInputFocus } from "@/hooks/useInputFocus";
 
 interface EligibilityBenefits {
   copay: string;
@@ -157,6 +158,10 @@ export default function OnboardingFlow({
   const [isPortrait, setIsPortrait] = useState(false);
   const [screenType, setScreenType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [isWideScreen, setIsWideScreen] = useState(false);
+
+  // Input focus hooks for better mobile keyboard handling
+  const nameInputRef = useInputFocus({ scrollOffset: 100 });
+  const emailInputRef = useInputFocus({ scrollOffset: 100 });
   const [screenReady, setScreenReady] = useState(false);
   // Initial video loading state
   const [initialVideoReady, setInitialVideoReady] = useState(false);
@@ -717,6 +722,7 @@ export default function OnboardingFlow({
             {/* Single Preferred Name Input */}
             <div className="mb-8">
               <input
+                ref={nameInputRef}
                 type="text"
                 value={formData.preferredName}
                 onChange={(e) => handleInputChange('preferredName', e.target.value)}
@@ -724,10 +730,11 @@ export default function OnboardingFlow({
                 onBlur={() => setShowKeyboard(false)}
                 placeholder=""
                 className="w-full text-2xl md:text-3xl font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
-                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', fontSize: '16px' }}
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="words"
+                inputMode="text"
               />
 
             </div>
@@ -912,6 +919,7 @@ export default function OnboardingFlow({
             {/* Email Input */}
             <div className="mb-8">
               <input
+                ref={emailInputRef}
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
@@ -919,10 +927,11 @@ export default function OnboardingFlow({
                 onBlur={() => setShowKeyboard(false)}
                 placeholder="well@being.com"
                 className="w-full text-2xl md:text-3xl font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
-                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', fontSize: '16px' }}
                 autoComplete="email"
                 autoCorrect="off"
                 autoCapitalize="off"
+                inputMode="email"
               />
             </div>
 
