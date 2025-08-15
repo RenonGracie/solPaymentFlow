@@ -758,30 +758,34 @@ export default function OnboardingFlow({
       {
         title: "I'm navigating a life change",
         desc: "Big or small, life shifts. Find your footing, your new life rhythm, and yourself amidst transition and uncertainty.",
-        color: 'border-2',
+        color: '',
         bgColor: '#e2ebff',
-        shadowColor: '#373842'
+        shadowColor: '#373842',
+        textColor: '#373842'
       },
       {
         title: "I want help with something specific",
         desc: "Care for anxiety, depression, trauma, relationships, and patterns that feel hard to change. Get matched to a therapist who specializes in what you're looking for.",
-        color: 'border-2',
+        color: '',
         bgColor: '#e6cab0',
-        shadowColor: '#5d3107'
+        shadowColor: '#5d3107',
+        textColor: '#5d3107'
       },
       {
         title: "I'm feeling really overwhelmed",
         desc: "Stress, burnout, auto-pilot, too much on your shoulders. Build coping tools and find space for you and what you truly want.",
-        color: 'border-2',
+        color: '',
         bgColor: '#fff8ca',
-        shadowColor: '#e6c9af'
+        shadowColor: '#e6c9af',
+        textColor: '#8B4513'
       },
       {
         title: "I'm not sure how to put it into words",
         desc: "You just know you want to feel better. We'll explore it together and make sure you feel seen, heard, and moving towards a goal.",
-        color: 'border-2',
+        color: '',
         bgColor: '#f9f9f9',
-        shadowColor: '#b2b2b4'
+        shadowColor: '#b2b2b4',
+        textColor: '#666666'
       }
     ];
 
@@ -816,16 +820,16 @@ export default function OnboardingFlow({
                     setFormData((prev) => ({ ...prev, whatBringsYou: opt.title }));
                     setCurrentStep(3); // go straight to email step
                   }}
-                  className={`relative max-w-sm mx-auto w-full text-left ${opt.color} rounded-xl pt-2.5 pb-3 px-3 md:pt-3 md:pb-3.5 md:px-4 hover:brightness-95 transition-colors`}
+                  className={`relative max-w-sm mx-auto w-full text-left ${opt.color} rounded-xl pt-1.5 pb-2.5 px-2.5 md:pt-2 md:pb-3 md:px-3.5 hover:brightness-95 transition-colors`}
                   style={{ 
                     fontFamily: 'var(--font-inter)',
                     backgroundColor: opt.bgColor,
                     boxShadow: `2px 2px 0 ${opt.shadowColor}`
                   }}
                 >
-                  <p className="very-vogue-title text-lg md:text-xl mb-0.5" style={{ color: opt.shadowColor }}>{opt.title}</p>
-                  <p className="text-[12px] md:text-[13px] leading-snug" style={{ color: opt.shadowColor }}>{opt.desc}</p>
-                  <ArrowRight className="absolute bottom-2.5 right-2.5 w-4 h-4 md:w-5 md:h-5" style={{ color: opt.shadowColor }} />
+                  <p className="very-vogue-title text-lg md:text-xl mb-0.5" style={{ color: opt.textColor }}>{opt.title}</p>
+                  <p className="text-[12px] md:text-[13px] leading-snug" style={{ color: opt.textColor }}>{opt.desc}</p>
+                  <ArrowRight className="absolute bottom-2.5 right-2.5 w-4 h-4 md:w-5 md:h-5" style={{ color: opt.textColor }} />
                 </button>
               ))}
             </div>
@@ -840,7 +844,7 @@ export default function OnboardingFlow({
                 className="text-sm md:text-base font-medium underline text-gray-700 hover:text-gray-900"
                 style={{ fontFamily: 'var(--font-inter)' }}
               >
-                (Other)
+                Other
               </button>
             </div>
           </div>
