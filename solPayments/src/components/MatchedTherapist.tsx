@@ -1,4 +1,4 @@
-// solPayments/src/components/MatchedTherapist.tsx
+// solPayments/src/components/MatchedTherapist.tsx - FIXED
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import Image from "next/image";
 import { TMatchedTherapistData } from "@/api/types/therapist.types";
 import type { SlotsResponse } from "@/api/services";
 import { useTherapistsService } from "@/api/services";
+import axios from "@/api/axios"; // Import axios for API calls
 
 /** ---- Availability types (from new backend endpoint) ---- */
 type AvSlot = { start: string; end: string; free_ratio: number; is_free: boolean };
@@ -35,6 +36,71 @@ type Availability = {
   days: Record<number, AvDay>;
 };
 
+// State to timezone mapping (IANA format for internal use)
+// Note: We use IANA timezones (America/New_York) for calculations but display 
+// user-friendly abbreviations (EST, CST, etc.) in the UI
+const STATE_TIMEZONE_MAP: Record<string, string> = {
+  // Eastern
+  CT: "America/New_York", DE: "America/New_York", DC: "America/New_York", FL: "America/New_York",
+  GA: "America/New_York", ME: "America/New_York", MD: "America/New_York", MA: "America/New_York",
+  NH: "America/New_York", NJ: "America/New_York", NY: "America/New_York", NC: "America/New_York",
+  OH: "America/New_York", PA: "America/New_York", RI: "America/New_York", SC: "America/New_York",
+  VT: "America/New_York", VA: "America/New_York", WV: "America/New_York", MI: "America/New_York",
+  IN: "America/New_York", KY: "America/New_York",
+  // Central
+  AL: "America/Chicago", AR: "America/Chicago", IL: "America/Chicago", IA: "America/Chicago",
+  LA: "America/Chicago", MN: "America/Chicago", MS: "America/Chicago", MO: "America/Chicago",
+  OK: "America/Chicago", WI: "America/Chicago", TX: "America/Chicago", TN: "America/Chicago",
+  KS: "America/Chicago", NE: "America/Chicago", SD: "America/Chicago", ND: "America/Chicago",
+  // Mountain
+  AZ: "America/Phoenix", CO: "America/Denver", ID: "America/Denver", MT: "America/Denver",
+  NM: "America/Denver", UT: "America/Denver", WY: "America/Denver",
+  // Pacific
+  CA: "America/Los_Angeles", NV: "America/Los_Angeles", OR: "America/Los_Angeles", WA: "America/Los_Angeles",
+  // Alaska/Hawaii
+  AK: "America/Anchorage", HI: "Pacific/Honolulu",
+};
+
+// Timezone display names for user-friendly display
+// Note: These will show standard time abbreviations year-round for consistency
+// In production, you might want to detect DST and show EDT/CDT/MDT/PDT accordingly
+const TIMEZONE_DISPLAY_MAP: Record<string, string> = {
+  "America/New_York": "EST",
+  "America/Chicago": "CST",
+  "America/Denver": "MST",
+  "America/Phoenix": "MST", // Arizona doesn't observe DST
+  "America/Los_Angeles": "PST",
+  "America/Anchorage": "AK",
+  "Pacific/Honolulu": "HI",
+};
+
+// Get display timezone abbreviation with DST awareness (optional)
+const getTimezoneDisplay = (ianaTimezone: string, includeDST: boolean = false): string => {
+  if (!includeDST) {
+    return TIMEZONE_DISPLAY_MAP[ianaTimezone] || "EST";
+  }
+  
+  // If you want to show EDT/CDT/MDT/PDT during daylight saving time:
+  const now = new Date();
+  const isDST = () => {
+    const jan = new Date(now.getFullYear(), 0, 1);
+    const jul = new Date(now.getFullYear(), 6, 1);
+    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset()) !== now.getTimezoneOffset();
+  };
+  
+  const dstMap: Record<string, string> = {
+    "America/New_York": isDST() ? "EDT" : "EST",
+    "America/Chicago": isDST() ? "CDT" : "CST",
+    "America/Denver": isDST() ? "MDT" : "MST",
+    "America/Phoenix": "MST", // Arizona doesn't observe DST
+    "America/Los_Angeles": isDST() ? "PDT" : "PST",
+    "America/Anchorage": isDST() ? "AKDT" : "AKST",
+    "Pacific/Honolulu": "HI", // Hawaii doesn't observe DST
+  };
+  
+  return dstMap[ianaTimezone] || "EST";
+};
+
 interface MatchedTherapistProps {
   therapistsList: TMatchedTherapistData[];
   clientData?: {
@@ -43,8 +109,11 @@ interface MatchedTherapistProps {
     last_name?: string;
     email?: string;
     response_id?: string;
+    state?: string; // Important for timezone
+    payment_type?: string; // Important for session duration
     [key: string]: unknown;
-  },  initialIndex?: number;
+  },
+  initialIndex?: number;
   onBack?: () => void;
   onBookSession?: (therapist: TMatchedTherapistData, slot: string) => void;
 }
@@ -66,6 +135,7 @@ export default function MatchedTherapist({
   const [fetchedSlots, setFetchedSlots] = useState<Record<string, string[]>>({});
   const [fetchingSlots, setFetchingSlots] = useState<Record<string, boolean>>({});
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
+  const [hasRecordedSelection, setHasRecordedSelection] = useState(false);
 
   /** New: cache monthly availability by therapist + month + tz */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
@@ -76,9 +146,13 @@ export default function MatchedTherapist({
   
   const { slots: slotsRequest } = useTherapistsService();
 
-  // Resolve selected payment type from query/localStorage
+  // Get payment type from client data, localStorage, or query param
   const getSelectedPaymentType = (): 'insurance' | 'cash_pay' => {
-    // Query param takes precedence if present
+    // First check client data
+    if (clientData?.payment_type === 'insurance' || clientData?.payment_type === 'cash_pay') {
+      return clientData.payment_type;
+    }
+    // Then query param
     if (typeof window !== 'undefined') {
       const qp = new URLSearchParams(window.location.search).get('payment_type');
       if (qp === 'cash_pay' || qp === 'insurance') return qp;
@@ -90,11 +164,50 @@ export default function MatchedTherapist({
     return 'insurance';
   };
 
-  /** Browser timezone */
+  // Get timezone based on client's state (IANA format for calculations)
   const timezone = useMemo(() => {
-    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; }
-    catch { return "America/New_York"; }
-  }, []);
+    // First try to get from client's state
+    if (clientData?.state) {
+      const stateUpper = String(clientData.state).toUpperCase().trim();
+      const tz = STATE_TIMEZONE_MAP[stateUpper];
+      if (tz) return tz;
+    }
+    
+    // Fallback to browser timezone
+    try { 
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; 
+    } catch { 
+      return "America/New_York"; 
+    }
+  }, [clientData?.state]);
+
+  // Get display-friendly timezone abbreviation
+  const timezoneDisplay = useMemo(() => {
+    return getTimezoneDisplay(timezone);
+  }, [timezone]);
+
+  // Record therapist selection when therapist changes
+  useEffect(() => {
+    if (!therapist?.id || !clientData?.response_id || hasRecordedSelection) return;
+    
+    // Record that this therapist was selected/viewed
+    const recordSelection = async () => {
+      try {
+        await axios.post('/therapists/select', {
+          response_id: clientData.response_id,
+          therapist_email: therapist.email,
+          therapist_name: therapist.intern_name,
+          therapist_id: therapist.id,
+        });
+        console.log(`✅ Recorded therapist selection: ${therapist.intern_name}`);
+        setHasRecordedSelection(true);
+      } catch (error) {
+        console.error('Failed to record therapist selection:', error);
+      }
+    };
+    
+    recordSelection();
+  }, [therapist?.id, therapist?.email, therapist?.intern_name, clientData?.response_id, hasRecordedSelection]);
   
   // Track viewed therapists
   useEffect(() => {
@@ -112,24 +225,20 @@ export default function MatchedTherapist({
     slotsRequest
       .makeRequest({ params: {
         email,
-        // Prefer response_id from clientData, else use client's state if present
         response_id: (clientData?.response_id as string) || undefined,
-        state: (!clientData?.response_id && typeof (clientData as { state?: unknown })?.state === 'string'
-          ? (clientData as { state?: string }).state
-          : undefined)
+        state: clientData?.state || undefined,
       } })
       .then((res: SlotsResponse) => {
         const avail = res?.available_slots || [];
         setFetchedSlots(prev => ({ ...prev, [email]: avail }));
       })
       .catch(() => {
-        // Swallow errors; fallback occurs to availability endpoint below / or to mock slots
+        // Swallow errors; fallback occurs to availability endpoint below
       })
       .finally(() => setFetchingSlots(prev => ({ ...prev, [email]: false })));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [therapist?.calendar_email, therapist?.email]);
+  }, [therapist?.calendar_email, therapist?.email, clientData?.response_id, clientData?.state, timezone, slotsRequest]);
 
-  /** New: Fetch monthly availability JSON (colors + sessions/slots) when therapist or month changes */
+  /** New: Fetch monthly availability JSON when therapist or month changes */
   const currentYear = calendarDate.getFullYear();
   const currentMonth = calendarDate.getMonth(); // 0-based
   const avKey = useMemo(() => {
@@ -145,42 +254,41 @@ export default function MatchedTherapist({
 
     const controller = new AbortController();
     const fetchAvailability = async () => {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? window.location.origin;
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
       const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, API_BASE);
       url.searchParams.set("year", String(currentYear));
       url.searchParams.set("month", String(currentMonth + 1));
       url.searchParams.set("timezone", timezone);
-      // Include payment_type to drive session duration rules (cash_pay=45, insurance=55)
+      
+      // Pass the actual payment type
       const paymentType = getSelectedPaymentType();
       url.searchParams.set("payment_type", paymentType);
-      url.searchParams.set("work_start", "01:00");
-      url.searchParams.set("work_end", "23:00");
+      
+      // Use reasonable work hours (7 AM to 9 PM)
+      url.searchParams.set("work_start", "07:00");
+      url.searchParams.set("work_end", "21:00");
+      
       try {
         const r = await fetch(url.toString(), { signal: controller.signal });
         if (!r.ok) throw new Error(`Availability fetch failed: ${r.status}`);
         const data: Availability = await r.json();
 
-        // Build and log per-day available sessions (for testing)
+        // Log available sessions
         const byDay: Record<string, string[]> = {};
         Object.entries(data.days || {}).forEach(([dayStr, payload]) => {
-          const day = Number(dayStr);
           const sessions = (payload.sessions ?? payload.slots.filter(s => s.is_free).map(s => ({ start: s.start, end: s.end })));
           byDay[dayStr] = sessions.map(s => s.start);
         });
-        // Helpful console payload
-        // Example: { "1": ["2025-08-01T14:00:00-04:00", ...], "2": [] , ...}
-        console.log(`[availability] ${email} ${currentYear}-${String(currentMonth+1).padStart(2,"0")} (${timezone})`, byDay);
+        console.log(`[availability] ${email} ${currentYear}-${String(currentMonth+1).padStart(2,"0")} (${timezoneDisplay}/${timezone})`, byDay);
 
         setAvailabilityCache(prev => ({ ...prev, [avKey]: data }));
       } catch (e) {
-        // Non-fatal; UI will fall back to legacy slots
         console.warn("Availability fetch error", e);
       }
     };
     fetchAvailability();
     return () => controller.abort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [avKey]);
+  }, [avKey, timezone, currentYear, currentMonth]);
   
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
@@ -191,7 +299,8 @@ export default function MatchedTherapist({
     const nextIndex = (currentIndex + 1) % therapistsList.length;
     setCurrentIndex(nextIndex);
     setSelectedTimeSlot(null);
-    setImageError({}); // Reset image errors for new therapist
+    setImageError({});
+    setHasRecordedSelection(false); // Reset for new therapist
   };
   
   const handleSelectPreviousTherapist = (therapistId: string) => {
@@ -200,17 +309,41 @@ export default function MatchedTherapist({
       setCurrentIndex(therapistIndex);
       setSelectedTimeSlot(null);
       setImageError({});
+      setHasRecordedSelection(false); // Reset for new therapist
     }
   };
   
-  const handleBookSession = () => {
-    if (selectedTimeSlot && selectedDateObj && onBookSession) {
-      const yyyy = selectedDateObj.getFullYear();
-      const mm = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
-      const dd = String(selectedDateObj.getDate()).padStart(2, '0');
-      const normalizedTime = selectedTimeSlot.replace(/\s/g, '');
-      const datetime = `${yyyy}-${mm}-${dd}T${convertTo24Hour(normalizedTime)}:00`;
-      onBookSession(currentTherapistData, datetime);
+  const handleBookSession = async () => {
+    if (!selectedTimeSlot || !selectedDateObj || !clientData?.response_id) return;
+    
+    const yyyy = selectedDateObj.getFullYear();
+    const mm = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(selectedDateObj.getDate()).padStart(2, '0');
+    const normalizedTime = selectedTimeSlot.replace(/\s/g, '');
+    const datetime = `${yyyy}-${mm}-${dd}T${convertTo24Hour(normalizedTime)}:00`;
+    
+    try {
+      // Call the appointments endpoint directly
+      const response = await axios.post('/appointments', {
+        client_response_id: clientData.response_id,
+        therapist_email: therapist?.email,
+        therapist_name: therapist?.intern_name,
+        datetime: datetime,
+        payment_type: getSelectedPaymentType(),
+      });
+      
+      console.log('✅ Appointment booked:', response.data);
+      
+      // Call the parent callback if provided
+      if (onBookSession) {
+        onBookSession(currentTherapistData, datetime);
+      }
+    } catch (error) {
+      console.error('❌ Failed to book appointment:', error);
+      // Still call parent callback as fallback
+      if (onBookSession) {
+        onBookSession(currentTherapistData, datetime);
+      }
     }
   };
   
@@ -224,6 +357,7 @@ export default function MatchedTherapist({
     if (period.toLowerCase() === 'am' && h === '12') h = '00';
     return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
   };
+
   // Function to handle image URL - S3 presigned URLs should be used directly
   const getImageUrl = (imageLink: string | null | undefined): string => {
     if (!imageLink) return '';
@@ -236,11 +370,9 @@ export default function MatchedTherapist({
 
   // Map program/cohort to display category
   const getTherapistCategory = (t: { program?: string; cohort?: string } | undefined): string => {
-    // Prefer selected payment type mapping
     const pt = getSelectedPaymentType();
     if (pt === 'cash_pay') return 'Graduate Therapist';
     if (pt === 'insurance') return 'Associate Therapist';
-    // Fallback to program/cohort hints
     const hay = `${t?.program ?? ''} ${t?.cohort ?? ''}`.toLowerCase();
     const gradHints = ['graduate', 'grad', 'intern', 'practicum', 'student', 'trainee'];
     return gradHints.some(k => hay.includes(k)) ? 'Graduate Therapist' : 'Associate Therapist';
@@ -259,7 +391,7 @@ export default function MatchedTherapist({
     setImageError(prev => ({ ...prev, [therapistId]: true }));
   };
 
-  // Sanitize labels to remove JSON artifacts like curly braces or stray quotes
+  // Sanitize labels to remove JSON artifacts
   const sanitizeLabel = (value: unknown): string => {
     if (typeof value !== 'string') return '';
     return value
@@ -268,7 +400,7 @@ export default function MatchedTherapist({
       .trim();
   };
  
-  // Normalize arbitrary inputs (string | string[] | JSON-like) to a clean string[]
+  // Normalize arbitrary inputs to a clean string[]
   const toStringArray = (input: unknown): string[] => {
     if (!input) return [];
     if (Array.isArray(input)) return input.map((v) => sanitizeLabel(typeof v === 'string' ? v : String(v))).filter(Boolean);
@@ -284,13 +416,10 @@ export default function MatchedTherapist({
           }
         } catch {}
       }
-      // Remove wrapping braces if present like {a, b}
       const noBraces = raw.replace(/^[{\[]|[}\]]$/g, '');
-      // Split by common delimiters
       const parts = noBraces.split(/[,;\|]/g).map((s) => sanitizeLabel(s));
       return parts.filter(Boolean);
     }
-    // Fallback
     try {
       return [sanitizeLabel(String(input))].filter(Boolean);
     } catch {
@@ -302,7 +431,7 @@ export default function MatchedTherapist({
     if (!Array.isArray(list)) return [];
     return list
       .map(sanitizeLabel)
-      .filter((label) => /[A-Za-z0-9]/.test(label)); // ensure there is meaningful content
+      .filter((label) => /[A-Za-z0-9]/.test(label));
   };
  
   const matchedSpecialties = cleanList(matchedSpecialtiesRaw);
@@ -323,7 +452,7 @@ export default function MatchedTherapist({
     ...uniqueSpecialties.filter(s => !matchedSpecialties.includes(s))
   ];
  
-  // Combine internal and external therapeutic orientation fields
+  // Combine therapeutic orientation fields
   const therapeuticOrientationCombined = [
     ...toStringArray(therapist?.therapeutic_orientation),
     ...toStringArray(therapist?.internal_therapeutic_orientation),
@@ -358,7 +487,6 @@ export default function MatchedTherapist({
   const goPrevMonth = () => {
     const next = new Date(currentYear, currentMonth - 1, 1);
     setCalendarDate(next);
-    // optional: reset selected day to 1st
     setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
   };
   const goNextMonth = () => {
@@ -367,20 +495,11 @@ export default function MatchedTherapist({
     setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
   };
 
-  /** Helper: calendar cell color based on free_ratio */
-  const dayColor = (ratio: number): "red" | "yellow" | "green" => {
-    if (ratio <= 0) return "red";         // no availability
-    if (ratio < 1) return "yellow";       // some availability
-    return "green";                        // fully free
-  };
-
-  /** Pull availability for this therapist + month (if fetched) */
+  // Pull availability for this therapist + month (if fetched)
   const availability = availabilityCache[avKey];
-
-  // Email used for legacy slots lookups
   const emailForSlots = therapist?.calendar_email || therapist?.email || '';
 
-  /** Fallback: derive per-day available slot counts from legacy ISO slots if no availability JSON */
+  // Fallback: derive per-day available slot counts from legacy ISO slots
   const legacyDayCount = useMemo(() => {
     const map: Record<number, number> = {};
     const isoList = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
@@ -394,7 +513,7 @@ export default function MatchedTherapist({
     return map;
   }, [fetchedSlots, therapist?.available_slots, emailForSlots, currentYear, currentMonth]);
 
-  /** Count available slots for a particular day (API sessions preferred, else free slots, else legacy) */
+  // Count available slots for a particular day
   const getDayAvailableCount = (date: Date): number => {
     const dayNum = date.getDate();
     if (availability?.days && availability.days[dayNum]) {
@@ -407,9 +526,7 @@ export default function MatchedTherapist({
     return legacyDayCount[dayNum] ?? 0;
   };
 
-  /** Build time slots for the selected day:
-   *  Prefer backend availability.sessions (fully-free session windows),
-   *  else fallback to legacy fetchedSlots (ISO strings). */
+  // Build time slots for the selected day
   const slotsForDay = useMemo(() => {
     if (!selectedDateObj) return [];
 
@@ -427,22 +544,28 @@ export default function MatchedTherapist({
       }
     }
 
-    // Fallback to legacy ISO list if no availability
+    // Fallback to legacy ISO list
     const calendarAvailableSlotsLegacy = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
     return (calendarAvailableSlotsLegacy || [])
-    .map((iso: string) => new Date(iso))
+      .map((iso: string) => new Date(iso))
       .filter((dt: Date) => isSameDay(dt, selectedDateObj))
-    .sort((a: Date, b: Date) => a.getTime() - b.getTime());
+      .sort((a: Date, b: Date) => a.getTime() - b.getTime());
   }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, therapist?.available_slots]);
 
   const formatTimeLabel = (date: Date) =>
     date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
+  // Get session duration based on payment type
+  const getSessionDuration = () => {
+    const paymentType = getSelectedPaymentType();
+    return paymentType === 'insurance' ? 55 : 45;
+  };
+
   if (!therapist) return null;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
-      {/* Header - reduced height to match app flow */}
+      {/* Header */}
       <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
         <Image
           src="/onboarding-banner.jpg"
@@ -453,15 +576,15 @@ export default function MatchedTherapist({
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-start p-3 sm:p-4">
-            {onBack && (
-              <button
-                onClick={onBack}
+          {onBack && (
+            <button
+              onClick={onBack}
               className="mr-2 p-2 rounded-full hover:bg-white/20 transition-colors"
               aria-label="Back"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-800" />
-              </button>
-            )}
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-800" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -559,7 +682,7 @@ export default function MatchedTherapist({
                     </div>
                   )}
 
-                  {/* Skills and Experience */}
+                  {/* Skills and Experience sections remain the same... */}
                   <div className="space-y-4">
                     <h3 className="very-vogue-title text-2xl text-gray-800">Skills and Experience</h3>
                     
@@ -567,7 +690,6 @@ export default function MatchedTherapist({
                     <div>
                       <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Specializes in</p>
                       <div className="flex flex-wrap gap-2">
-                        {/* Highlighted (matched) first */}
                         {matchedSpecialties.map((specialty, i) => (
                           <span 
                             key={`matched-specialty-${i}`}
@@ -578,7 +700,6 @@ export default function MatchedTherapist({
                           </span>
                         ))}
 
-                        {/* First 3 non-highlighted (or all if expanded) */}
                         {(() => {
                           const nonMatched = sortedSpecialties.filter((s) => !matchedSpecialties.includes(s));
                           const visible = showAllSpecialties ? nonMatched : nonMatched.slice(0, 3);
@@ -656,7 +777,10 @@ export default function MatchedTherapist({
                 <CardContent className="p-4 md:p-6 flex flex-col">
                   <h3 className="very-vogue-title text-2xl text-gray-800 mb-1">Book Your First Session</h3>
                   <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
-                    Local Timezone ({timezone})
+                    {clientData?.state ? 
+                      `${String(clientData.state).toUpperCase()} Time (${timezoneDisplay})` : 
+                      `Local Time (${timezoneDisplay})`
+                    }
                   </p>
 
                   {/* Calendar */}
@@ -664,8 +788,12 @@ export default function MatchedTherapist({
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium" style={{ fontFamily: 'var(--font-inter)' }}>{monthLabel}</h4>
                       <div className="flex gap-2">
-                        <button onClick={goPrevMonth} className="p-1 hover:bg-gray-100 rounded border border-gray-200" aria-label="Previous month"><ChevronLeft className="w-4 h-4" /></button>
-                        <button onClick={goNextMonth} className="p-1 hover:bg-gray-100 rounded border border-gray-200" aria-label="Next month"><ChevronRight className="w-4 h-4" /></button>
+                        <button onClick={goPrevMonth} className="p-1 hover:bg-gray-100 rounded border border-gray-200" aria-label="Previous month">
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button onClick={goNextMonth} className="p-1 hover:bg-gray-100 rounded border border-gray-200" aria-label="Next month">
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                     <div className="border border-[#5C3106] rounded-2xl p-2 shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -677,10 +805,9 @@ export default function MatchedTherapist({
                       <div className="grid grid-cols-7 gap-1 text-center text-sm">
                         {calendarCells.map((cell) => {
                           const selected = selectedDateObj ? isSameDay(cell.date, selectedDateObj) : false;
-
-                          // Availability-based coloring for in-month cells using count thresholds
                           let bgClass = 'bg-white';
                           let isUnavailable = false;
+                          
                           if (cell.inMonth) {
                             const count = getDayAvailableCount(cell.date);
                             const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
@@ -766,7 +893,7 @@ export default function MatchedTherapist({
                     onClick={handleBookSession}
                     disabled={!selectedTimeSlot || !selectedDateObj}
                   >
-                    Book 45-Min Session →
+                    Book {getSessionDuration()}-Min Session →
                   </Button>
 
                   {/* Find Another Therapist */}
@@ -785,7 +912,7 @@ export default function MatchedTherapist({
             </div>
           </div>
 
-          {/* Previously Viewed Therapists */}
+          {/* Previously Viewed Therapists section remains the same... */}
           {previouslyViewed.length > 0 && (
             <div className="mt-6">
               <h3 className="very-vogue-title text-2xl text-gray-800 mb-4">Previously Viewed Therapists</h3>
@@ -820,7 +947,7 @@ export default function MatchedTherapist({
         </div>
       </div>
 
-      {/* Video Modal */}
+      {/* Video Modal remains the same... */}
       {showVideo && hasValidVideo && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowVideo(false)}>
           <div className="bg-white rounded-lg p-4 max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
