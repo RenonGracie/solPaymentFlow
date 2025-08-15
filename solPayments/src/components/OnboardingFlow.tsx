@@ -807,12 +807,17 @@ export default function OnboardingFlow({
         </div>
 
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-10">
-          <div className="flow-narrow mx-auto w-full">
-            <h1 className="text-3xl md:text-4xl mb-5 text-gray-800 text-center" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
-               What brings you here today?
-             </h1>
+          <div className="w-full max-w-md mx-auto">
+            <div className="text-center mb-8">
+              <p className="text-lg md:text-xl text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                we're so happy you're here
+              </p>
+              <h1 className="text-3xl md:text-4xl text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                What brings you here today?
+              </h1>
+            </div>
  
-            <div className="space-y-2 max-w-sm mx-auto w-full">
+            <div className="space-y-3 w-full flex flex-col items-center">
               {options.map((opt) => (
                 <button
                   key={opt.title}
@@ -820,7 +825,7 @@ export default function OnboardingFlow({
                     setFormData((prev) => ({ ...prev, whatBringsYou: opt.title }));
                     setCurrentStep(3); // go straight to email step
                   }}
-                  className={`relative max-w-xs mx-auto w-full text-left ${opt.color} rounded-xl pt-1.5 pb-2.5 px-2.5 md:pt-2 md:pb-3 md:px-3.5 hover:brightness-95 transition-colors`}
+                  className={`relative w-80 max-w-full text-left ${opt.color} rounded-xl pt-1.5 pb-2.5 px-2.5 md:pt-2 md:pb-3 md:px-3.5 hover:brightness-95 transition-colors`}
                   style={{ 
                     fontFamily: 'var(--font-inter)',
                     backgroundColor: opt.bgColor,
