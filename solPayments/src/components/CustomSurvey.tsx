@@ -62,6 +62,9 @@ interface SurveyData {
   lived_experiences: string[];
   university?: string;
   referred_by?: string | string[];
+  
+  // Terms and Conditions
+  terms_accepted: boolean;
 }
 
 interface CustomSurveyProps {
@@ -203,7 +206,10 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
     feeling_afraid: '',
     lived_experiences: [],
     university: '',
-    referred_by: ''
+    referred_by: '',
+    
+    // Terms and Conditions
+    terms_accepted: false
   });
 
   // Detect viewport orientation and screen type
@@ -289,7 +295,8 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
     const hasGender = (surveyData.gender || '').trim().length > 0;
     const hasDob = (surveyData.date_of_birth || '').trim().length > 0;
     const hasRace = (surveyData.race_ethnicity || []).length > 0;
-    return hasFirst && hasLast && hasPhone && hasGender && hasDob && hasRace;
+    const hasTermsAccepted = surveyData.terms_accepted;
+    return hasFirst && hasLast && hasPhone && hasGender && hasDob && hasRace && hasTermsAccepted;
   };
 
   const scaleOptions = [
@@ -1067,10 +1074,6 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               key={option}
                               onClick={() => {
                                 updateSurveyData('alcohol_frequency', option);
-                                const ready = option && surveyData.recreational_drugs_frequency;
-                                if (ready) {
-                                  setTimeout(() => { setShowPhq9Intro(true); setPhq9IntroEnded(false); setCurrentStep('phq9'); }, 120);
-                                }
                               }}
                               className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                                 isSelected
@@ -1100,10 +1103,6 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               key={option}
                               onClick={() => {
                                 updateSurveyData('recreational_drugs_frequency', option);
-                                const ready = surveyData.alcohol_frequency && option;
-                                if (ready) {
-                                  setTimeout(() => { setShowPhq9Intro(true); setPhq9IntroEnded(false); setCurrentStep('phq9'); }, 120);
-                                }
                               }}
                               className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                                 isSelected
@@ -1122,7 +1121,22 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                 </div>
               </div>
 
-              {/* Bottom Navigation removed; auto-advance once both responses are present */}
+              {/* Continue Button */}
+              {surveyData.alcohol_frequency && surveyData.recreational_drugs_frequency && (
+                <div className="pt-6">
+                  <Button
+                    onClick={() => {
+                      setShowPhq9Intro(true);
+                      setPhq9IntroEnded(false);
+                      setCurrentStep('phq9');
+                    }}
+                    className="w-full max-w-md mx-auto py-4 px-6 bg-yellow-100 hover:bg-yellow-300 text-gray-800 rounded-full text-base font-medium transition-all shadow-[1px_1px_0_#5C3106] border border-[#5C3106]"
+                    style={{ fontFamily: 'var(--font-inter)' }}
+                  >
+                    Continue →
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -1838,12 +1852,16 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                {/* Terms and Conditions */}
                <div className="mb-6 sm:mb-8">
-                 <label className="flex items-start space-x-3 cursor-pointer">
-                   <input
-                     type="checkbox"
-                     className="mt-1 rounded"
-                     required
-                   />
+                 <label className={`flex items-start space-x-3 cursor-pointer p-3 rounded-lg border-2 transition-colors ${
+                   !surveyData.terms_accepted ? 'border-red-300 bg-red-50' : 'border-transparent bg-transparent'
+                 }`}>
+                                        <input
+                       type="checkbox"
+                       checked={surveyData.terms_accepted}
+                       onChange={(e) => setSurveyData(prev => ({ ...prev, terms_accepted: e.target.checked }))}
+                       className="mt-1 rounded w-4 h-4 text-[#5C3106] focus:ring-[#5C3106] border-gray-300"
+                       required
+                     />
                    <span className="text-xs sm:text-sm text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
                      I agree to Sol Health's{' '}
                      <a href="https://solhealth.co/terms-of-service" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
@@ -1857,9 +1875,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      <a href="https://solhealth.co/telehealth-consent" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
                        Telehealth Consent
                      </a>
-                     .
+                     . <span className="text-red-500">*</span>
                    </span>
                  </label>
+                 {!surveyData.terms_accepted && (
+                   <p className="text-xs text-red-600 mt-2 ml-7" style={{ fontFamily: 'var(--font-inter)' }}>
+                     You must agree to the terms to continue
+                   </p>
+                 )}
                </div>
 
                {/* Submit Button */}
