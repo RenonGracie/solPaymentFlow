@@ -127,7 +127,7 @@ export default function MatchedTherapist({
 }: MatchedTherapistProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(new Date());
+  const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(null);
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [viewedTherapistIds, setViewedTherapistIds] = useState<Set<string>>(new Set());
   const [showVideo, setShowVideo] = useState(false);
@@ -273,13 +273,53 @@ export default function MatchedTherapist({
         if (!r.ok) throw new Error(`Availability fetch failed: ${r.status}`);
         const data: Availability = await r.json();
 
-        // Log available sessions
+        // Log available sessions with time analysis
         const byDay: Record<string, string[]> = {};
+        const timeAnalysis: Record<string, { before7am: number; after10pm: number; validHours: number; totalSlots: number }> = {};
+        
         Object.entries(data.days || {}).forEach(([dayStr, payload]) => {
           const sessions = (payload.sessions ?? payload.slots.filter(s => s.is_free).map(s => ({ start: s.start, end: s.end })));
           byDay[dayStr] = sessions.map(s => s.start);
+          
+          // Analyze time distribution for backend improvements
+          let before7am = 0, after10pm = 0, validHours = 0;
+          sessions.forEach(session => {
+            const sessionDate = new Date(session.start);
+            const hour = sessionDate.getHours();
+            if (hour < 7) before7am++;
+            else if (hour >= 22) after10pm++;
+            else validHours++;
+          });
+          
+          timeAnalysis[dayStr] = {
+            before7am,
+            after10pm,
+            validHours,
+            totalSlots: sessions.length
+          };
         });
-        console.log(`[availability] ${email} ${currentYear}-${String(currentMonth+1).padStart(2,"0")} (${timezoneDisplay}/${timezone})`, byDay);
+        
+        console.log(`[Availability] ${email} ${currentYear}-${String(currentMonth+1).padStart(2,"0")} (${timezoneDisplay}/${timezone}):`, {
+          byDay,
+          timeAnalysis,
+          summary: {
+            totalDays: Object.keys(byDay).length,
+            daysWithInvalidTimes: Object.values(timeAnalysis).filter(day => day.before7am > 0 || day.after10pm > 0).length,
+            totalInvalidSlots: Object.values(timeAnalysis).reduce((sum, day) => sum + day.before7am + day.after10pm, 0)
+          }
+        });
+        
+        // Log specific warnings for invalid time slots
+        Object.entries(timeAnalysis).forEach(([dayStr, analysis]) => {
+          if (analysis.before7am > 0 || analysis.after10pm > 0) {
+            console.warn(`[Backend Calendar Issue] ${email} - Day ${dayStr}:`, {
+              slotsBefor7am: analysis.before7am,
+              slotsAfter10pm: analysis.after10pm,
+              validSlots: analysis.validHours,
+              recommendation: 'Backend should filter slots to 7AM-10PM range before sending to frontend'
+            });
+          }
+        });
 
         setAvailabilityCache(prev => ({ ...prev, [avKey]: data }));
       } catch (e) {
@@ -368,14 +408,46 @@ export default function MatchedTherapist({
     return '';
   };
 
-  // Map program/cohort to display category
+  // Map program to display category based on database program field
   const getTherapistCategory = (t: { program?: string; cohort?: string } | undefined): string => {
-    const pt = getSelectedPaymentType();
-    if (pt === 'cash_pay') return 'Graduate Therapist';
-    if (pt === 'insurance') return 'Associate Therapist';
-    const hay = `${t?.program ?? ''} ${t?.cohort ?? ''}`.toLowerCase();
-    const gradHints = ['graduate', 'grad', 'intern', 'practicum', 'student', 'trainee'];
-    return gradHints.some(k => hay.includes(k)) ? 'Graduate Therapist' : 'Associate Therapist';
+    const program = (t?.program ?? '').trim();
+    const paymentType = getSelectedPaymentType();
+    
+    let category: string;
+    
+    // Graduate Therapist programs
+    if (program === 'MHC' || program === 'MSW' || program === 'MFT') {
+      category = 'Graduate Therapist';
+    }
+    // Associate Therapist programs  
+    else if (program === 'Limited Permit') {
+      category = 'Associate Therapist';
+    }
+    // Fallback - default to Graduate for empty/unknown programs
+    else {
+      if (program) {
+        console.warn(`[Therapist Category] Unknown program type: "${program}" for therapist. Please update category mapping.`);
+      }
+      category = 'Graduate Therapist';
+    }
+    
+    // Verification: Check if therapist category matches expected payment type
+    const expectedCategory = paymentType === 'cash_pay' ? 'Graduate Therapist' : 'Associate Therapist';
+    if (category !== expectedCategory) {
+      console.error(`[Data Mismatch] Therapist program "${program}" resulted in "${category}" but payment type "${paymentType}" expects "${expectedCategory}"`, {
+        therapistName: therapist?.intern_name,
+        therapistId: therapist?.id,
+        program: program,
+        paymentType: paymentType,
+        actualCategory: category,
+        expectedCategory: expectedCategory,
+        recommendation: 'Check therapist data or payment type assignment'
+      });
+    } else {
+      console.log(`[Category Verified] ${therapist?.intern_name}: ${category} matches ${paymentType} payment type ✓`);
+    }
+    
+    return category;
   };
 
   // Function to extract YouTube video ID from URL
@@ -499,19 +571,49 @@ export default function MatchedTherapist({
   const availability = availabilityCache[avKey];
   const emailForSlots = therapist?.calendar_email || therapist?.email || '';
 
-  // Fallback: derive per-day available slot counts from legacy ISO slots
+  // Fallback: derive per-day available slot counts from legacy ISO slots with logging
   const legacyDayCount = useMemo(() => {
     const map: Record<number, number> = {};
     const isoList = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
+    let invalidTimeSlots = 0;
+    let validTimeSlots = 0;
+    
     for (const iso of isoList) {
       const dt = new Date(iso);
       if (dt.getFullYear() === currentYear && dt.getMonth() === currentMonth) {
         const day = dt.getDate();
-        map[day] = (map[day] ?? 0) + 1;
+        const hour = dt.getHours();
+        
+        // Count valid vs invalid time slots for logging
+        if (hour >= 7 && hour < 22) {
+          validTimeSlots++;
+          map[day] = (map[day] ?? 0) + 1;
+        } else {
+          invalidTimeSlots++;
+          console.warn(`[Legacy Slots] Invalid time slot from legacy API:`, {
+            therapist: therapist?.intern_name,
+            isoString: iso,
+            parsedTime: dt.toLocaleString(),
+            hour: hour,
+            reason: hour < 7 ? 'before-7am' : 'after-10pm',
+            timezone: timezoneDisplay
+          });
+        }
       }
     }
+    
+    if (isoList.length > 0) {
+      console.log(`[Legacy Slots] ${therapist?.intern_name} - ${currentYear}-${String(currentMonth+1).padStart(2,"0")}:`, {
+        totalLegacySlots: isoList.length,
+        validTimeSlots,
+        invalidTimeSlots,
+        filteredDayCount: Object.keys(map).length,
+        timezone: timezoneDisplay
+      });
+    }
+    
     return map;
-  }, [fetchedSlots, therapist?.available_slots, emailForSlots, currentYear, currentMonth]);
+  }, [fetchedSlots, therapist?.available_slots, emailForSlots, currentYear, currentMonth, therapist?.intern_name, timezoneDisplay]);
 
   // Count available slots for a particular day
   const getDayAvailableCount = (date: Date): number => {
@@ -526,31 +628,107 @@ export default function MatchedTherapist({
     return legacyDayCount[dayNum] ?? 0;
   };
 
-  // Build time slots for the selected day
+  // Auto-select first available future date when availability data loads
+  useEffect(() => {
+    if (!selectedDateObj && (availability?.days || Object.keys(fetchedSlots).length > 0)) {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      
+      // Find the first date starting from tomorrow that has availability
+      for (let i = 0; i < 30; i++) { // Check next 30 days
+        const checkDate = new Date(tomorrow);
+        checkDate.setDate(tomorrow.getDate() + i);
+        
+        if (checkDate.getFullYear() === currentYear && checkDate.getMonth() === currentMonth) {
+          const availableCount = getDayAvailableCount(checkDate);
+          if (availableCount > 0) {
+            console.log(`[Calendar] Auto-selecting first available date: ${checkDate.toDateString()} (${availableCount} slots)`);
+            setSelectedDateObj(checkDate);
+            break;
+          }
+        }
+      }
+    }
+  }, [availability?.days, fetchedSlots, selectedDateObj, currentYear, currentMonth, getDayAvailableCount]);
+
+  // Build time slots for the selected day with time restrictions and extensive logging
   const slotsForDay = useMemo(() => {
     if (!selectedDateObj) return [];
 
-    // Prefer new availability JSON
+    let rawSlots: Date[] = [];
+    let dataSource = 'none';
+
+    // Get raw slots from API - prefer new availability JSON
     if (availability?.days) {
       const dayNum = selectedDateObj.getDate();
       const payload = availability.days[dayNum];
       if (payload) {
+        dataSource = 'new-availability-api';
         const sessions = (payload.sessions && payload.sessions.length > 0)
           ? payload.sessions.map(s => new Date(s.start))
           : payload.slots.filter(s => s.is_free).map(s => new Date(s.start));
-        return sessions
-          .filter(dt => isSameDay(dt, selectedDateObj))
-          .sort((a, b) => a.getTime() - b.getTime());
+        rawSlots = sessions.filter(dt => isSameDay(dt, selectedDateObj));
       }
     }
 
     // Fallback to legacy ISO list
-    const calendarAvailableSlotsLegacy = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
-    return (calendarAvailableSlotsLegacy || [])
-      .map((iso: string) => new Date(iso))
-      .filter((dt: Date) => isSameDay(dt, selectedDateObj))
-      .sort((a: Date, b: Date) => a.getTime() - b.getTime());
-  }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, therapist?.available_slots]);
+    if (rawSlots.length === 0) {
+      dataSource = 'legacy-iso-slots';
+      const calendarAvailableSlotsLegacy = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
+      rawSlots = (calendarAvailableSlotsLegacy || [])
+        .map((iso: string) => new Date(iso))
+        .filter((dt: Date) => isSameDay(dt, selectedDateObj));
+    }
+
+    // Extensive logging for debugging
+    console.log(`[Calendar Debug] ${therapist?.intern_name} - ${selectedDateObj.toDateString()}:`, {
+      dataSource,
+      rawSlotsCount: rawSlots.length,
+      rawSlots: rawSlots.map(s => ({
+        time: s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }),
+        hour24: s.getHours(),
+        isoString: s.toISOString()
+      })),
+      timezone: `${timezoneDisplay} (${timezone})`,
+      therapistEmail: emailForSlots
+    });
+
+    // Filter for 7 AM - 10 PM (7:00 - 21:59)
+    const filteredSlots = rawSlots.filter(dt => {
+      const hour = dt.getHours();
+      const isInRange = hour >= 7 && hour < 22;
+      
+      if (!isInRange) {
+        console.warn(`[Calendar] Slot outside 7AM-10PM range filtered:`, {
+          therapist: therapist?.intern_name,
+          date: selectedDateObj.toDateString(),
+          slot: dt.toLocaleString(),
+          hour24: hour,
+          timeDisplay: dt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }),
+          timezone: timezoneDisplay,
+          reason: hour < 7 ? 'before-7am' : 'after-10pm'
+        });
+      }
+      
+      return isInRange;
+    });
+
+    console.log(`[Calendar Debug] After time filtering (7AM-10PM):`, {
+      therapist: therapist?.intern_name,
+      date: selectedDateObj.toDateString(),
+      filteredCount: filteredSlots.length,
+      filteredSlots: filteredSlots.map(s => s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })),
+      removedCount: rawSlots.length - filteredSlots.length,
+      removalDetails: rawSlots.length !== filteredSlots.length ? {
+        originalSlots: rawSlots.map(s => s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })),
+        removedSlots: rawSlots.filter(dt => dt.getHours() < 7 || dt.getHours() >= 22)
+          .map(s => ({ time: s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }), hour: s.getHours() }))
+      } : 'none'
+    });
+
+    return filteredSlots.sort((a, b) => a.getTime() - b.getTime());
+  }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, therapist?.available_slots, therapist?.intern_name, timezoneDisplay, timezone]);
 
   const formatTimeLabel = (date: Date) =>
     date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -805,40 +983,67 @@ export default function MatchedTherapist({
                       <div className="grid grid-cols-7 gap-1 text-center text-sm">
                         {calendarCells.map((cell) => {
                           const selected = selectedDateObj ? isSameDay(cell.date, selectedDateObj) : false;
+                          const today = new Date();
+                          const isToday = isSameDay(cell.date, today);
+                          const isPastOrToday = cell.date <= today; // Today and past are both non-selectable
+                          
                           let bgClass = 'bg-white';
                           let isUnavailable = false;
+                          let textClass = '';
                           
                           if (cell.inMonth) {
-                            const count = getDayAvailableCount(cell.date);
-                            const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
-                            isUnavailable = color === 'red';
-                            bgClass =
-                              color === 'red' ? 'bg-red-100' :
-                              color === 'yellow' ? 'bg-yellow-100' :
-                              'bg-green-100';
+                            if (isPastOrToday) {
+                              // Past dates and today are greyed out and disabled
+                              bgClass = 'bg-gray-100';
+                              textClass = 'text-gray-400';
+                              isUnavailable = true;
+                            } else {
+                              // Future dates use availability color-coding
+                              const count = getDayAvailableCount(cell.date);
+                              const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
+                              isUnavailable = color === 'red';
+                              bgClass =
+                                color === 'red' ? 'bg-red-100' :
+                                color === 'yellow' ? 'bg-yellow-100' :
+                                'bg-green-100';
+                            }
                           }
+
+                          const getTitle = () => {
+                            if (!cell.inMonth) return undefined;
+                            if (isPastOrToday) {
+                              return isToday ? 'Today - earliest booking is tomorrow at 7 AM' : 'Past date - not available';
+                            }
+                            return `Available slots: ${getDayAvailableCount(cell.date)}`;
+                          };
 
                           return (
                             <button
                               key={cell.key}
                               onClick={() => cell.inMonth && !isUnavailable && setSelectedDateObj(cell.date)}
                               disabled={!cell.inMonth || isUnavailable}
-                              title={cell.inMonth ? `Available slots: ${getDayAvailableCount(cell.date)}` : undefined}
+                              title={getTitle()}
                               className={`py-2 rounded-lg transition-colors border relative ${
                                 selected
                                   ? 'bg-blue-500 text-white border-blue-500'
                                   : cell.inMonth
                                     ? isUnavailable
-                                      ? `${bgClass} cursor-not-allowed opacity-75 border-transparent`
+                                      ? `${bgClass} ${textClass} cursor-not-allowed opacity-75 border-transparent`
                                       : `${bgClass} hover:bg-yellow-50 border-transparent`
                                     : 'bg-white text-gray-300 cursor-not-allowed opacity-60 border-transparent'
                               }`}
                             >
-                              <span className={isUnavailable && cell.inMonth ? 'relative' : ''}>
+                              <span className={isUnavailable && cell.inMonth && !isPastOrToday ? 'relative' : ''}>
                                 {cell.day}
-                                {isUnavailable && cell.inMonth && (
+                                {isUnavailable && cell.inMonth && !isPastOrToday && (
                                   <span className="absolute inset-0 flex items-center justify-center">
                                     <span className="block w-full h-0.5 bg-red-500 transform rotate-45 absolute"></span>
+                                  </span>
+                                )}
+                                {isPastOrToday && cell.inMonth && (
+                                  <span className="absolute inset-0 flex items-center justify-center">
+                                    <span className="block w-full h-0.5 bg-gray-400 transform rotate-45 absolute"></span>
+                                    <span className="block w-full h-0.5 bg-gray-400 transform -rotate-45 absolute"></span>
                                   </span>
                                 )}
                               </span>

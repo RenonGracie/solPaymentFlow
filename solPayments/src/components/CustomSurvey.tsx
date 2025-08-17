@@ -1123,14 +1123,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
               {/* Continue Button */}
               {surveyData.alcohol_frequency && surveyData.recreational_drugs_frequency && (
-                <div className="pt-6">
+                <div className="pt-6 flex justify-center">
                   <Button
                     onClick={() => {
                       setShowPhq9Intro(true);
                       setPhq9IntroEnded(false);
                       setCurrentStep('phq9');
                     }}
-                    className="w-full max-w-md mx-auto py-4 px-6 bg-yellow-100 hover:bg-yellow-300 text-gray-800 rounded-full text-base font-medium transition-all shadow-[1px_1px_0_#5C3106] border border-[#5C3106]"
+                    className="max-w-md py-4 px-6 bg-yellow-100 hover:bg-yellow-300 text-gray-800 rounded-full text-base font-medium transition-all shadow-[1px_1px_0_#5C3106] border border-[#5C3106] min-w-[200px]"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >
                     Continue →
@@ -1855,13 +1855,22 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                  <label className={`flex items-start space-x-3 cursor-pointer p-3 rounded-lg border-2 transition-colors ${
                    !surveyData.terms_accepted ? 'border-red-300 bg-red-50' : 'border-transparent bg-transparent'
                  }`}>
-                                        <input
-                       type="checkbox"
-                       checked={surveyData.terms_accepted}
-                       onChange={(e) => setSurveyData(prev => ({ ...prev, terms_accepted: e.target.checked }))}
-                       className="mt-1 rounded w-4 h-4 text-[#5C3106] focus:ring-[#5C3106] border-gray-300"
-                       required
-                     />
+                                                           <input
+                     type="checkbox"
+                     checked={surveyData.terms_accepted}
+                     onChange={(e) => setSurveyData(prev => ({ ...prev, terms_accepted: e.target.checked }))}
+                     className="mt-1 w-4 h-4 text-[#5C3106] bg-white border-2 border-gray-300 rounded focus:ring-[#5C3106] focus:ring-2 checked:bg-[#5C3106] checked:border-[#5C3106]"
+                     style={{ 
+                       appearance: 'none',
+                       WebkitAppearance: 'none',
+                       MozAppearance: 'none',
+                       backgroundImage: surveyData.terms_accepted ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z\'/%3e%3c/svg%3e")' : 'none',
+                       backgroundSize: '100% 100%',
+                       backgroundPosition: 'center',
+                       backgroundRepeat: 'no-repeat'
+                     }}
+                     required
+                   />
                    <span className="text-xs sm:text-sm text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
                      I agree to Sol Health's{' '}
                      <a href="https://solhealth.co/terms-of-service" target="_blank" rel="noopener noreferrer" className="underline text-gray-900 hover:text-gray-700">
