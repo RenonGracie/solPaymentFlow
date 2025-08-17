@@ -532,9 +532,104 @@ export default function MatchedTherapist({
   const therapeuticOrientation = Array.from(new Set(cleanList(therapeuticOrientationCombined)));
   const religions = toStringArray(therapist?.religion);
 
-  // Check if video URL is valid
+  // Check if video URL is valid with comprehensive logging
   const welcomeVideoLink = therapist?.welcome_video_link ?? '';
-  const hasValidVideo = welcomeVideoLink.startsWith('http://') || welcomeVideoLink.startsWith('https://');
+  
+  const videoAnalysis = useMemo(() => {
+    console.log(`[Video Analysis] Therapist: ${therapist?.intern_name}`, {
+      therapistId: therapist?.id,
+      rawVideoLink: welcomeVideoLink,
+      linkType: typeof welcomeVideoLink,
+      linkLength: welcomeVideoLink?.length || 0,
+      isEmpty: !welcomeVideoLink,
+      startsWithHttp: welcomeVideoLink?.startsWith('http://') || false,
+      startsWithHttps: welcomeVideoLink?.startsWith('https://') || false
+    });
+
+    if (!welcomeVideoLink || welcomeVideoLink.trim() === '') {
+      console.log(`[Video] No video link for ${therapist?.intern_name}`);
+      return { hasVideo: false, videoType: 'none', embedUrl: '', reason: 'No video URL provided' };
+    }
+
+    const cleanUrl = welcomeVideoLink.trim();
+    
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      console.warn(`[Video] Invalid URL format for ${therapist?.intern_name}: ${cleanUrl}`);
+      return { hasVideo: false, videoType: 'invalid', embedUrl: '', reason: 'URL does not start with http/https' };
+    }
+
+    // Analyze YouTube URLs
+    if (cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be')) {
+      const videoId = extractYouTubeId(cleanUrl);
+      if (!videoId) {
+        console.error(`[Video] Could not extract YouTube ID from: ${cleanUrl}`);
+        return { hasVideo: false, videoType: 'youtube-invalid', embedUrl: '', reason: 'Invalid YouTube URL format' };
+      }
+
+      // Detect YouTube Shorts
+      const isShort = cleanUrl.includes('/shorts/') || cleanUrl.includes('youtube.com/shorts');
+      const videoType = isShort ? 'youtube-short' : 'youtube-regular';
+      const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+
+      console.log(`[Video] YouTube ${isShort ? 'Short' : 'Regular'} detected for ${therapist?.intern_name}:`, {
+        originalUrl: cleanUrl,
+        videoId: videoId,
+        embedUrl: embedUrl,
+        isShort: isShort
+      });
+
+      return { hasVideo: true, videoType, embedUrl, videoId, isShort, reason: 'Valid YouTube video' };
+    }
+
+    // Analyze Vimeo URLs
+    if (cleanUrl.includes('vimeo.com')) {
+      const vimeoMatch = cleanUrl.match(/vimeo\.com\/(\d+)/);
+      if (vimeoMatch) {
+        const videoId = vimeoMatch[1];
+        const embedUrl = `https://player.vimeo.com/video/${videoId}`;
+        
+        console.log(`[Video] Vimeo video detected for ${therapist?.intern_name}:`, {
+          originalUrl: cleanUrl,
+          videoId: videoId,
+          embedUrl: embedUrl
+        });
+
+        return { hasVideo: true, videoType: 'vimeo', embedUrl, videoId, reason: 'Valid Vimeo video' };
+      } else {
+        console.error(`[Video] Could not extract Vimeo ID from: ${cleanUrl}`);
+        return { hasVideo: false, videoType: 'vimeo-invalid', embedUrl: '', reason: 'Invalid Vimeo URL format' };
+      }
+    }
+
+    // Check for direct video files
+    const videoExtensions = ['.mp4', '.mov', '.avi', '.webm', '.m4v'];
+    const hasVideoExtension = videoExtensions.some(ext => cleanUrl.toLowerCase().includes(ext));
+    
+    if (hasVideoExtension) {
+      console.log(`[Video] Direct video file detected for ${therapist?.intern_name}:`, {
+        originalUrl: cleanUrl,
+        detectedExtension: videoExtensions.find(ext => cleanUrl.toLowerCase().includes(ext))
+      });
+
+      return { hasVideo: true, videoType: 'direct', embedUrl: cleanUrl, reason: 'Direct video file' };
+    }
+
+    // Check for other known video platforms
+    const supportedPlatforms = ['wistia.com', 'loom.com', 'drive.google.com'];
+    const platform = supportedPlatforms.find(p => cleanUrl.includes(p));
+    
+    if (platform) {
+      console.log(`[Video] ${platform} video detected for ${therapist?.intern_name}: ${cleanUrl}`);
+      return { hasVideo: true, videoType: 'other-platform', embedUrl: cleanUrl, platform, reason: `Video from ${platform}` };
+    }
+
+    // Unknown video source
+    console.warn(`[Video] Unknown video source for ${therapist?.intern_name}: ${cleanUrl}`);
+    return { hasVideo: false, videoType: 'unknown', embedUrl: '', reason: 'Unknown video platform or format' };
+
+  }, [welcomeVideoLink, therapist?.intern_name, therapist?.id]);
+
+  const hasValidVideo = videoAnalysis.hasVideo;
 
   // Calendar computations (Monday-start week)
   const monthLabel = calendarDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
@@ -1152,31 +1247,115 @@ export default function MatchedTherapist({
         </div>
       </div>
 
-      {/* Video Modal remains the same... */}
+      {/* Enhanced Video Modal with Smart Sizing */}
       {showVideo && hasValidVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowVideo(false)}>
-          <div className="bg-white rounded-lg p-4 max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
-            {therapist.welcome_video_link?.includes('youtube.com') || therapist.welcome_video_link?.includes('youtu.be') ? (
-              <iframe
-                src={`https://www.youtube.com/embed/${extractYouTubeId(therapist.welcome_video_link)}`}
-                className="w-full h-[500px] rounded"
-                allowFullScreen
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              />
-            ) : therapist.welcome_video_link?.includes('vimeo.com') ? (
-              <iframe
-                src={therapist.welcome_video_link.replace('vimeo.com', 'player.vimeo.com/video')}
-                className="w-full h-[500px] rounded"
-                allowFullScreen
-              />
-            ) : (
-              <video
-                src={therapist.welcome_video_link}
-                className="w-full h-[500px] rounded"
-                controls
-                autoPlay
-              />
-            )}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowVideo(false)}>
+          <div className="bg-white rounded-lg p-4 w-full max-w-4xl mx-auto" onClick={e => e.stopPropagation()}>
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                Welcome Video - {therapist?.intern_name}
+              </h3>
+              <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                Video Type: {videoAnalysis.videoType} | Source: {videoAnalysis.embedUrl}
+              </p>
+            </div>
+            
+            {(() => {
+              console.log(`[Video Modal] Rendering ${videoAnalysis.videoType} for ${therapist?.intern_name}`);
+              
+              switch (videoAnalysis.videoType) {
+                case 'youtube-short':
+                  // YouTube Shorts - use 9:16 aspect ratio
+                  return (
+                    <div className="flex justify-center">
+                      <div className="w-full max-w-sm" style={{ aspectRatio: '9/16' }}>
+                        <iframe
+                          src={`${videoAnalysis.embedUrl}?rel=0&modestbranding=1`}
+                          className="w-full h-full rounded"
+                          allowFullScreen
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          title={`Welcome video from ${therapist?.intern_name}`}
+                        />
+                      </div>
+                    </div>
+                  );
+                
+                case 'youtube-regular':
+                  // Regular YouTube videos - use 16:9 aspect ratio
+                  return (
+                    <div className="w-full" style={{ aspectRatio: '16/9' }}>
+                      <iframe
+                        src={`${videoAnalysis.embedUrl}?rel=0&modestbranding=1`}
+                        className="w-full h-full rounded"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        title={`Welcome video from ${therapist?.intern_name}`}
+                      />
+                    </div>
+                  );
+                
+                case 'vimeo':
+                  // Vimeo videos - use 16:9 aspect ratio
+                  return (
+                    <div className="w-full" style={{ aspectRatio: '16/9' }}>
+                      <iframe
+                        src={videoAnalysis.embedUrl}
+                        className="w-full h-full rounded"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        title={`Welcome video from ${therapist?.intern_name}`}
+                      />
+                    </div>
+                  );
+                
+                case 'direct':
+                  // Direct video files
+                  return (
+                    <video
+                      src={videoAnalysis.embedUrl}
+                      className="w-full max-h-[500px] rounded"
+                      controls
+                      preload="metadata"
+                      title={`Welcome video from ${therapist?.intern_name}`}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  );
+                
+                case 'other-platform':
+                  // Other platforms - try iframe first, fallback to link
+                  return (
+                    <div className="text-center">
+                      <iframe
+                        src={videoAnalysis.embedUrl}
+                        className="w-full h-[400px] rounded"
+                        allowFullScreen
+                        title={`Welcome video from ${therapist?.intern_name}`}
+                        onError={() => console.error(`[Video] Failed to load iframe for ${videoAnalysis.platform}`)}
+                      />
+                      <p className="mt-2 text-sm text-gray-600">
+                        If the video doesn't load, <a href={videoAnalysis.embedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">click here to view it directly</a>.
+                      </p>
+                    </div>
+                  );
+                
+                default:
+                  return (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">Unable to display this video format.</p>
+                      <a 
+                        href={welcomeVideoLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        View video in new tab
+                      </a>
+                    </div>
+                  );
+              }
+            })()}
+            
             <Button onClick={() => setShowVideo(false)} className="mt-4 w-full">
               Close Video
             </Button>
