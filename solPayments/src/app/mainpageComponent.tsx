@@ -348,37 +348,51 @@ export default function MainPageComponent() {
           </div>
         ) : (
           <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3' }}>
-            {currentStep === STEPS.MATCHED_THERAPIST && matchData?.therapists && matchData.therapists.length > 0 && (
-              <MatchedTherapist
-                therapistsList={matchData.therapists}
-                initialIndex={0}
-                onBack={() => {
-                  setCurrentStep(STEPS.TYPEFORM);
-                  setClientResponseId(null);
-                }}
-                onBookSession={async (therapistData, slot) => {
-                  try {
-                    const therapist = therapistData.therapist;
-                    const bookedSession = await bookAppointment.makeRequest({
-                      data: {
-                        client_response_id: clientResponseId as string,
-                        therapist_email: therapist.email || '',
-                        therapist_name: therapist.intern_name || '',
-                        datetime: slot,
-                        send_client_email_notification: true,
-                        reminder_type: 'email',
-                        status: 'scheduled',
-                      },
-                    });
+            {currentStep === STEPS.MATCHED_THERAPIST && matchData?.therapists && matchData.therapists.length > 0 && (() => {
+              const clientData = {
+                ...matchData.client,
+                payment_type: selectedPaymentType || (matchData.client as any)?.payment_type,
+                response_id: clientResponseId || matchData.client?.response_id,
+              };
+              
+              console.log('🔍 CLIENT DATA DEBUG - Passing to MatchedTherapist:');
+              console.log('selectedPaymentType:', selectedPaymentType);
+              console.log('matchData.client:', matchData.client);
+              console.log('final clientData:', clientData);
+              
+              return (
+                <MatchedTherapist
+                  therapistsList={matchData.therapists}
+                  clientData={clientData}
+                  initialIndex={0}
+                  onBack={() => {
+                    setCurrentStep(STEPS.TYPEFORM);
+                    setClientResponseId(null);
+                  }}
+                  onBookSession={async (therapistData, slot) => {
+                    try {
+                      const therapist = therapistData.therapist;
+                      const bookedSession = await bookAppointment.makeRequest({
+                        data: {
+                          client_response_id: clientResponseId as string,
+                          therapist_email: therapist.email || '',
+                          therapist_name: therapist.intern_name || '',
+                          datetime: slot,
+                          send_client_email_notification: true,
+                          reminder_type: 'email',
+                          status: 'scheduled',
+                        },
+                      });
 
-                    handleBookSession(bookedSession);
-                  } catch (error) {
-                    console.error('Error booking appointment:', error);
-                    alert('Failed to book appointment. Please try again.');
-                  }
-                }}
-              />
-            )}
+                      handleBookSession(bookedSession);
+                    } catch (error) {
+                      console.error('Error booking appointment:', error);
+                      alert('Failed to book appointment. Please try again.');
+                    }
+                  }}
+                />
+              );
+            })()}
                         
             {currentStep === STEPS.CONFIRMATION && (
               <div className="text-center py-20">

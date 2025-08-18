@@ -148,19 +148,36 @@ export default function MatchedTherapist({
 
   // Get payment type from client data, localStorage, or query param
   const getSelectedPaymentType = (): 'insurance' | 'cash_pay' => {
+    // DEBUG: Log all available sources
+    console.log('🔍 PAYMENT TYPE DEBUG:');
+    console.log('clientData?.payment_type:', clientData?.payment_type);
+    console.log('clientData keys:', Object.keys(clientData || {}));
+    
     // First check client data
     if (clientData?.payment_type === 'insurance' || clientData?.payment_type === 'cash_pay') {
+      console.log('✅ Found payment type in clientData:', clientData.payment_type);
       return clientData.payment_type;
     }
+    
     // Then query param
     if (typeof window !== 'undefined') {
       const qp = new URLSearchParams(window.location.search).get('payment_type');
-      if (qp === 'cash_pay' || qp === 'insurance') return qp;
+      console.log('URL payment_type param:', qp);
+      if (qp === 'cash_pay' || qp === 'insurance') {
+        console.log('✅ Found payment type in URL:', qp);
+        return qp;
+      }
       try {
         const fromLs = window.localStorage.getItem('sol_payment_type');
-        if (fromLs === 'cash_pay' || fromLs === 'insurance') return fromLs;
+        console.log('localStorage sol_payment_type:', fromLs);
+        if (fromLs === 'cash_pay' || fromLs === 'insurance') {
+          console.log('✅ Found payment type in localStorage:', fromLs);
+          return fromLs;
+        }
       } catch {}
     }
+    
+    console.log('⚠️ Defaulting to insurance - no payment type found');
     return 'insurance';
   };
 
@@ -354,7 +371,24 @@ export default function MatchedTherapist({
   };
   
   const handleBookSession = async () => {
-    if (!selectedTimeSlot || !selectedDateObj || !clientData?.response_id) return;
+    // DEBUG: Log the current state of all booking requirements
+    console.log('🔍 BOOKING DEBUG - Checking requirements:');
+    console.log('selectedTimeSlot:', selectedTimeSlot);
+    console.log('selectedDateObj:', selectedDateObj);
+    console.log('clientData?.response_id:', clientData?.response_id);
+    console.log('Button should be disabled?', !selectedTimeSlot || !selectedDateObj);
+    
+    if (!selectedTimeSlot || !selectedDateObj || !clientData?.response_id) {
+      console.warn('❌ BOOKING BLOCKED - Missing required data:', {
+        hasTimeSlot: !!selectedTimeSlot,
+        hasDateObj: !!selectedDateObj,
+        hasResponseId: !!clientData?.response_id,
+        selectedTimeSlot,
+        selectedDateObj: selectedDateObj?.toISOString(),
+        responseId: clientData?.response_id
+      });
+      return;
+    }
     
     // ========================================
     // COMPREHENSIVE BOOKING DATA LOGGING
