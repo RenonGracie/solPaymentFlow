@@ -356,6 +356,41 @@ export default function MatchedTherapist({
   const handleBookSession = async () => {
     if (!selectedTimeSlot || !selectedDateObj || !clientData?.response_id) return;
     
+    // ========================================
+    // COMPREHENSIVE BOOKING DATA LOGGING
+    // ========================================
+    
+    console.log('🚀 BOOKING SESSION - COMPREHENSIVE DATA DUMP');
+    console.log('==========================================');
+    
+    // ALL CLIENT DATA
+    console.log('📋 ALL CLIENT DATA:');
+    console.log(JSON.stringify(clientData, null, 2));
+    
+    // ALL ASSOCIATED THERAPIST DATA (the selected therapist)
+    console.log('👩‍⚕️ ALL ASSOCIATED THERAPIST DATA:');
+    console.log(JSON.stringify(currentTherapistData, null, 2));
+    
+    // RESPONSE_ID
+    console.log('🆔 RESPONSE_ID:');
+    console.log(JSON.stringify({ response_id: clientData?.response_id }, null, 2));
+    
+    // ADDITIONAL BOOKING CONTEXT
+    console.log('📅 BOOKING CONTEXT:');
+    const bookingContext = {
+      selectedTimeSlot: selectedTimeSlot,
+      selectedDate: selectedDateObj?.toISOString(),
+      selectedDateLocal: selectedDateObj?.toDateString(),
+      paymentType: getSelectedPaymentType(),
+      timezone: timezone,
+      timezoneDisplay: timezoneDisplay,
+      sessionDuration: getSessionDuration(),
+      therapistCategory: getTherapistCategory(therapist)
+    };
+    console.log(JSON.stringify(bookingContext, null, 2));
+    
+    console.log('==========================================');
+    
     const yyyy = selectedDateObj.getFullYear();
     const mm = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(selectedDateObj.getDate()).padStart(2, '0');
@@ -536,24 +571,9 @@ export default function MatchedTherapist({
   // Use the correct database field name: "welcome_video"
   const welcomeVideoLink = therapist?.welcome_video ?? therapist?.welcome_video_link ?? therapist?.greetings_video_link ?? '';
   
-  const videoAnalysis = useMemo(() => {
-    console.log(`[Video Analysis] Therapist: ${therapist?.intern_name}`, {
-      therapistId: therapist?.id,
-      rawVideoLink: welcomeVideoLink,
-      linkType: typeof welcomeVideoLink,
-      linkLength: welcomeVideoLink?.length || 0,
-      isEmpty: !welcomeVideoLink,
-      startsWithHttp: welcomeVideoLink?.startsWith('http://') || false,
-      startsWithHttps: welcomeVideoLink?.startsWith('https://') || false,
-      // Add more debugging for the actual therapist object
-      therapistDataKeys: Object.keys(therapist || {}),
-      hasWelcomeVideoField: 'welcome_video_link' in (therapist || {}),
-      welcomeVideoFieldValue: therapist?.welcome_video_link,
-      greetingsVideoField: therapist?.greetings_video_link
-    });
+    const videoAnalysis = useMemo(() => {
 
     if (!welcomeVideoLink || welcomeVideoLink.trim() === '') {
-      console.log(`[Video] No video link for ${therapist?.intern_name}`);
       return { hasVideo: false, videoType: 'none', embedUrl: '', reason: 'No video URL provided' };
     }
 
@@ -577,12 +597,7 @@ export default function MatchedTherapist({
       const videoType = isShort ? 'youtube-short' : 'youtube-regular';
       const embedUrl = `https://www.youtube.com/embed/${videoId}`;
 
-      console.log(`[Video] YouTube ${isShort ? 'Short' : 'Regular'} detected for ${therapist?.intern_name}:`, {
-        originalUrl: cleanUrl,
-        videoId: videoId,
-        embedUrl: embedUrl,
-        isShort: isShort
-      });
+
 
       return { hasVideo: true, videoType, embedUrl, videoId, isShort, reason: 'Valid YouTube video' };
     }
@@ -594,11 +609,7 @@ export default function MatchedTherapist({
         const videoId = vimeoMatch[1];
         const embedUrl = `https://player.vimeo.com/video/${videoId}`;
         
-        console.log(`[Video] Vimeo video detected for ${therapist?.intern_name}:`, {
-          originalUrl: cleanUrl,
-          videoId: videoId,
-          embedUrl: embedUrl
-        });
+
 
         return { hasVideo: true, videoType: 'vimeo', embedUrl, videoId, reason: 'Valid Vimeo video' };
       } else {
@@ -612,11 +623,6 @@ export default function MatchedTherapist({
     const hasVideoExtension = videoExtensions.some(ext => cleanUrl.toLowerCase().includes(ext));
     
     if (hasVideoExtension) {
-      console.log(`[Video] Direct video file detected for ${therapist?.intern_name}:`, {
-        originalUrl: cleanUrl,
-        detectedExtension: videoExtensions.find(ext => cleanUrl.toLowerCase().includes(ext))
-      });
-
       return { hasVideo: true, videoType: 'direct', embedUrl: cleanUrl, reason: 'Direct video file' };
     }
 
@@ -625,7 +631,6 @@ export default function MatchedTherapist({
     const platform = supportedPlatforms.find(p => cleanUrl.includes(p));
     
     if (platform) {
-      console.log(`[Video] ${platform} video detected for ${therapist?.intern_name}: ${cleanUrl}`);
       return { hasVideo: true, videoType: 'other-platform', embedUrl: cleanUrl, platform, reason: `Video from ${platform}` };
     }
 
@@ -1295,17 +1300,9 @@ export default function MatchedTherapist({
               <h3 className="text-lg font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                 Welcome Video - {therapist?.intern_name}
               </h3>
-              <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
-                Video Type: {videoAnalysis.videoType} | Source: {videoAnalysis.embedUrl}
-              </p>
             </div>
             
             {(() => {
-              console.log(`[Video Modal] Rendering ${videoAnalysis.videoType} for ${therapist?.intern_name}`);
-              console.log(`[Video Modal DEBUG] Raw video link: "${welcomeVideoLink}"`);
-              console.log(`[Video Modal DEBUG] Video analysis:`, videoAnalysis);
-              console.log(`[Video Modal DEBUG] Using embed URL: "${videoAnalysis.embedUrl}"`);
-              
               switch (videoAnalysis.videoType) {
                 case 'youtube-short':
                   // YouTube Shorts - use 9:16 aspect ratio
