@@ -1665,8 +1665,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                      </label>
                      <input
                        type="text"
-                       value={surveyData.preferred_name || surveyData.first_name}
-                       onChange={(e) => updateSurveyData('preferred_name', e.target.value)}
+                       value={surveyData.first_name}
+                       onChange={(e) => {
+                         updateSurveyData('first_name', e.target.value);
+                         // If preferred_name is empty or same as old first_name, update it too
+                         if (!surveyData.preferred_name || surveyData.preferred_name === surveyData.first_name) {
+                           updateSurveyData('preferred_name', e.target.value);
+                         }
+                       }}
                        className={`w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base shadow-[1px_1px_0_#5C3106] ${invalidFirst ? 'ring-1 ring-red-300 border-red-300' : ''}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
@@ -1675,6 +1681,24 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                          Your therapist will address you as "{surveyData.preferred_name}"
                        </p>
                      )}
+                   </div>
+
+                   {/* Preferred Name (Optional) */}
+                   <div>
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                       Preferred Name <span className="text-gray-500">(Optional - if different from first name)</span>
+                     </label>
+                     <input
+                       type="text"
+                       value={surveyData.preferred_name || ''}
+                       onChange={(e) => updateSurveyData('preferred_name', e.target.value || surveyData.first_name)}
+                       placeholder={`Leave empty to use "${surveyData.first_name}"`}
+                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       style={{ fontFamily: 'var(--font-inter)' }}
+                     />
+                     <p className="text-xs text-gray-500 mt-1">
+                       How would you like your therapist to address you?
+                     </p>
                    </div>
 
                    {/* Last Name */}

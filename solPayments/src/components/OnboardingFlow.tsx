@@ -534,7 +534,7 @@ export default function OnboardingFlow({
     // Mobile portrait layout - 9:16 video full screen
     if (screenType === 'mobile') {
       return (
-        <div className="relative bg-black h-[100dvh] w-full overflow-hidden overscroll-none">
+        <div className="relative bg-black h-[100dvh] w-full overscroll-none">
           <video 
             className="absolute inset-0 w-full h-full object-cover object-bottom"
             autoPlay 

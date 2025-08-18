@@ -40,7 +40,7 @@ export default function RootLayout({
         /> */}
       </head>
       <body suppressHydrationWarning className="antialiased">
-        <div className="min-h-screen overflow-hidden" style={{ height: '100dvh', maxHeight: '100dvh' }}>
+        <div className="min-h-screen" style={{ height: '100dvh', maxHeight: '100dvh' }}>
           <ClientBody>{children}</ClientBody>
         </div>
       </body>

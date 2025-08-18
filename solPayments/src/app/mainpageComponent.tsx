@@ -23,6 +23,7 @@ interface ExtendedClientData {
   first_name?: string;
   last_name?: string;
   email?: string;
+  preferred_name?: string;
   response_id?: string;
   state?: string;
   phone?: string;
@@ -371,9 +372,9 @@ export default function MainPageComponent() {
       // Prepare client data for IntakeQ
       const clientData: IntakeQClientData = {
         response_id: (bookedSession as ExtendedBookAppointmentResponse)?.ClientResponseId || clientResponseId || '',
-        first_name: matchData.client?.first_name || formData?.firstName || '',
-        last_name: matchData.client?.last_name || formData?.lastName || '',
-        preferred_name: formData?.preferredName || onboardingData?.preferredName,
+        first_name: matchData.client?.first_name || formData?.firstName || onboardingData?.firstName || '',
+        last_name: matchData.client?.last_name || formData?.lastName || onboardingData?.lastName || '',
+        preferred_name: (matchData.client as ExtendedClientData)?.preferred_name || formData?.preferredName || onboardingData?.preferredName,
         email: matchData.client?.email || formData?.email || '',
         phone: (matchData.client as ExtendedClientData)?.phone || '',
         state: (matchData.client as ExtendedClientData)?.state || formData?.state || '',
