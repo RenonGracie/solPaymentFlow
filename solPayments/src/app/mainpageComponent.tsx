@@ -129,45 +129,105 @@ export default function MainPageComponent() {
   // Use the polling hook from the API
   const { matchData, loading, error, utmUserId, pollFormAndRequestMatch } = usePollFormAndRequestMatch();
 
+  // Check for existing payment type on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !selectedPaymentType) {
+      try {
+        const savedPaymentType = localStorage.getItem('sol_payment_type');
+        const urlPaymentType = new URLSearchParams(window.location.search).get('payment_type');
+        
+        console.log('🔍 Initial payment type check:');
+        console.log('- localStorage:', savedPaymentType);
+        console.log('- URL param:', urlPaymentType);
+        
+        const paymentType = urlPaymentType || savedPaymentType;
+        if (paymentType === 'cash_pay' || paymentType === 'insurance') {
+          console.log('✅ Restoring payment type from storage:', paymentType);
+          setSelectedPaymentType(paymentType as PaymentType);
+        }
+      } catch (e) {
+        console.warn('Failed to check stored payment type:', e);
+      }
+    }
+  }, [selectedPaymentType]);
+
   // Handle onboarding completion
-  const handleOnboardingComplete = (data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    preferredName?: string;
-    state?: string;
-    provider?: string;
-    memberId?: string;
-    dateOfBirth?: string;
-    paymentType?: string;
-    verificationData?: {
-      benefits?: {
-        copay: string;
-        coinsurance: string;
-        memberObligation: string;
-        deductible: string;
-        remainingDeductible: string;
-        oopMax: string;
-        remainingOopMax: string;
-        benefitStructure: string;
-      };
-      [key: string]: unknown;
-    }; // Insurance verification response
-  }) => {
-    setOnboardingData(data);
-    setFormData({
-      ...data,
-      paymentType: data.paymentType || selectedPaymentType || ''
+  const handleOnboardingComplete = (
+    data: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      preferredName?: string;
+      state?: string;
+      provider?: string;
+      memberId?: string;
+      dateOfBirth?: string;
+      paymentType?: string;
+      whatBringsYou?: string;
+      verificationData?: any;
+    }
+  ) => {
+    console.log('🎯 ONBOARDING COMPLETE - Data received:', data);
+    console.log('🎯 Payment type from onboarding:', data.paymentType);
+    
+    setOnboardingData({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      preferredName: data.preferredName,
+      state: data.state,
     });
-    setSelectedPaymentType((data.paymentType as PaymentType) || selectedPaymentType);
-    // Go directly to survey since onboarding is complete
+    
+    // Set payment type from onboarding data
+    const paymentType = data.paymentType as PaymentType;
+    console.log('🎯 Setting selectedPaymentType to:', paymentType);
+    setSelectedPaymentType(paymentType);
+    
+    // Store payment type in localStorage for persistence
+    try {
+      localStorage.setItem('sol_payment_type', paymentType);
+      console.log('🎯 Stored payment type in localStorage:', paymentType);
+    } catch (e) {
+      console.warn('Failed to store payment type in localStorage:', e);
+    }
+    
+    setFormData({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      preferredName: data.preferredName,
+      state: data.state,
+      provider: data.provider,
+      memberId: data.memberId,
+      dateOfBirth: data.dateOfBirth,
+      paymentType: paymentType,
+      verificationData: data.verificationData
+    });
+    
     setShowOnboarding(false);
     setCurrentStep(STEPS.TYPEFORM);
   };
 
-  const handleSelectPaymentType = (type: "insurance" | "cash_pay") => {
+  const handleSelectPaymentType = (type: PaymentType) => {
+    console.log('🎯 Payment type selected:', type);
     setSelectedPaymentType(type);
-    // Keep onboarding flow active - it will handle both insurance and cash pay
+    
+    // Store in localStorage for persistence across reloads
+    try {
+      localStorage.setItem('sol_payment_type', type);
+      console.log('🎯 Stored payment type in localStorage:', type);
+    } catch (e) {
+      console.warn('Failed to store payment type in localStorage:', e);
+    }
+    
+    // Also add to URL for debugging and consistency
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('payment_type', type);
+      window.history.replaceState({}, '', url.toString());
+      console.log('🎯 Added payment_type to URL:', type);
+    }
+
     // The onboarding flow will call handleOnboardingComplete when fully done
   };
 
@@ -186,6 +246,9 @@ export default function MainPageComponent() {
   // Updated to handle custom survey submission
   const handleSurveySubmit = useCallback(async (surveyData: SurveyData) => {
     console.log('🎯 Survey submitted with data:', surveyData);
+    console.log('🎯 Current selectedPaymentType state:', selectedPaymentType);
+    console.log('🎯 Payment type from localStorage:', localStorage.getItem('sol_payment_type'));
+    
     setCurrentStep(null); // Hide survey, show loading
     setIsProcessingResponse(true);
 
@@ -209,6 +272,7 @@ export default function MainPageComponent() {
       };
 
       console.log('📦 Complete client data being sent:', completeClientData);
+      console.log('📦 Payment type in client data:', completeClientData.payment_type);
 
       // Store the client response directly in our backend
       const response = await axiosInstance.post('/clients_signup', completeClientData);

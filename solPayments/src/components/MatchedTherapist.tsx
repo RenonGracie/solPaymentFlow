@@ -159,6 +159,13 @@ export default function MatchedTherapist({
       return clientData.payment_type;
     }
     
+    // Check for alternative field names in client data
+    const altPaymentType = (clientData as any)?.paymentType || (clientData as any)?.payment_method;
+    if (altPaymentType === 'insurance' || altPaymentType === 'cash_pay') {
+      console.log('✅ Found payment type in clientData (alt field):', altPaymentType);
+      return altPaymentType;
+    }
+    
     // Then query param
     if (typeof window !== 'undefined') {
       const qp = new URLSearchParams(window.location.search).get('payment_type');
@@ -174,7 +181,9 @@ export default function MatchedTherapist({
           console.log('✅ Found payment type in localStorage:', fromLs);
           return fromLs;
         }
-      } catch {}
+      } catch (e) {
+        console.warn('Failed to read from localStorage:', e);
+      }
     }
     
     console.log('⚠️ Defaulting to insurance - no payment type found');
