@@ -1,19 +1,60 @@
 'use client';
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-// import InsuranceVerificationModal from "@/components/InsuranceVerificationModal"; // No longer needed
 import CustomSurvey from "@/components/CustomSurvey";
-import OnboardingFlow from "@/components/OnboardingFlow"; // New component
-import { TherapistProvider } from "@/providers/TherapistProvider";
-import { usePollFormAndRequestMatch } from "@/api/hooks/usePollFormAndRequestMatch";
-import { STEPS } from "@/constants";
-import { BookAppointmentResponse } from "@/api/services";
-import axiosInstance from '@/api/axios';
+import OnboardingFlow from "@/components/OnboardingFlow";
 import MatchedTherapist from "@/components/MatchedTherapist";
-import { useAppointmentsService } from "@/api/services";
+import { TherapistProvider } from "@/providers/TherapistProvider";
+import { 
+  useAppointmentsService,
+  type BookAppointmentResponse 
+} from "@/api/services";
+import { usePollFormAndRequestMatch } from "@/api/hooks/usePollFormAndRequestMatch";
+import axiosInstance from "@/api/axios";
+import IntakeQService, { type IntakeQClientData } from "@/api/services/intakeqService";
+import { STEPS } from "@/constants";
 
 type PaymentType = "insurance" | "cash_pay";
+
+// Extended client data interface that includes all possible fields
+interface ExtendedClientData {
+  id?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  response_id?: string;
+  state?: string;
+  phone?: string;
+  gender?: string;
+  age?: string;
+  payment_type?: string;
+  // Mental health screening fields
+  pleasure_doing_things?: string;
+  feeling_down?: string;
+  trouble_falling?: string;
+  feeling_tired?: string;
+  poor_appetite?: string;
+  feeling_bad_about_yourself?: string;
+  trouble_concentrating?: string;
+  moving_or_speaking_so_slowly?: string;
+  suicidal_thoughts?: string;
+  feeling_nervous?: string;
+  not_control_worrying?: string;
+  worrying_too_much?: string;
+  trouble_relaxing?: string;
+  being_so_restless?: string;
+  easily_annoyed?: string;
+  feeling_afraid?: string;
+  // Therapy preferences
+  therapist_specializes_in?: string[];
+  therapist_identifies_as?: string;
+}
+
+// Extended booking response that includes all possible fields
+interface ExtendedBookAppointmentResponse extends BookAppointmentResponse {
+  ClientResponseId?: string;
+}
 
 interface FormData {
   firstName: string;
@@ -263,6 +304,19 @@ export default function MainPageComponent() {
         id: `client_${responseId}`,
         response_id: responseId,
         payment_type: selectedPaymentType,
+        
+        // Ensure onboarding data is preserved (especially preferred_name)
+        preferred_name: surveyData.preferred_name || formData?.preferredName || onboardingData?.preferredName,
+        first_name: surveyData.first_name || formData?.firstName || onboardingData?.firstName,
+        
+        // Add insurance information if available
+        ...(selectedPaymentType === 'insurance' && formData && {
+          insurance_provider: formData.provider,
+          insurance_member_id: formData.memberId,
+          insurance_date_of_birth: formData.dateOfBirth,
+          insurance_verification_data: formData.verificationData ? JSON.stringify(formData.verificationData) : null,
+        }),
+        
         // REMOVED: state: 'completed' - keep the actual US state from survey
         utm: {
           utm_source: 'sol_payments',
@@ -288,7 +342,7 @@ export default function MainPageComponent() {
     } finally {
       setIsProcessingResponse(false);
     }
-  }, [selectedPaymentType, pollFormAndRequestMatch]);
+  }, [selectedPaymentType, pollFormAndRequestMatch, formData, onboardingData]);
 
   const handleBackFromSurvey = () => {
     setCurrentStep(null);
@@ -297,10 +351,107 @@ export default function MainPageComponent() {
     setShowOnboarding(true);
   };
 
-  const handleBookSession = useCallback((bookedSessionData: BookAppointmentResponse) => {
-    setBookingData(bookedSessionData);
+  const handleBookSession = (bookedSession: BookAppointmentResponse) => {
+    console.log('✅ Session booked successfully:', bookedSession);
+    setBookingData(bookedSession);
     setCurrentStep(STEPS.CONFIRMATION);
-  }, []);
+    
+    // Create IntakeQ profile after successful booking
+    createIntakeQProfile(bookedSession);
+  };
+
+  // Create IntakeQ profile for the client
+  const createIntakeQProfile = async (bookedSession: BookAppointmentResponse) => {
+    try {
+      if (!matchData?.client || !selectedPaymentType) {
+        console.warn('Missing client data or payment type for IntakeQ profile creation');
+        return;
+      }
+
+      // Prepare client data for IntakeQ
+      const clientData: IntakeQClientData = {
+        response_id: (bookedSession as ExtendedBookAppointmentResponse)?.ClientResponseId || clientResponseId || '',
+        first_name: matchData.client?.first_name || formData?.firstName || '',
+        last_name: matchData.client?.last_name || formData?.lastName || '',
+        preferred_name: formData?.preferredName || onboardingData?.preferredName,
+        email: matchData.client?.email || formData?.email || '',
+        phone: (matchData.client as ExtendedClientData)?.phone || '',
+        state: (matchData.client as ExtendedClientData)?.state || formData?.state || '',
+        gender: (matchData.client as ExtendedClientData)?.gender || '',
+        payment_type: selectedPaymentType,
+        
+        // Insurance-specific data (only for insurance clients)
+        ...(selectedPaymentType === 'insurance' && formData && {
+          insurance_provider: formData.provider,
+          insurance_member_id: formData.memberId,
+          insurance_date_of_birth: formData.dateOfBirth,
+          insurance_verification_data: formData.verificationData ? JSON.stringify(formData.verificationData) : undefined,
+        }),
+        
+        // Mental health screening data
+        phq9_scores: {
+          pleasure_doing_things: (matchData.client as ExtendedClientData)?.pleasure_doing_things || '',
+          feeling_down: (matchData.client as ExtendedClientData)?.feeling_down || '',
+          trouble_falling: (matchData.client as ExtendedClientData)?.trouble_falling || '',
+          feeling_tired: (matchData.client as ExtendedClientData)?.feeling_tired || '',
+          poor_appetite: (matchData.client as ExtendedClientData)?.poor_appetite || '',
+          feeling_bad_about_yourself: (matchData.client as ExtendedClientData)?.feeling_bad_about_yourself || '',
+          trouble_concentrating: (matchData.client as ExtendedClientData)?.trouble_concentrating || '',
+          moving_or_speaking_so_slowly: (matchData.client as ExtendedClientData)?.moving_or_speaking_so_slowly || '',
+          suicidal_thoughts: (matchData.client as ExtendedClientData)?.suicidal_thoughts || '',
+        },
+        
+        gad7_scores: {
+          feeling_nervous: (matchData.client as ExtendedClientData)?.feeling_nervous || '',
+          not_control_worrying: (matchData.client as ExtendedClientData)?.not_control_worrying || '',
+          worrying_too_much: (matchData.client as ExtendedClientData)?.worrying_too_much || '',
+          trouble_relaxing: (matchData.client as ExtendedClientData)?.trouble_relaxing || '',
+          being_so_restless: (matchData.client as ExtendedClientData)?.being_so_restless || '',
+          easily_annoyed: (matchData.client as ExtendedClientData)?.easily_annoyed || '',
+          feeling_afraid: (matchData.client as ExtendedClientData)?.feeling_afraid || '',
+        },
+        
+        // Therapy preferences
+        therapist_specializes_in: (matchData.client as ExtendedClientData)?.therapist_specializes_in || [],
+        therapist_identifies_as: (matchData.client as ExtendedClientData)?.therapist_identifies_as || '',
+      };
+
+      console.log('🔄 Creating IntakeQ profile for client:', {
+        email: clientData.email,
+        payment_type: clientData.payment_type,
+        preferred_name: clientData.preferred_name,
+        has_insurance_data: !!(clientData.insurance_provider)
+      });
+
+      const intakeQResult = await IntakeQService.createClientProfile(clientData);
+      
+      if (intakeQResult.success) {
+        console.log('✅ IntakeQ profile created successfully:', {
+          client_id: intakeQResult.client_id,
+          intake_url: intakeQResult.intake_url
+        });
+        
+        // Optionally update the database with IntakeQ client ID
+        const responseId = (bookedSession as ExtendedBookAppointmentResponse)?.ClientResponseId;
+        if (intakeQResult.client_id && responseId) {
+          try {
+            await axiosInstance.patch(`/clients_signup/${responseId}`, {
+              intakeq_client_id: intakeQResult.client_id,
+              intakeq_intake_url: intakeQResult.intake_url
+            });
+            console.log('✅ Database updated with IntakeQ client ID');
+          } catch (error) {
+            console.warn('⚠️ Failed to update database with IntakeQ ID:', error);
+          }
+        }
+      } else {
+        console.error('❌ IntakeQ profile creation failed:', intakeQResult.error);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error creating IntakeQ profile:', error);
+    }
+  };
 
   const handleShowBookingSection = useCallback(() => {
     // Additional logic when showing booking section
@@ -415,8 +566,8 @@ export default function MainPageComponent() {
             {currentStep === STEPS.MATCHED_THERAPIST && matchData?.therapists && matchData.therapists.length > 0 && (() => {
               const clientData = {
                 ...matchData.client,
-                payment_type: selectedPaymentType || (matchData.client as { payment_type?: string })?.payment_type,
-                response_id: clientResponseId || matchData.client?.response_id,
+                payment_type: selectedPaymentType || (matchData.client as ExtendedClientData)?.payment_type,
+                response_id: clientResponseId || (matchData.client as ExtendedClientData)?.response_id,
               };
               
               console.log('🔍 CLIENT DATA DEBUG - Passing to MatchedTherapist:');
