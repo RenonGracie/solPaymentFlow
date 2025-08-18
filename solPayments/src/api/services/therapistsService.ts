@@ -59,7 +59,8 @@ export type MatchResponse = {
       therapeutic_orientation?: string[];
       internal_therapeutic_orientation?: string[] | string;
       family_household?: string;
-      welcome_video_link?: string;
+      welcome_video?: string;  // Correct database field name
+      welcome_video_link?: string;  // Keep for backward compatibility
       greetings_video_link?: string;
       image_link?: string | null;  // Update to allow null
       accepting_new_clients?: boolean;

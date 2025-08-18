@@ -533,7 +533,8 @@ export default function MatchedTherapist({
   const religions = toStringArray(therapist?.religion);
 
   // Check if video URL is valid with comprehensive logging
-  const welcomeVideoLink = therapist?.welcome_video_link ?? '';
+  // Use the correct database field name: "welcome_video"
+  const welcomeVideoLink = therapist?.welcome_video ?? therapist?.welcome_video_link ?? therapist?.greetings_video_link ?? '';
   
   const videoAnalysis = useMemo(() => {
     console.log(`[Video Analysis] Therapist: ${therapist?.intern_name}`, {
@@ -543,7 +544,12 @@ export default function MatchedTherapist({
       linkLength: welcomeVideoLink?.length || 0,
       isEmpty: !welcomeVideoLink,
       startsWithHttp: welcomeVideoLink?.startsWith('http://') || false,
-      startsWithHttps: welcomeVideoLink?.startsWith('https://') || false
+      startsWithHttps: welcomeVideoLink?.startsWith('https://') || false,
+      // Add more debugging for the actual therapist object
+      therapistDataKeys: Object.keys(therapist || {}),
+      hasWelcomeVideoField: 'welcome_video_link' in (therapist || {}),
+      welcomeVideoFieldValue: therapist?.welcome_video_link,
+      greetingsVideoField: therapist?.greetings_video_link
     });
 
     if (!welcomeVideoLink || welcomeVideoLink.trim() === '') {
@@ -629,7 +635,7 @@ export default function MatchedTherapist({
 
   }, [welcomeVideoLink, therapist?.intern_name, therapist?.id]);
 
-  const hasValidVideo = videoAnalysis.hasVideo;
+  const hasValidVideo = videoAnalysis.hasVideo && welcomeVideoLink && welcomeVideoLink.trim() !== '';
 
   // Calendar computations (Monday-start week)
   const monthLabel = calendarDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
@@ -713,14 +719,27 @@ export default function MatchedTherapist({
   // Count available slots for a particular day
   const getDayAvailableCount = (date: Date): number => {
     const dayNum = date.getDate();
-    if (availability?.days && availability.days[dayNum]) {
+    
+    // Check if the date is in the currently cached month
+    const dateYear = date.getFullYear();
+    const dateMonth = date.getMonth();
+    const isSameMonth = (dateYear === currentYear && dateMonth === currentMonth);
+    
+    if (isSameMonth && availability?.days && availability.days[dayNum]) {
       const payload = availability.days[dayNum];
       const sessions = payload.sessions ?? [];
       if (sessions.length > 0) return sessions.length;
       const freeSlots = (payload.slots || []).filter(s => s.is_free);
       return freeSlots.length;
     }
-    return legacyDayCount[dayNum] ?? 0;
+    
+    // For legacy fallback, only use if it's the same month
+    if (isSameMonth) {
+      return legacyDayCount[dayNum] ?? 0;
+    }
+    
+    // For dates in different months, return 0 (will need to fetch availability when calendar changes)
+    return 0;
   };
 
   // Auto-select first available future date when availability data loads
@@ -730,18 +749,39 @@ export default function MatchedTherapist({
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
       
-      // Find the first date starting from tomorrow that has availability
-      for (let i = 0; i < 30; i++) { // Check next 30 days
+      console.log(`[Calendar] Auto-selection starting from tomorrow: ${tomorrow.toDateString()}`);
+      
+      // First, try to select tomorrow specifically if it has availability
+      const tomorrowAvailability = getDayAvailableCount(tomorrow);
+      if (tomorrowAvailability > 0) {
+        console.log(`[Calendar] Auto-selecting tomorrow: ${tomorrow.toDateString()} (${tomorrowAvailability} slots)`);
+        setSelectedDateObj(tomorrow);
+        
+        // If tomorrow is in a different month, update the calendar view
+        if (tomorrow.getFullYear() !== currentYear || tomorrow.getMonth() !== currentMonth) {
+          console.log(`[Calendar] Tomorrow is in different month, updating calendar view to ${tomorrow.getFullYear()}-${tomorrow.getMonth() + 1}`);
+          setCalendarDate(new Date(tomorrow.getFullYear(), tomorrow.getMonth(), 1));
+        }
+        return;
+      }
+      
+      // If tomorrow doesn't have availability, find the first available date starting from tomorrow
+      for (let i = 1; i < 30; i++) { // Start from day after tomorrow (i=1)
         const checkDate = new Date(tomorrow);
         checkDate.setDate(tomorrow.getDate() + i);
         
-        if (checkDate.getFullYear() === currentYear && checkDate.getMonth() === currentMonth) {
-          const availableCount = getDayAvailableCount(checkDate);
-          if (availableCount > 0) {
-            console.log(`[Calendar] Auto-selecting first available date: ${checkDate.toDateString()} (${availableCount} slots)`);
-            setSelectedDateObj(checkDate);
-            break;
+        // Check availability regardless of which month it's in (could cross month boundaries)
+        const availableCount = getDayAvailableCount(checkDate);
+        if (availableCount > 0) {
+          console.log(`[Calendar] Auto-selecting first available date after tomorrow: ${checkDate.toDateString()} (${availableCount} slots)`);
+          setSelectedDateObj(checkDate);
+          
+          // If the selected date is in a different month, update the calendar view
+          if (checkDate.getFullYear() !== currentYear || checkDate.getMonth() !== currentMonth) {
+            console.log(`[Calendar] Selected date is in different month, updating calendar view to ${checkDate.getFullYear()}-${checkDate.getMonth() + 1}`);
+            setCalendarDate(new Date(checkDate.getFullYear(), checkDate.getMonth(), 1));
           }
+          break;
         }
       }
     }
@@ -1262,6 +1302,9 @@ export default function MatchedTherapist({
             
             {(() => {
               console.log(`[Video Modal] Rendering ${videoAnalysis.videoType} for ${therapist?.intern_name}`);
+              console.log(`[Video Modal DEBUG] Raw video link: "${welcomeVideoLink}"`);
+              console.log(`[Video Modal DEBUG] Video analysis:`, videoAnalysis);
+              console.log(`[Video Modal DEBUG] Using embed URL: "${videoAnalysis.embedUrl}"`);
               
               switch (videoAnalysis.videoType) {
                 case 'youtube-short':
