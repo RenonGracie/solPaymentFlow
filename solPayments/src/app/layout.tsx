@@ -34,10 +34,10 @@ export default function RootLayout({
             <link rel="dns-prefetch" href={videoCdn} />
           </>
         )}
-        <Script
+        {/* <Script
           crossOrigin="anonymous"
           src="//unpkg.com/same-runtime/dist/index.global.js"
-        />
+        /> */}
       </head>
       <body suppressHydrationWarning className="antialiased">
         <div className="min-h-screen overflow-hidden" style={{ height: '100dvh', maxHeight: '100dvh' }}>
