@@ -1,5 +1,5 @@
 // solPayments/src/components/MatchedTherapist.tsx - FIXED
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Play, ChevronLeft, ChevronRight } from "lucide-react";
@@ -147,7 +147,7 @@ export default function MatchedTherapist({
   const { slots: slotsRequest } = useTherapistsService();
 
   // Get payment type from client data, localStorage, or query param
-  const getSelectedPaymentType = (): 'insurance' | 'cash_pay' => {
+  const getSelectedPaymentType = useCallback((): 'insurance' | 'cash_pay' => {
     // DEBUG: Log all available sources
     console.log('🔍 PAYMENT TYPE DEBUG:');
     console.log('clientData?.payment_type:', clientData?.payment_type);
@@ -160,7 +160,8 @@ export default function MatchedTherapist({
     }
     
     // Check for alternative field names in client data
-    const altPaymentType = (clientData as any)?.paymentType || (clientData as any)?.payment_method;
+    const altPaymentType = (clientData as { paymentType?: string; payment_method?: string })?.paymentType || 
+                          (clientData as { paymentType?: string; payment_method?: string })?.payment_method;
     if (altPaymentType === 'insurance' || altPaymentType === 'cash_pay') {
       console.log('✅ Found payment type in clientData (alt field):', altPaymentType);
       return altPaymentType;
@@ -188,7 +189,7 @@ export default function MatchedTherapist({
     
     console.log('⚠️ Defaulting to insurance - no payment type found');
     return 'insurance';
-  };
+  }, [clientData]);
 
   // Get timezone based on client's state (IANA format for calculations)
   const timezone = useMemo(() => {
@@ -262,7 +263,7 @@ export default function MatchedTherapist({
         // Swallow errors; fallback occurs to availability endpoint below
       })
       .finally(() => setFetchingSlots(prev => ({ ...prev, [email]: false })));
-  }, [therapist?.calendar_email, therapist?.email, clientData?.response_id, clientData?.state, timezone, slotsRequest]);
+  }, [therapist?.calendar_email, therapist?.email, clientData?.response_id, clientData?.state, slotsRequest, fetchedSlots, fetchingSlots]);
 
   /** New: Fetch monthly availability JSON when therapist or month changes */
   const currentYear = calendarDate.getFullYear();
@@ -354,7 +355,7 @@ export default function MatchedTherapist({
     };
     fetchAvailability();
     return () => controller.abort();
-  }, [avKey, timezone, currentYear, currentMonth]);
+  }, [avKey, timezone, currentYear, currentMonth, therapist?.calendar_email, therapist?.email, getSelectedPaymentType, timezoneDisplay, availabilityCache]);
   
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
@@ -681,7 +682,7 @@ export default function MatchedTherapist({
     console.warn(`[Video] Unknown video source for ${therapist?.intern_name}: ${cleanUrl}`);
     return { hasVideo: false, videoType: 'unknown', embedUrl: '', reason: 'Unknown video platform or format' };
 
-  }, [welcomeVideoLink, therapist?.intern_name, therapist?.id]);
+  }, [welcomeVideoLink, therapist?.intern_name]);
 
   const hasValidVideo = videoAnalysis.hasVideo && welcomeVideoLink && welcomeVideoLink.trim() !== '';
 
@@ -765,7 +766,7 @@ export default function MatchedTherapist({
   }, [fetchedSlots, therapist?.available_slots, emailForSlots, currentYear, currentMonth, therapist?.intern_name, timezoneDisplay]);
 
   // Count available slots for a particular day
-  const getDayAvailableCount = (date: Date): number => {
+  const getDayAvailableCount = useCallback((date: Date): number => {
     const dayNum = date.getDate();
     
     // Check if the date is in the currently cached month
@@ -788,7 +789,7 @@ export default function MatchedTherapist({
     
     // For dates in different months, return 0 (will need to fetch availability when calendar changes)
     return 0;
-  };
+  }, [availability?.days, currentYear, currentMonth, legacyDayCount]);
 
   // Auto-select first available future date when availability data loads
   useEffect(() => {

@@ -164,7 +164,7 @@ export default function MainPageComponent() {
       dateOfBirth?: string;
       paymentType?: string;
       whatBringsYou?: string;
-      verificationData?: any;
+      verificationData?: FormData['verificationData'];
     }
   ) => {
     console.log('🎯 ONBOARDING COMPLETE - Data received:', data);
@@ -201,7 +201,7 @@ export default function MainPageComponent() {
       memberId: data.memberId,
       dateOfBirth: data.dateOfBirth,
       paymentType: paymentType,
-      verificationData: data.verificationData
+      verificationData: data.verificationData as FormData['verificationData']
     });
     
     setShowOnboarding(false);
@@ -415,7 +415,7 @@ export default function MainPageComponent() {
             {currentStep === STEPS.MATCHED_THERAPIST && matchData?.therapists && matchData.therapists.length > 0 && (() => {
               const clientData = {
                 ...matchData.client,
-                payment_type: selectedPaymentType || (matchData.client as any)?.payment_type,
+                payment_type: selectedPaymentType || (matchData.client as { payment_type?: string })?.payment_type,
                 response_id: clientResponseId || matchData.client?.response_id,
               };
               
