@@ -369,6 +369,136 @@ export default function MainPageComponent() {
       const responseId = `response_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setClientResponseId(responseId);
 
+      // Calculate assessment scores
+      const calculatePHQ9Score = (scores: Record<string, string>): number => {
+        const scoreMap = { "Not at all": 0, "Several days": 1, "More than half the days": 2, "Nearly every day": 3 };
+        return Object.values(scores).reduce((total, answer) => total + (scoreMap[answer as keyof typeof scoreMap] || 0), 0);
+      };
+
+      const calculateGAD7Score = (scores: Record<string, string>): number => {
+        const scoreMap = { "Not at all": 0, "Several days": 1, "More than half the days": 2, "Nearly every day": 3 };
+        return Object.values(scores).reduce((total, answer) => total + (scoreMap[answer as keyof typeof scoreMap] || 0), 0);
+      };
+
+      // Build comprehensive user data with ALL collected information
+      const comprehensiveUserData: ComprehensiveUserData = {
+        // Core identity
+        id: `client_${responseId}`,
+        response_id: responseId,
+        first_name: surveyData.first_name || formData?.firstName || onboardingData?.firstName || "",
+        last_name: surveyData.last_name || formData?.lastName || onboardingData?.lastName || "",
+        preferred_name: surveyData.preferred_name || formData?.preferredName || onboardingData?.preferredName,
+        email: surveyData.email,
+        phone: surveyData.phone,
+        
+        // Assessment scores with detailed breakdown
+        phq9_scores: {
+          pleasure_doing_things: surveyData.pleasure_doing_things,
+          feeling_down: surveyData.feeling_down,
+          trouble_falling: surveyData.trouble_falling,
+          feeling_tired: surveyData.feeling_tired,
+          poor_appetite: surveyData.poor_appetite,
+          feeling_bad_about_yourself: surveyData.feeling_bad_about_yourself,
+          trouble_concentrating: surveyData.trouble_concentrating,
+          moving_or_speaking_so_slowly: surveyData.moving_or_speaking_so_slowly,
+          suicidal_thoughts: surveyData.suicidal_thoughts
+        },
+        gad7_scores: {
+          feeling_nervous: surveyData.feeling_nervous,
+          not_control_worrying: surveyData.not_control_worrying,
+          worrying_too_much: surveyData.worrying_too_much,
+          trouble_relaxing: surveyData.trouble_relaxing,
+          being_so_restless: surveyData.being_so_restless,
+          easily_annoyed: surveyData.easily_annoyed,
+          feeling_afraid: surveyData.feeling_afraid
+        },
+        
+        // Calculate assessment totals
+        phq9_total: calculatePHQ9Score({
+          pleasure_doing_things: surveyData.pleasure_doing_things,
+          feeling_down: surveyData.feeling_down,
+          trouble_falling: surveyData.trouble_falling,
+          feeling_tired: surveyData.feeling_tired,
+          poor_appetite: surveyData.poor_appetite,
+          feeling_bad_about_yourself: surveyData.feeling_bad_about_yourself,
+          trouble_concentrating: surveyData.trouble_concentrating,
+          moving_or_speaking_so_slowly: surveyData.moving_or_speaking_so_slowly,
+          suicidal_thoughts: surveyData.suicidal_thoughts
+        }),
+        gad7_total: calculateGAD7Score({
+          feeling_nervous: surveyData.feeling_nervous,
+          not_control_worrying: surveyData.not_control_worrying,
+          worrying_too_much: surveyData.worrying_too_much,
+          trouble_relaxing: surveyData.trouble_relaxing,
+          being_so_restless: surveyData.being_so_restless,
+          easily_annoyed: surveyData.easily_annoyed,
+          feeling_afraid: surveyData.feeling_afraid
+        }),
+        
+        // Complete demographics
+        age: surveyData.age,
+        gender: surveyData.gender,
+        state: surveyData.state,
+        race_ethnicity: surveyData.race_ethnicity,
+        lived_experiences: surveyData.lived_experiences,
+        university: surveyData.university,
+        
+        // Therapy context
+        what_brings_you: onboardingData?.whatBringsYou,
+        therapist_gender_preference: surveyData.therapist_gender_preference,
+        therapist_specialization: surveyData.therapist_specialization,
+        therapist_lived_experiences: surveyData.therapist_lived_experiences,
+        
+        // Substance screening
+        alcohol_frequency: surveyData.alcohol_frequency,
+        recreational_drugs_frequency: surveyData.recreational_drugs_frequency,
+        
+        // Safety and matching
+        safety_screening: surveyData.safety_screening,
+        matching_preference: surveyData.matching_preference,
+        
+        // Payment info
+        payment_type: selectedPaymentType || undefined,
+        
+        // Insurance data (if applicable)
+        ...(selectedPaymentType === 'insurance' && formData && {
+          insurance_data: {
+            provider: formData.provider,
+            member_id: formData.memberId,
+            date_of_birth: formData.dateOfBirth,
+            verification_response: formData.verificationData,
+            benefits: formData.verificationData?.benefits
+          }
+        }),
+        
+        // Tracking
+        utm: {
+          utm_source: 'sol_payments',
+          utm_medium: 'direct',
+          utm_campaign: 'onboarding'
+        },
+        referred_by: Array.isArray(surveyData.referred_by) ? surveyData.referred_by : (surveyData.referred_by ? [surveyData.referred_by] : undefined),
+        onboarding_completed_at: new Date().toISOString(),
+        survey_completed_at: new Date().toISOString(),
+        last_updated: new Date().toISOString()
+      };
+
+      // Store comprehensive user data in state for later use
+      setCurrentUserData(comprehensiveUserData);
+
+      console.log('📦 Comprehensive user data created:', {
+        response_id: comprehensiveUserData.response_id,
+        has_phq9_scores: !!comprehensiveUserData.phq9_scores,
+        phq9_total: comprehensiveUserData.phq9_total,
+        has_gad7_scores: !!comprehensiveUserData.gad7_scores,
+        gad7_total: comprehensiveUserData.gad7_total,
+        has_therapist_preferences: !!(comprehensiveUserData.therapist_gender_preference || comprehensiveUserData.therapist_specialization?.length),
+        has_substance_data: !!(comprehensiveUserData.alcohol_frequency || comprehensiveUserData.recreational_drugs_frequency),
+        has_demographics: !!(comprehensiveUserData.race_ethnicity?.length || comprehensiveUserData.lived_experiences?.length),
+        payment_type: comprehensiveUserData.payment_type,
+        total_fields: Object.keys(comprehensiveUserData).length
+      });
+
       // Add payment type to survey data WITHOUT overwriting state
       const completeClientData = {
         ...surveyData,
@@ -427,33 +557,117 @@ export default function MainPageComponent() {
     setBookingData(bookedSession);
     setCurrentStep(STEPS.CONFIRMATION);
     
-    // Create comprehensive IntakeQ profile with current user data
+    // Enrich current user data with booking information
     if (currentUserData) {
-      createComprehensiveIntakeQProfile(currentUserData);
+      console.log('🔄 Enriching user data with booking information...');
+      
+      // Extract booking details from the response
+      const enrichedUserData: ComprehensiveUserData = {
+        ...currentUserData,
+        // Note: We'll need to get therapist info from the booking context
+        // This will be populated when we have the therapist data available
+        last_updated: new Date().toISOString()
+      };
+      
+      console.log('📋 Creating IntakeQ profile with enriched data:', {
+        response_id: enrichedUserData.response_id,
+        has_booking_data: !!bookedSession,
+        total_fields: Object.keys(enrichedUserData).length
+      });
+      
+      // Create comprehensive IntakeQ profile immediately
+      createComprehensiveIntakeQProfile(enrichedUserData);
+      
+      // Update the user data state
+      setCurrentUserData(enrichedUserData);
+    } else {
+      console.warn('⚠️ No currentUserData available for IntakeQ profile creation');
+      console.log('Current state:', {
+        currentUserData: currentUserData,
+        bookedSession: bookedSession,
+        clientResponseId: clientResponseId
+      });
     }
   };
 
   const createComprehensiveIntakeQProfile = async (clientData: ComprehensiveUserData) => {
     try {
-      console.log('🔄 Creating comprehensive IntakeQ profile with enhanced data:', {
+      console.log('🔄 =================================================');
+      console.log('🔄 CREATING COMPREHENSIVE INTAKEQ PROFILE');
+      console.log('🔄 =================================================');
+      
+      console.log('📋 Client Overview:', {
         email: clientData.email,
         preferred_name: clientData.preferred_name,
         first_name: clientData.first_name,
         last_name: clientData.last_name,
         payment_type: clientData.payment_type,
-        has_insurance_data: !!(clientData.insurance_data?.provider),
-        has_phq9_scores: !!(clientData.phq9_scores && clientData.phq9_total !== undefined),
-        has_gad7_scores: !!(clientData.gad7_scores && clientData.gad7_total !== undefined),
-        has_therapist_preferences: !!(clientData.therapist_gender_preference || clientData.therapist_specialization?.length),
-        has_selected_therapist: !!(clientData.selected_therapist),
-        has_appointment: !!(clientData.appointment),
-        total_fields_populated: Object.entries(clientData).filter(([, value]) => {
-          if (value === undefined || value === null || value === '') return false;
-          if (Array.isArray(value) && value.length === 0) return false;
-          if (typeof value === 'object' && Object.keys(value).length === 0) return false;
-          return true;
-        }).length,
         response_id: clientData.response_id
+      });
+
+      console.log('📊 Assessment Data:', {
+        has_phq9_scores: !!(clientData.phq9_scores && Object.keys(clientData.phq9_scores).length > 0),
+        phq9_total: clientData.phq9_total,
+        has_gad7_scores: !!(clientData.gad7_scores && Object.keys(clientData.gad7_scores).length > 0),
+        gad7_total: clientData.gad7_total,
+        phq9_questions_answered: clientData.phq9_scores ? Object.keys(clientData.phq9_scores).length : 0,
+        gad7_questions_answered: clientData.gad7_scores ? Object.keys(clientData.gad7_scores).length : 0
+      });
+
+      console.log('🎯 Therapy Preferences:', {
+        therapist_gender_preference: clientData.therapist_gender_preference,
+        specialization_count: clientData.therapist_specialization?.length || 0,
+        lived_experience_count: clientData.therapist_lived_experiences?.length || 0,
+        therapist_specializations: clientData.therapist_specialization,
+        therapist_lived_experiences: clientData.therapist_lived_experiences
+      });
+
+      console.log('🔍 Substance Use Screening:', {
+        alcohol_frequency: clientData.alcohol_frequency,
+        recreational_drugs_frequency: clientData.recreational_drugs_frequency
+      });
+
+      console.log('👤 Demographics:', {
+        age: clientData.age,
+        gender: clientData.gender,
+        state: clientData.state,
+        race_ethnicity_count: clientData.race_ethnicity?.length || 0,
+        lived_experiences_count: clientData.lived_experiences?.length || 0,
+        university: clientData.university
+      });
+
+      console.log('💳 Insurance Data:', {
+        has_insurance_data: !!(clientData.insurance_data?.provider),
+        provider: clientData.insurance_data?.provider,
+        member_id: clientData.insurance_data?.member_id,
+        has_benefits: !!(clientData.insurance_data?.benefits)
+      });
+
+      console.log('👩‍⚕️ Selected Therapist:', {
+        has_selected_therapist: !!(clientData.selected_therapist),
+        therapist_name: clientData.selected_therapist?.name,
+        therapist_email: clientData.selected_therapist?.email,
+        therapist_specialties_count: clientData.selected_therapist?.specialties?.length || 0
+      });
+
+      console.log('📅 Appointment Info:', {
+        has_appointment: !!(clientData.appointment),
+        date: clientData.appointment?.date,
+        time: clientData.appointment?.time,
+        timezone: clientData.appointment?.timezone
+      });
+
+      const totalFieldsPopulated = Object.entries(clientData).filter(([, value]) => {
+        if (value === undefined || value === null || value === '') return false;
+        if (Array.isArray(value) && value.length === 0) return false;
+        if (typeof value === 'object' && Object.keys(value).length === 0) return false;
+        return true;
+      }).length;
+
+      console.log('📊 Data Completeness:', {
+        total_fields_in_interface: Object.keys(clientData).length,
+        total_fields_populated: totalFieldsPopulated,
+        completeness_percentage: Math.round((totalFieldsPopulated / Object.keys(clientData).length) * 100)
       });
 
       // Convert comprehensive data to IntakeQ format
@@ -485,17 +699,42 @@ export default function MainPageComponent() {
         })
       };
 
+      console.log('🚀 Calling IntakeQ API with payload:', {
+        payload_keys: Object.keys(intakeQData),
+        payload_size: JSON.stringify(intakeQData).length,
+        has_assessment_totals: !!(intakeQData.phq9_total !== undefined && intakeQData.gad7_total !== undefined),
+        payment_type: intakeQData.payment_type
+      });
+
       const intakeQResult = await IntakeQService.createClientProfile(intakeQData);
       
+      console.log('📥 IntakeQ API Response:', {
+        success: intakeQResult.success,
+        client_id: intakeQResult.client_id,
+        intake_url: intakeQResult.intake_url,
+        error: intakeQResult.error
+      });
+      
       if (intakeQResult.success) {
-        console.log('✅ Comprehensive IntakeQ profile created successfully:', {
+        console.log('✅ =================================================');
+        console.log('✅ INTAKEQ PROFILE CREATED SUCCESSFULLY!');
+        console.log('✅ =================================================');
+        console.log('✅ Profile Details:', {
           client_id: intakeQResult.client_id,
           intake_url: intakeQResult.intake_url,
           total_fields_sent: Object.keys(intakeQData).length,
           assessment_scores: {
-            phq9: clientData.phq9_total,
-            gad7: clientData.gad7_total
-          }
+            phq9_total: clientData.phq9_total,
+            gad7_total: clientData.gad7_total
+          },
+          therapist_info: clientData.selected_therapist ? {
+            name: clientData.selected_therapist.name,
+            email: clientData.selected_therapist.email
+          } : 'None selected',
+          appointment_info: clientData.appointment ? {
+            date: clientData.appointment.date,
+            time: clientData.appointment.time
+          } : 'None scheduled'
         });
         
         // Update the user data state with IntakeQ info
@@ -521,11 +760,28 @@ export default function MainPageComponent() {
           }
         }
       } else {
-        console.error('❌ IntakeQ profile creation failed:', intakeQResult.error);
+        console.error('❌ =================================================');
+        console.error('❌ INTAKEQ PROFILE CREATION FAILED!');
+        console.error('❌ =================================================');
+        console.error('❌ Error Details:', {
+          error: intakeQResult.error,
+          payload_size: Object.keys(intakeQData).length,
+          payment_type: intakeQData.payment_type,
+          client_email: intakeQData.email
+        });
       }
       
     } catch (error) {
-      console.error('❌ Error creating comprehensive IntakeQ profile:', error);
+      console.error('❌ =================================================');
+      console.error('❌ EXCEPTION IN INTAKEQ PROFILE CREATION!');
+      console.error('❌ =================================================');
+      console.error('❌ Exception Details:', {
+        error: error,
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        error_stack: error instanceof Error ? error.stack : 'No stack trace',
+        client_data_available: !!clientData,
+        response_id: clientData?.response_id
+      });
     }
   };
 
@@ -663,6 +919,45 @@ export default function MainPageComponent() {
                   onBookSession={async (therapistData, slot) => {
                     try {
                       const therapist = therapistData.therapist;
+                      
+                      // Enrich current user data with selected therapist info BEFORE booking
+                      if (currentUserData) {
+                        const therapistInfo = {
+                          id: therapist.id || therapist.email || 'unknown',
+                          name: therapist.intern_name || 'Unknown',
+                          email: therapist.email || '',
+                          bio: therapist.biography || '',
+                          specialties: therapist.specialities || [],
+                          image_link: therapist.image_link || undefined,
+                          states: therapist.states || [],
+                          therapeutic_orientation: therapist.therapeutic_orientation || []
+                        };
+                        
+                        const appointmentInfo = {
+                          date: new Date(slot).toLocaleDateString(),
+                          time: new Date(slot).toLocaleTimeString(),
+                          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                          duration: 45,
+                          session_type: 'initial'
+                        };
+                        
+                        const enrichedData = {
+                          ...currentUserData,
+                          selected_therapist: therapistInfo,
+                          appointment: appointmentInfo,
+                          last_updated: new Date().toISOString()
+                        };
+                        
+                        console.log('🎯 Enriching user data with therapist selection:', {
+                          therapist_name: therapistInfo.name,
+                          therapist_specialties: therapistInfo.specialties,
+                          appointment_date: appointmentInfo.date,
+                          appointment_time: appointmentInfo.time
+                        });
+                        
+                        setCurrentUserData(enrichedData);
+                      }
+                      
                       const bookedSession = await bookAppointment.makeRequest({
                         data: {
                           client_response_id: clientResponseId as string,
@@ -717,7 +1012,6 @@ export default function MainPageComponent() {
     </div>
   );
 } 
-
 
 // 'use client';
 
