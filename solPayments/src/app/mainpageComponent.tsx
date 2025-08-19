@@ -83,8 +83,17 @@ interface ComprehensiveUserData {
     provider?: string;
     member_id?: string;
     date_of_birth?: string;
-    verification_response?: any;
-    benefits?: any;
+    verification_response?: Record<string, unknown>;
+    benefits?: {
+      copay?: string;
+      deductible?: string;
+      coinsurance?: string;
+      oopMax?: string;
+      remainingDeductible?: string;
+      remainingOopMax?: string;
+      memberObligation?: string;
+      benefitStructure?: string;
+    };
   };
   
   // Payment info
@@ -476,7 +485,7 @@ export default function MainPageComponent() {
         })
       };
 
-      const intakeQResult = await IntakeQService.createClientProfile(intakeQData as any);
+      const intakeQResult = await IntakeQService.createClientProfile(intakeQData);
       
       if (intakeQResult.success) {
         console.log('✅ Comprehensive IntakeQ profile created successfully:', {
