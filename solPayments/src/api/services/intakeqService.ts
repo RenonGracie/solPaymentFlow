@@ -1,40 +1,99 @@
 // src/api/services/intakeqService.ts
-import axios from '@/api/axios';
+import axios from '../axios';
 
+// Extended interface to include all possible IntakeQ fields
 export interface IntakeQClientData {
-  // Basic Info
+  // Basic Required Fields
+  response_id: string;
   first_name: string;
   last_name: string;
-  preferred_name?: string;
   email: string;
+  payment_type: 'cash_pay' | 'insurance';
+  
+  // Optional Basic Fields
+  preferred_name?: string;
+  middle_name?: string;
   phone?: string;
+  mobile_phone?: string;
   date_of_birth?: string;
-  
-  // Demographics
   gender?: string;
+  
+  // Address Information
+  street_address?: string;
+  city?: string;
   state?: string;
+  postal_code?: string;
+  country?: string;
+  
+  // Demographics & Personal Info
   age?: string;
+  marital_status?: string;
+  race_ethnicity?: string[];
+  lived_experiences?: string[];
+  university?: string;
+  referred_by?: string;
   
-  // Payment Info
-  payment_type: 'insurance' | 'cash_pay';
+  // Mental Health Screening (PHQ-9)
+  phq9_scores?: {
+    pleasure_doing_things?: string;
+    feeling_down?: string;
+    trouble_falling?: string;
+    feeling_tired?: string;
+    poor_appetite?: string;
+    feeling_bad_about_yourself?: string;
+    trouble_concentrating?: string;
+    moving_or_speaking_so_slowly?: string;
+    suicidal_thoughts?: string;
+  };
   
-  // Insurance specific (only for insurance clients)
+  // Anxiety Screening (GAD-7)
+  gad7_scores?: {
+    feeling_nervous?: string;
+    not_control_worrying?: string;
+    worrying_too_much?: string;
+    trouble_relaxing?: string;
+    being_so_restless?: string;
+    easily_annoyed?: string;
+    feeling_afraid?: string;
+  };
+  
+  // Substance Use Screening
+  alcohol_frequency?: string;
+  recreational_drugs_frequency?: string;
+  
+  // Therapist Preferences
+  therapist_gender_preference?: string;
+  therapist_specialization?: string[];
+  therapist_lived_experiences?: string[];
+  
+  // Insurance Information (for insurance clients)
   insurance_provider?: string;
   insurance_member_id?: string;
   insurance_date_of_birth?: string;
-  insurance_verification_data?: string;
+  insurance_verification_data?: string; // JSON string of verification response
   
-  // Therapy preferences
-  therapist_specializes_in?: string[];
-  therapist_identifies_as?: string;
+  // Insurance Benefits (if available)
+  copay?: string;
+  deductible?: string;
+  coinsurance?: string;
+  out_of_pocket_max?: string;
+  remaining_deductible?: string;
+  remaining_oop_max?: string;
+  member_obligation?: string;
+  benefit_structure?: string;
   
-  // Mental health screening data
-  phq9_scores?: Record<string, string>;
-  gad7_scores?: Record<string, string>;
+  // Additional Context
+  safety_screening?: string;
+  matching_preference?: string;
+  what_brings_you?: string;
   
-  // Additional info
-  response_id: string;
-  client_id?: string;
+  // Custom fields for tracking
+  sol_health_response_id?: string;
+  onboarding_completed_at?: string;
+  survey_completed_at?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
 }
 
 export interface IntakeQResponse {
@@ -46,25 +105,32 @@ export interface IntakeQResponse {
 
 export class IntakeQService {
   /**
-   * Create IntakeQ client profile via backend API (resolves CORS issues)
+   * Create comprehensive IntakeQ client profile via backend API
    */
   static async createClientProfile(clientData: IntakeQClientData): Promise<IntakeQResponse> {
     try {
-      console.log(`🔄 Creating IntakeQ profile via backend for ${clientData.payment_type} client:`, {
+      console.log(`🔄 Creating comprehensive IntakeQ profile via backend for ${clientData.payment_type} client:`, {
         email: clientData.email,
         preferred_name: clientData.preferred_name,
+        first_name: clientData.first_name,
+        last_name: clientData.last_name,
         payment_type: clientData.payment_type,
         has_insurance_data: !!(clientData.insurance_provider),
-        response_id: clientData.response_id
+        has_phq9_scores: !!(clientData.phq9_scores),
+        has_gad7_scores: !!(clientData.gad7_scores),
+        has_therapist_preferences: !!(clientData.therapist_gender_preference || clientData.therapist_specialization?.length),
+        response_id: clientData.response_id,
+        total_fields: Object.keys(clientData).length
       });
 
-      // Call your backend endpoint instead of IntakeQ directly
+      // Call your backend endpoint with comprehensive data
       const response = await axios.post('/intakeq/create-client', clientData);
-      
-      console.log(`✅ IntakeQ profile created successfully via backend:`, {
+
+      console.log(`✅ Comprehensive IntakeQ profile created successfully via backend:`, {
         client_id: response.data.client_id,
         intake_url: response.data.intake_url,
-        payment_type: clientData.payment_type
+        payment_type: clientData.payment_type,
+        fields_sent: Object.keys(clientData).length
       });
 
       return {
@@ -74,7 +140,7 @@ export class IntakeQService {
       };
 
     } catch (error) {
-      console.error('❌ IntakeQ profile creation failed via backend:', error);
+      console.error('❌ Comprehensive IntakeQ profile creation failed via backend:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Backend integration error'
@@ -83,14 +149,28 @@ export class IntakeQService {
   }
 
   /**
-   * Get IntakeQ client by email via backend (for checking existing profiles)
+   * Get client by email via backend API  
    */
-  static async getClientByEmail(email: string, paymentType: 'insurance' | 'cash_pay'): Promise<unknown> {
+  static async getClientByEmail(email: string, paymentType: 'cash_pay' | 'insurance'): Promise<unknown> {
     try {
-      const response = await axios.get(`/intakeq/client?email=${encodeURIComponent(email)}&payment_type=${paymentType}`);
+      console.log(`🔍 Searching for existing IntakeQ client via backend:`, {
+        email,
+        payment_type: paymentType
+      });
+
+      const response = await axios.get('/intakeq/client', {
+        params: { email, payment_type: paymentType }
+      });
+
+      console.log(`✅ IntakeQ client search completed via backend:`, {
+        found: !!response.data,
+        email
+      });
+
       return response.data;
+
     } catch (error) {
-      console.error('Error fetching IntakeQ client via backend:', error);
+      console.error('❌ IntakeQ client search failed via backend:', error);
       return null;
     }
   }

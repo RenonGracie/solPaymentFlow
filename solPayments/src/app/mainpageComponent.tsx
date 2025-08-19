@@ -30,6 +30,18 @@ interface ExtendedClientData {
   gender?: string;
   age?: string;
   payment_type?: string;
+  date_of_birth?: string;
+  alcohol_frequency?: string;
+  recreational_drugs_frequency?: string;
+  therapist_gender_preference?: string;
+  therapist_specialization?: string[];
+  therapist_lived_experiences?: string[];
+  race_ethnicity?: string[];
+  lived_experiences?: string[];
+  university?: string;
+  referred_by?: string;
+  safety_screening?: string;
+  matching_preference?: string;
   // Mental health screening fields
   pleasure_doing_things?: string;
   feeling_down?: string;
@@ -151,6 +163,7 @@ export default function MainPageComponent() {
     email: string;
     preferredName?: string;
     state?: string;
+    whatBringsYou?: string;
   } | null>(null);
   
   // Modal states - no longer needed
@@ -361,79 +374,144 @@ export default function MainPageComponent() {
     createIntakeQProfile(bookedSession);
   };
 
-  // Create IntakeQ profile for the client
+  // Create comprehensive IntakeQ profile for the client
   const createIntakeQProfile = async (bookedSession: BookAppointmentResponse) => {
-    try {
-      if (!matchData?.client || !selectedPaymentType) {
-        console.warn('Missing client data or payment type for IntakeQ profile creation');
-        return;
-      }
+    const responseId = (bookedSession as ExtendedBookAppointmentResponse)?.ClientResponseId || clientResponseId;
+    
+    if (!responseId) {
+      console.warn('⚠️ No response ID available for IntakeQ profile creation');
+      return;
+    }
 
-      // Prepare client data for IntakeQ
+    try {
+      console.log('🔍 Preparing comprehensive IntakeQ data from all sources:', {
+        matchData_client_fields: Object.keys(matchData?.client || {}),
+        formData_fields: Object.keys(formData || {}),
+        onboardingData_fields: Object.keys(onboardingData || {}),
+        clientData_available: !!matchData?.client
+      });
+
+      // Prepare comprehensive client data for IntakeQ
       const clientData: IntakeQClientData = {
-        response_id: (bookedSession as ExtendedBookAppointmentResponse)?.ClientResponseId || clientResponseId || '',
-        first_name: matchData.client?.first_name || formData?.firstName || onboardingData?.firstName || '',
-        last_name: matchData.client?.last_name || formData?.lastName || onboardingData?.lastName || '',
-        preferred_name: (matchData.client as ExtendedClientData)?.preferred_name || formData?.preferredName || onboardingData?.preferredName,
-        email: matchData.client?.email || formData?.email || '',
-        phone: (matchData.client as ExtendedClientData)?.phone || '',
-        state: (matchData.client as ExtendedClientData)?.state || formData?.state || '',
-        gender: (matchData.client as ExtendedClientData)?.gender || '',
-        payment_type: selectedPaymentType,
+        // Required fields
+        response_id: responseId,
+        first_name: matchData?.client?.first_name || formData?.firstName || onboardingData?.firstName || '',
+        last_name: matchData?.client?.last_name || formData?.lastName || onboardingData?.lastName || '',
+        email: matchData?.client?.email || formData?.email || onboardingData?.email || '',
+        payment_type: selectedPaymentType || 'cash_pay',
         
-        // Insurance-specific data (only for insurance clients)
+        // Optional basic fields
+        preferred_name: (matchData?.client as ExtendedClientData)?.preferred_name || formData?.preferredName || onboardingData?.preferredName,
+        phone: (matchData?.client as ExtendedClientData)?.phone || '',
+        mobile_phone: (matchData?.client as ExtendedClientData)?.phone || '',
+        date_of_birth: (matchData?.client as ExtendedClientData)?.date_of_birth || formData?.dateOfBirth,
+        gender: (matchData?.client as ExtendedClientData)?.gender || '',
+        age: (matchData?.client as ExtendedClientData)?.age || '',
+        
+        // Address information
+        street_address: '',
+        city: '',
+        state: (matchData?.client as ExtendedClientData)?.state || formData?.state || onboardingData?.state || '',
+        postal_code: '',
+        country: 'USA',
+        
+        // Mental Health Screening (PHQ-9) - from client data
+        phq9_scores: {
+          pleasure_doing_things: (matchData?.client as ExtendedClientData)?.pleasure_doing_things || '',
+          feeling_down: (matchData?.client as ExtendedClientData)?.feeling_down || '',
+          trouble_falling: (matchData?.client as ExtendedClientData)?.trouble_falling || '',
+          feeling_tired: (matchData?.client as ExtendedClientData)?.feeling_tired || '',
+          poor_appetite: (matchData?.client as ExtendedClientData)?.poor_appetite || '',
+          feeling_bad_about_yourself: (matchData?.client as ExtendedClientData)?.feeling_bad_about_yourself || '',
+          trouble_concentrating: (matchData?.client as ExtendedClientData)?.trouble_concentrating || '',
+          moving_or_speaking_so_slowly: (matchData?.client as ExtendedClientData)?.moving_or_speaking_so_slowly || '',
+          suicidal_thoughts: (matchData?.client as ExtendedClientData)?.suicidal_thoughts || '',
+        },
+        
+        // Anxiety Screening (GAD-7) - from client data
+        gad7_scores: {
+          feeling_nervous: (matchData?.client as ExtendedClientData)?.feeling_nervous || '',
+          not_control_worrying: (matchData?.client as ExtendedClientData)?.not_control_worrying || '',
+          worrying_too_much: (matchData?.client as ExtendedClientData)?.worrying_too_much || '',
+          trouble_relaxing: (matchData?.client as ExtendedClientData)?.trouble_relaxing || '',
+          being_so_restless: (matchData?.client as ExtendedClientData)?.being_so_restless || '',
+          easily_annoyed: (matchData?.client as ExtendedClientData)?.easily_annoyed || '',
+          feeling_afraid: (matchData?.client as ExtendedClientData)?.feeling_afraid || '',
+        },
+        
+        // Substance use screening - from client data
+        alcohol_frequency: (matchData?.client as ExtendedClientData)?.alcohol_frequency || '',
+        recreational_drugs_frequency: (matchData?.client as ExtendedClientData)?.recreational_drugs_frequency || '',
+        
+        // Therapist preferences - from client data
+        therapist_gender_preference: (matchData?.client as ExtendedClientData)?.therapist_gender_preference || '',
+        therapist_specialization: (matchData?.client as ExtendedClientData)?.therapist_specialization || [],
+        therapist_lived_experiences: (matchData?.client as ExtendedClientData)?.therapist_lived_experiences || [],
+        
+        // Demographics from client data
+        race_ethnicity: (matchData?.client as ExtendedClientData)?.race_ethnicity || [],
+        lived_experiences: (matchData?.client as ExtendedClientData)?.lived_experiences || [],
+        university: (matchData?.client as ExtendedClientData)?.university || '',
+        referred_by: (matchData?.client as ExtendedClientData)?.referred_by || '',
+        
+        // Additional context
+        safety_screening: (matchData?.client as ExtendedClientData)?.safety_screening || '',
+        matching_preference: (matchData?.client as ExtendedClientData)?.matching_preference || '',
+        what_brings_you: onboardingData?.whatBringsYou || '',
+        
+        // Insurance information if available
         ...(selectedPaymentType === 'insurance' && formData && {
           insurance_provider: formData.provider,
           insurance_member_id: formData.memberId,
           insurance_date_of_birth: formData.dateOfBirth,
           insurance_verification_data: formData.verificationData ? JSON.stringify(formData.verificationData) : undefined,
+          
+          // Insurance benefits if available
+          ...(formData.verificationData?.benefits && {
+            copay: formData.verificationData.benefits.copay,
+            deductible: formData.verificationData.benefits.deductible,
+            coinsurance: formData.verificationData.benefits.coinsurance,
+            out_of_pocket_max: formData.verificationData.benefits.oopMax,
+            remaining_deductible: formData.verificationData.benefits.remainingDeductible,
+            remaining_oop_max: formData.verificationData.benefits.remainingOopMax,
+            member_obligation: formData.verificationData.benefits.memberObligation,
+            benefit_structure: formData.verificationData.benefits.benefitStructure,
+          }),
         }),
         
-        // Mental health screening data
-        phq9_scores: {
-          pleasure_doing_things: (matchData.client as ExtendedClientData)?.pleasure_doing_things || '',
-          feeling_down: (matchData.client as ExtendedClientData)?.feeling_down || '',
-          trouble_falling: (matchData.client as ExtendedClientData)?.trouble_falling || '',
-          feeling_tired: (matchData.client as ExtendedClientData)?.feeling_tired || '',
-          poor_appetite: (matchData.client as ExtendedClientData)?.poor_appetite || '',
-          feeling_bad_about_yourself: (matchData.client as ExtendedClientData)?.feeling_bad_about_yourself || '',
-          trouble_concentrating: (matchData.client as ExtendedClientData)?.trouble_concentrating || '',
-          moving_or_speaking_so_slowly: (matchData.client as ExtendedClientData)?.moving_or_speaking_so_slowly || '',
-          suicidal_thoughts: (matchData.client as ExtendedClientData)?.suicidal_thoughts || '',
-        },
-        
-        gad7_scores: {
-          feeling_nervous: (matchData.client as ExtendedClientData)?.feeling_nervous || '',
-          not_control_worrying: (matchData.client as ExtendedClientData)?.not_control_worrying || '',
-          worrying_too_much: (matchData.client as ExtendedClientData)?.worrying_too_much || '',
-          trouble_relaxing: (matchData.client as ExtendedClientData)?.trouble_relaxing || '',
-          being_so_restless: (matchData.client as ExtendedClientData)?.being_so_restless || '',
-          easily_annoyed: (matchData.client as ExtendedClientData)?.easily_annoyed || '',
-          feeling_afraid: (matchData.client as ExtendedClientData)?.feeling_afraid || '',
-        },
-        
-        // Therapy preferences
-        therapist_specializes_in: (matchData.client as ExtendedClientData)?.therapist_specializes_in || [],
-        therapist_identifies_as: (matchData.client as ExtendedClientData)?.therapist_identifies_as || '',
+        // Tracking fields
+        sol_health_response_id: responseId,
+        onboarding_completed_at: new Date().toISOString(),
+        survey_completed_at: matchData?.client ? new Date().toISOString() : undefined,
+        utm_source: 'sol_payments',
+        utm_medium: 'direct',
+        utm_campaign: 'onboarding',
       };
 
-      console.log('🔄 Creating IntakeQ profile for client:', {
+      console.log('📦 Comprehensive IntakeQ payload prepared:', {
         email: clientData.email,
         payment_type: clientData.payment_type,
         preferred_name: clientData.preferred_name,
-        has_insurance_data: !!(clientData.insurance_provider)
+        first_name: clientData.first_name,
+        last_name: clientData.last_name,
+        has_insurance_data: !!(clientData.insurance_provider),
+        has_phq9_data: !!(clientData.phq9_scores && Object.values(clientData.phq9_scores).some(v => v)),
+        has_gad7_data: !!(clientData.gad7_scores && Object.values(clientData.gad7_scores).some(v => v)),
+        has_therapist_preferences: !!(clientData.therapist_gender_preference || clientData.therapist_specialization?.length),
+        total_fields_populated: Object.entries(clientData).filter(([, value]) => value !== undefined && value !== '' && value !== null).length,
+        response_id: responseId
       });
 
       const intakeQResult = await IntakeQService.createClientProfile(clientData);
       
       if (intakeQResult.success) {
-        console.log('✅ IntakeQ profile created successfully:', {
+        console.log('✅ Comprehensive IntakeQ profile created successfully:', {
           client_id: intakeQResult.client_id,
-          intake_url: intakeQResult.intake_url
+          intake_url: intakeQResult.intake_url,
+          total_fields_sent: Object.keys(clientData).length
         });
         
-        // Optionally update the database with IntakeQ client ID
-        const responseId = (bookedSession as ExtendedBookAppointmentResponse)?.ClientResponseId;
+        // Update the database with IntakeQ client ID
         if (intakeQResult.client_id && responseId) {
           try {
             await axiosInstance.patch(`/clients_signup/${responseId}`, {
@@ -450,7 +528,7 @@ export default function MainPageComponent() {
       }
       
     } catch (error) {
-      console.error('❌ Error creating IntakeQ profile:', error);
+      console.error('❌ Error creating comprehensive IntakeQ profile:', error);
     }
   };
 
