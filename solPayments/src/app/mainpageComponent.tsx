@@ -461,15 +461,27 @@ export default function MainPageComponent() {
         payment_type: selectedPaymentType || undefined,
         
         // Insurance data (if applicable)
-        ...(selectedPaymentType === 'insurance' && formData && {
-          insurance_data: {
+        ...(selectedPaymentType === 'insurance' && formData && (() => {
+          console.log('💳 Insurance Data Processing:', {
             provider: formData.provider,
             member_id: formData.memberId,
-            date_of_birth: formData.dateOfBirth,
-            verification_response: formData.verificationData,
-            benefits: formData.verificationData?.benefits
-          }
-        }),
+            has_verification_data: !!formData.verificationData,
+            has_benefits: !!formData.verificationData?.benefits,
+            member_obligation: formData.verificationData?.benefits?.memberObligation,
+            verification_data_keys: formData.verificationData ? Object.keys(formData.verificationData) : [],
+            benefits_keys: formData.verificationData?.benefits ? Object.keys(formData.verificationData.benefits) : []
+          });
+          
+          return {
+            insurance_data: {
+              provider: formData.provider,
+              member_id: formData.memberId,
+              date_of_birth: formData.dateOfBirth,
+              verification_response: formData.verificationData,
+              benefits: formData.verificationData?.benefits
+            }
+          };
+        })()),
         
         // Tracking
         utm: {
@@ -1012,7 +1024,6 @@ export default function MainPageComponent() {
     </div>
   );
 } 
-
 // 'use client';
 
 // import { useCallback, useState, useEffect } from "react";
