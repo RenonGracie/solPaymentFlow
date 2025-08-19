@@ -348,9 +348,13 @@ export default function OnboardingFlow({
           ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase()
           : formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1).toLowerCase();
 
+        // For cash_pay, derive first/last names from preferred name if not provided
+        const derivedFirstName = formData.firstName || capitalizedPreferredName || '';
+        const derivedLastName = formData.lastName || 'Client'; // Default last name for cash_pay
+
         onComplete({
-          firstName: formData.firstName,
-          lastName: formData.lastName || '', // Add default empty string if no last name
+          firstName: derivedFirstName,
+          lastName: derivedLastName,
           email: formData.email,
           preferredName: capitalizedPreferredName,
           state: selectedState,
