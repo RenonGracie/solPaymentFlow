@@ -245,16 +245,27 @@ export default function MainPageComponent() {
   useEffect(() => {
     if (typeof window !== 'undefined' && !selectedPaymentType) {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlPaymentType = urlParams.get('payment_type');
+        const clearStorage = urlParams.get('clear') === 'true';
         const savedPaymentType = localStorage.getItem('sol_payment_type');
-        const urlPaymentType = new URLSearchParams(window.location.search).get('payment_type');
         
         console.log('🔍 Initial payment type check:');
         console.log('- localStorage:', savedPaymentType);
         console.log('- URL param:', urlPaymentType);
+        console.log('- clear storage requested:', clearStorage);
         
+        // If clear=true in URL, clear stored payment type
+        if (clearStorage) {
+          localStorage.removeItem('sol_payment_type');
+          console.log('🧹 Cleared stored payment type from localStorage');
+          return;
+        }
+        
+        // Priority: URL param overrides localStorage
         const paymentType = urlPaymentType || savedPaymentType;
         if (paymentType === 'cash_pay' || paymentType === 'insurance') {
-          console.log('✅ Restoring payment type from storage:', paymentType);
+          console.log('✅ Restoring payment type from:', urlPaymentType ? 'URL' : 'localStorage', paymentType);
           setSelectedPaymentType(paymentType as PaymentType);
         }
       } catch (e) {
@@ -322,6 +333,18 @@ export default function MainPageComponent() {
 
   const handleSelectPaymentType = (type: PaymentType) => {
     console.log('🎯 Payment type selected:', type);
+    
+    // If changing payment type, clear any existing flow state
+    const currentType = selectedPaymentType;
+    if (currentType && currentType !== type) {
+      console.log('🔄 Payment type change detected:', currentType, '→', type);
+      // Clear any existing form data and states
+      setFormData(null);
+      setClientResponseId(null);
+      setBookingData(null);
+      setCurrentUserData(null);
+    }
+    
     setSelectedPaymentType(type);
     
     // Store in localStorage for persistence across reloads
@@ -336,6 +359,8 @@ export default function MainPageComponent() {
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       url.searchParams.set('payment_type', type);
+      // Remove clear param if it exists
+      url.searchParams.delete('clear');
       window.history.replaceState({}, '', url.toString());
       console.log('🎯 Added payment_type to URL:', type);
     }
