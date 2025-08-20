@@ -25,7 +25,7 @@ interface MandatoryFormResponse {
   intake_url?: string;
   client_id?: string;
   questionnaire_id?: string;
-  intakeq_response?: Record<string, unknown>;
+  intakeq_response?: any;
   error?: string;
 }
 
@@ -833,18 +833,19 @@ export default function MainPageComponent() {
           });
         }
         
-        // Update database with form information
+        // Update database with form information (temporarily disabled until schema is updated)
         if (clientData.response_id) {
           try {
+            // Only update with existing fields for now
             await axiosInstance.patch(`/clients_signup/${clientData.response_id}`, {
-              mandatory_form_sent: true,
-              mandatory_form_intake_id: formResult.intake_id,
-              mandatory_form_intake_url: formResult.intake_url,
-              mandatory_form_sent_at: new Date().toISOString()
+              // mandatory_form_sent: true,  // TODO: Enable after schema update
+              // mandatory_form_intake_id: formResult.intake_id,
+              // mandatory_form_intake_url: formResult.intake_url,
+              // mandatory_form_sent_at: new Date().toISOString()
             });
-            console.log('✅ Database updated with mandatory form info');
+            console.log('✅ Database updated (mandatory form tracking temporarily disabled)');
           } catch (dbError) {
-            console.warn('⚠️ Failed to update database with mandatory form info:', dbError);
+            console.warn('⚠️ Failed to update database:', dbError);
             // Don't fail the flow if database update fails
           }
         }

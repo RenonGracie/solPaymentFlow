@@ -177,4 +177,4 @@ export class IntakeQService {
   }
 }
 
-export default IntakeQService; 
+export default IntakeQService;
