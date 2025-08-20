@@ -25,7 +25,7 @@ interface MandatoryFormResponse {
   intake_url?: string;
   client_id?: string;
   questionnaire_id?: string;
-  intakeq_response?: Record<string, unknown>;
+  intakeq_response?: any;
   error?: string;
 }
 
@@ -350,6 +350,19 @@ export default function MainPageComponent() {
         return Object.values(scores).reduce((total, answer) => total + (scoreMap[answer as keyof typeof scoreMap] || 0), 0);
       };
 
+      // Calculate date of birth from age
+      const calculateDateOfBirthFromAge = (age: string | number): string => {
+        if (!age) return "";
+        const ageNum = typeof age === 'string' ? parseInt(age) : age;
+        if (isNaN(ageNum) || ageNum < 0 || ageNum > 150) return "";
+        
+        const currentDate = new Date();
+        const birthYear = currentDate.getFullYear() - ageNum;
+        // Use January 1st as default since we only have age, not exact birth date
+        const birthDate = new Date(birthYear, 0, 1); // January 1st of birth year
+        return birthDate.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
+      };
+
       // Build comprehensive user data with ALL collected information
       const comprehensiveUserData: ComprehensiveUserData = {
         // Core identity
@@ -407,6 +420,16 @@ export default function MainPageComponent() {
         
         // Complete demographics
         age: surveyData.age,
+        date_of_birth: (() => {
+          // Prefer insurance DOB if available, otherwise calculate from age
+          if (selectedPaymentType === 'insurance' && formData?.dateOfBirth) {
+            console.log('📅 Using insurance verification DOB:', formData.dateOfBirth);
+            return formData.dateOfBirth; // This is from insurance verification
+          }
+          const calculatedDOB = calculateDateOfBirthFromAge(surveyData.age);
+          console.log('📅 Calculated DOB from age:', { age: surveyData.age, calculated_dob: calculatedDOB });
+          return calculatedDOB;
+        })(),
         gender: surveyData.gender,
         state: surveyData.state,
         race_ethnicity: surveyData.race_ethnicity,

@@ -373,8 +373,8 @@ export default function OnboardingFlow({
   };
 
   const handleInsuranceVerification = async () => {
-    // Validate required fields
-    if (!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId || !formData.email) {
+    // Validate required fields (email already collected in earlier step)
+    if (!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId) {
       return;
     }
 
@@ -1699,21 +1699,7 @@ export default function OnboardingFlow({
                   />
                 </div>
 
-                {/* Email - Pre-filled from earlier */}
-                <div className="flow-narrow">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email*
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    disabled={verificationStep === 'verifying'}
-                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
-                    style={{ fontFamily: 'var(--font-inter)', fontSize: '16px' }}
-                    placeholder="melinda@gmail.com"
-                  />
-                </div>
+{/* Email already collected in earlier step - no need to show again */}
 
                 {/* Display preferred name info */}
                 {formData.preferredName && formData.preferredName !== formData.firstName && (
@@ -1754,9 +1740,9 @@ export default function OnboardingFlow({
             {verificationStep === 'form' && (
               <Button
                 onClick={handleInsuranceVerification}
-                disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId || !formData.email}
+                disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId}
                 className={`flow-narrow mx-auto w-full py-5 px-8 rounded-full text-lg font-medium transition-colors ${
-                  selectedProvider && formData.firstName && formData.lastName && formData.dateOfBirth && formData.memberId && formData.email
+                  selectedProvider && formData.firstName && formData.lastName && formData.dateOfBirth && formData.memberId
                     ? 'bg-amber-700 text-white hover:bg-amber-800' 
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 }`}
