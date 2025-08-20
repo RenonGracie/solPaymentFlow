@@ -25,7 +25,7 @@ interface MandatoryFormResponse {
   intake_url?: string;
   client_id?: string;
   questionnaire_id?: string;
-  intakeq_response?: any;
+  intakeq_response?: Record<string, unknown>;
   error?: string;
 }
 
