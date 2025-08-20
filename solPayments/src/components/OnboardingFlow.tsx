@@ -1353,28 +1353,16 @@ export default function OnboardingFlow({
             )}
 
             {/* Continue Button */}
-            {selectedState && (() => {
-              // For cash pay, check if all required fields are filled
-              const derivedFirstName = formData.firstName || formData.preferredName || '';
-              const derivedLastName = formData.lastName || '';
-              const hasRequiredFields = derivedFirstName && derivedLastName && formData.email;
-              
-              return (
-                <Button
-                  onClick={handleStateConfirm}
-                  disabled={!hasRequiredFields}
-                  className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 ${
-                    hasRequiredFields 
-                      ? 'bg-blue-100 text-gray-800 hover:bg-blue-200' 
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                  style={{ fontFamily: 'var(--font-inter)' }}
-                >
-                  Continue
-                  <ChevronRight className="inline w-4 h-4 ml-2" />
-                </Button>
-              );
-            })()}
+            {selectedState && (
+              <Button
+                onClick={handleStateConfirm}
+                className="w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 bg-blue-100 text-gray-800 hover:bg-blue-200"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Continue
+                <ChevronRight className="inline w-4 h-4 ml-2" />
+              </Button>
+            )}
           </div>
         </div>
 
