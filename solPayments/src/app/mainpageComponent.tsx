@@ -13,9 +13,21 @@ import {
 import { usePollFormAndRequestMatch } from "@/api/hooks/usePollFormAndRequestMatch";
 import axiosInstance from "@/api/axios";
 import IntakeQService, { type IntakeQClientData } from "@/api/services/intakeqService";
+import { sendMandatoryForm } from "@/app/api/intakeq";
 import { STEPS } from "@/constants";
 
 type PaymentType = "insurance" | "cash_pay";
+
+// Interface for mandatory form API response
+interface MandatoryFormResponse {
+  success: boolean;
+  intake_id?: string;
+  intake_url?: string;
+  client_id?: string;
+  questionnaire_id?: string;
+  intakeq_response?: any;
+  error?: string;
+}
 
 // Comprehensive user data interface that includes ALL possible fields
 interface ComprehensiveUserData {
@@ -109,6 +121,11 @@ interface ComprehensiveUserData {
   // IntakeQ integration
   intakeq_client_id?: string;
   intakeq_intake_url?: string;
+  
+  // Mandatory form tracking
+  mandatory_form_sent?: boolean;
+  mandatory_form_intake_id?: string;
+  mandatory_form_intake_url?: string;
 }
 
 // Extended client data interface (for backward compatibility)
@@ -702,6 +719,13 @@ export default function MainPageComponent() {
           } : 'None scheduled'
         });
         
+        // Send mandatory form after successful client creation
+        if (intakeQResult.client_id) {
+          await sendMandatoryFormAfterBooking(intakeQResult.client_id, clientData);
+        } else {
+          console.warn('⚠️ No client_id available to send mandatory form');
+        }
+        
         // Update the user data state with IntakeQ info
         if (currentUserData) {
           setCurrentUserData({
@@ -747,6 +771,101 @@ export default function MainPageComponent() {
         client_data_available: !!clientData,
         response_id: clientData?.response_id
       });
+    }
+  };
+
+  // Function to send mandatory form after successful booking
+  const sendMandatoryFormAfterBooking = async (clientId: string, clientData: ComprehensiveUserData) => {
+    try {
+      console.log('📋 =================================================');
+      console.log('📋 SENDING MANDATORY INTAKEQ FORM');
+      console.log('📋 =================================================');
+      
+      // Determine payment type from client data
+      const paymentType = clientData.payment_type || 'cash_pay';
+      console.log('💳 Payment type:', paymentType);
+      
+      // Prepare form data
+      const formData = {
+        payment_type: paymentType,
+        client_id: clientId,
+        // Add practitioner/therapist ID if available
+        practitioner_id: clientData.selected_therapist?.id || undefined,
+        // Add external client ID for tracking
+        external_client_id: clientData.response_id
+      };
+      
+      console.log('📤 Form data being sent:', formData);
+      
+      // Send the mandatory form
+      const formResult = await sendMandatoryForm(formData) as MandatoryFormResponse;
+      
+      console.log('📥 Mandatory form response:', {
+        success: formResult.success,
+        intake_id: formResult.intake_id,
+        intake_url: formResult.intake_url,
+        questionnaire_id: formResult.questionnaire_id
+      });
+      
+      if (formResult.success) {
+        console.log('✅ =================================================');
+        console.log('✅ MANDATORY FORM SENT SUCCESSFULLY!');
+        console.log('✅ =================================================');
+        console.log('✅ Form Details:', {
+          intake_id: formResult.intake_id,
+          intake_url: formResult.intake_url,
+          client_id: clientId,
+          payment_type: paymentType,
+          therapist_name: clientData.selected_therapist?.name || 'Not specified',
+          client_name: `${clientData.first_name} ${clientData.last_name}`.trim()
+        });
+        
+        // Update user data with form information
+        if (currentUserData) {
+          setCurrentUserData({
+            ...currentUserData,
+            mandatory_form_sent: true,
+            mandatory_form_intake_id: formResult.intake_id,
+            mandatory_form_intake_url: formResult.intake_url,
+            last_updated: new Date().toISOString()
+          });
+        }
+        
+        // Optionally update database with form information
+        if (clientData.response_id) {
+          try {
+            await axiosInstance.patch(`/clients_signup/${clientData.response_id}`, {
+              mandatory_form_sent: true,
+              mandatory_form_intake_id: formResult.intake_id,
+              mandatory_form_intake_url: formResult.intake_url,
+              mandatory_form_sent_at: new Date().toISOString()
+            });
+            console.log('✅ Database updated with mandatory form info');
+          } catch (dbError) {
+            console.warn('⚠️ Failed to update database with mandatory form info:', dbError);
+          }
+        }
+        
+      } else {
+        console.error('❌ Failed to send mandatory form:', formResult);
+      }
+      
+    } catch (error) {
+      console.error('❌ =================================================');
+      console.error('❌ EXCEPTION IN MANDATORY FORM SENDING!');
+      console.error('❌ =================================================');
+      console.error('❌ Exception Details:', {
+        error: error,
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        error_stack: error instanceof Error ? error.stack : 'No stack trace',
+        client_id: clientId,
+        client_data_available: !!clientData,
+        response_id: clientData?.response_id
+      });
+      
+      // Don't throw the error - we don't want to break the booking flow
+      // if the mandatory form fails to send
+      console.warn('⚠️ Mandatory form sending failed, but continuing with booking flow');
     }
   };
 
