@@ -24,6 +24,7 @@ const getBaseURL = () => {
    * @param {string} [formData.client_email] - Client email (if client_id not available)
    * @param {string} [formData.client_phone] - Client phone (optional, for SMS)
    * @param {string} [formData.practitioner_id] - Practitioner/Therapist ID
+   * @param {string} [formData.therapist_email] - Therapist email for identification
    * @param {string} [formData.external_client_id] - External client ID for tracking
    * @returns {Promise<Object>} Response with intake URL and details
    */

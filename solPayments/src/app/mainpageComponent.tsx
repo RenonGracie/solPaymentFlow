@@ -25,7 +25,7 @@ interface MandatoryFormResponse {
   intake_url?: string;
   client_id?: string;
   questionnaire_id?: string;
-  intakeq_response?: Record<string, unknown>;
+  intakeq_response?: any;
   error?: string;
 }
 
@@ -791,6 +791,8 @@ export default function MainPageComponent() {
         client_id: clientId,
         // Add practitioner/therapist ID if available
         practitioner_id: clientData.selected_therapist?.id || undefined,
+        // Add therapist email for practitioner identification
+        therapist_email: clientData.selected_therapist?.email || undefined,
         // Add external client ID for tracking
         external_client_id: clientData.response_id
       };
@@ -831,7 +833,7 @@ export default function MainPageComponent() {
           });
         }
         
-        // Optionally update database with form information
+        // Update database with form information
         if (clientData.response_id) {
           try {
             await axiosInstance.patch(`/clients_signup/${clientData.response_id}`, {
@@ -843,6 +845,7 @@ export default function MainPageComponent() {
             console.log('✅ Database updated with mandatory form info');
           } catch (dbError) {
             console.warn('⚠️ Failed to update database with mandatory form info:', dbError);
+            // Don't fail the flow if database update fails
           }
         }
         
