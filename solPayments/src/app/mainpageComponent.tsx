@@ -241,38 +241,7 @@ export default function MainPageComponent() {
   // Use the polling hook from the API
   const { matchData, loading, error, utmUserId, pollFormAndRequestMatch } = usePollFormAndRequestMatch();
 
-  // Check for existing payment type on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !selectedPaymentType) {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlPaymentType = urlParams.get('payment_type');
-        const clearStorage = urlParams.get('clear') === 'true';
-        const savedPaymentType = localStorage.getItem('sol_payment_type');
-        
-        console.log('🔍 Initial payment type check:');
-        console.log('- localStorage:', savedPaymentType);
-        console.log('- URL param:', urlPaymentType);
-        console.log('- clear storage requested:', clearStorage);
-        
-        // If clear=true in URL, clear stored payment type
-        if (clearStorage) {
-          localStorage.removeItem('sol_payment_type');
-          console.log('🧹 Cleared stored payment type from localStorage');
-          return;
-        }
-        
-        // Priority: URL param overrides localStorage
-        const paymentType = urlPaymentType || savedPaymentType;
-        if (paymentType === 'cash_pay' || paymentType === 'insurance') {
-          console.log('✅ Restoring payment type from:', urlPaymentType ? 'URL' : 'localStorage', paymentType);
-          setSelectedPaymentType(paymentType as PaymentType);
-        }
-      } catch (e) {
-        console.warn('Failed to check stored payment type:', e);
-      }
-    }
-  }, [selectedPaymentType]);
+  // No payment type persistence - always start fresh
 
   // Handle onboarding completion
   const handleOnboardingComplete = (
@@ -306,14 +275,6 @@ export default function MainPageComponent() {
     console.log('🎯 Setting selectedPaymentType to:', paymentType);
     setSelectedPaymentType(paymentType);
     
-    // Store payment type in localStorage for persistence
-    try {
-      localStorage.setItem('sol_payment_type', paymentType);
-      console.log('🎯 Stored payment type in localStorage:', paymentType);
-    } catch (e) {
-      console.warn('Failed to store payment type in localStorage:', e);
-    }
-    
     setFormData({
       firstName: data.firstName,
       lastName: data.lastName,
@@ -333,39 +294,7 @@ export default function MainPageComponent() {
 
   const handleSelectPaymentType = (type: PaymentType) => {
     console.log('🎯 Payment type selected:', type);
-    
-    // If changing payment type, clear any existing flow state
-    const currentType = selectedPaymentType;
-    if (currentType && currentType !== type) {
-      console.log('🔄 Payment type change detected:', currentType, '→', type);
-      // Clear any existing form data and states
-      setFormData(null);
-      setClientResponseId(null);
-      setBookingData(null);
-      setCurrentUserData(null);
-    }
-    
     setSelectedPaymentType(type);
-    
-    // Store in localStorage for persistence across reloads
-    try {
-      localStorage.setItem('sol_payment_type', type);
-      console.log('🎯 Stored payment type in localStorage:', type);
-    } catch (e) {
-      console.warn('Failed to store payment type in localStorage:', e);
-    }
-    
-    // Also add to URL for debugging and consistency
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.set('payment_type', type);
-      // Remove clear param if it exists
-      url.searchParams.delete('clear');
-      window.history.replaceState({}, '', url.toString());
-      console.log('🎯 Added payment_type to URL:', type);
-    }
-
-    // The onboarding flow will call handleOnboardingComplete when fully done
   };
 
   // No longer needed - insurance is handled in onboarding flow
@@ -384,7 +313,6 @@ export default function MainPageComponent() {
   const handleSurveySubmit = useCallback(async (surveyData: SurveyData) => {
     console.log('🎯 Survey submitted with data:', surveyData);
     console.log('🎯 Current selectedPaymentType state:', selectedPaymentType);
-    console.log('🎯 Payment type from localStorage:', localStorage.getItem('sol_payment_type'));
     
     setCurrentStep(null); // Hide survey, show loading
     setIsProcessingResponse(true);
