@@ -346,25 +346,21 @@ export default function OnboardingFlow({
         // Ensure preferred name is capitalized
         const capitalizedPreferredName = formData.preferredName 
           ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase()
-          : formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1).toLowerCase();
+          : '';
 
-        // For cash_pay, validate required fields (no defaults)
-        const derivedFirstName = formData.firstName || capitalizedPreferredName || '';
-        const derivedLastName = formData.lastName || ''; // No default - require user input
-        
-        // Validate required fields for cash pay
-        if (!derivedFirstName || !derivedLastName || !formData.email) {
-          console.warn('Missing required fields for cash pay:', {
-            firstName: !!derivedFirstName,
-            lastName: !!derivedLastName, 
-            email: !!formData.email
+        // For cash_pay at state selection, we only need email and preferred name
+        // firstName and lastName will be collected in the next step
+        if (!formData.email || !formData.preferredName) {
+          console.warn('Missing required fields for cash pay state selection:', {
+            email: !!formData.email,
+            preferredName: !!formData.preferredName
           });
           return; // Don't proceed without required fields
         }
 
         onComplete({
-          firstName: derivedFirstName,
-          lastName: derivedLastName,
+          firstName: capitalizedPreferredName, // Use preferred name as firstName for now
+          lastName: '', // Will be collected in next step
           email: formData.email,
           preferredName: capitalizedPreferredName,
           state: selectedState,
