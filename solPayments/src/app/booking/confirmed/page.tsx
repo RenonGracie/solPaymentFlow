@@ -1,7 +1,7 @@
 // solPayments/src/app/booking/confirmed/page.tsx
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -127,7 +127,7 @@ const analyzeVideo = (videoLink: string, therapistName?: string): VideoAnalysis 
   return { hasVideo: false, videoType: 'unknown', embedUrl: '', reason: 'Unknown video platform or format' };
 };
 
-export default function BookingConfirmedPage() {
+function BookingConfirmedContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const responseId = searchParams?.get('response_id') || null;
@@ -548,5 +548,26 @@ export default function BookingConfirmedPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+        <p className="text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+          Loading booking confirmation...
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function BookingConfirmedPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <BookingConfirmedContent />
+    </Suspense>
   );
 } 
