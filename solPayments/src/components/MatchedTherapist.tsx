@@ -148,11 +148,6 @@ export default function MatchedTherapist({
 
   // Get payment type from client data, localStorage, or query param
   const getSelectedPaymentType = useCallback((): 'insurance' | 'cash_pay' => {
-    // DEBUG: Log all available sources
-    console.log('🔍 PAYMENT TYPE DEBUG:');
-    console.log('clientData?.payment_type:', clientData?.payment_type);
-    console.log('clientData keys:', Object.keys(clientData || {}));
-    
     // First check client data
     if (clientData?.payment_type === 'insurance' || clientData?.payment_type === 'cash_pay') {
       console.log('✅ Found payment type in clientData:', clientData.payment_type);
@@ -942,7 +937,7 @@ export default function MatchedTherapist({
 
       {/* Heading below banner */}
       <div className="px-4 md:px-6 py-3">
-        <h2 className="very-vogue-title text-2xl sm:text-3xl text-gray-800">
+        <h2 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800">
           We Found the <em>Best Therapist</em> for You
         </h2>
       </div>
@@ -991,7 +986,7 @@ export default function MatchedTherapist({
                     </div>
                     
                     <div className="flex-1 w-full">
-                      <h2 className="very-vogue-title text-3xl text-gray-800">{therapist.intern_name}</h2>
+                      <h2 className="very-vogue-title text-2xl sm:text-3xl text-gray-800">{therapist.intern_name}</h2>
                       <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>{getTherapistCategory(therapist)}</p>
                       {/* Matched specialties */}
                       <div className="flex flex-wrap gap-2 mt-3">
@@ -1036,7 +1031,7 @@ export default function MatchedTherapist({
 
                   {/* Skills and Experience sections remain the same... */}
                   <div className="space-y-4">
-                    <h3 className="very-vogue-title text-2xl text-gray-800">Skills and Experience</h3>
+                    <h3 className="very-vogue-title text-xl sm:text-2xl text-gray-800">Skills and Experience</h3>
                     
                     {/* Specialties */}
                     <div>
@@ -1127,7 +1122,7 @@ export default function MatchedTherapist({
             <div className="col-span-1 md:col-span-5 flex flex-col min-h-0">
               <Card className="md:flex-1 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106] md:sticky md:top-4">
                 <CardContent className="p-4 md:p-6 flex flex-col">
-                  <h3 className="very-vogue-title text-2xl text-gray-800 mb-1">Book Your First Session</h3>
+                  <h3 className="very-vogue-title text-xl sm:text-2xl text-gray-800 mb-1">Book Your First Session</h3>
                   <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
                     {clientData?.state ? 
                       `${String(clientData.state).toUpperCase()} Time (${timezoneDisplay})` : 
@@ -1277,7 +1272,7 @@ export default function MatchedTherapist({
 
                   {/* Find Another Therapist */}
                   <div className="text-center mt-auto">
-                    <p className="very-vogue-title text-xl text-gray-800 mb-2">It's Okay to Keep Looking…</p>
+                    <p className="very-vogue-title text-lg sm:text-xl text-gray-800 mb-2">It's Okay to Keep Looking…</p>
                     <Button
                       variant="outline"
                       className="w-full rounded-full border-2 border-[#5C3106]"
@@ -1294,7 +1289,7 @@ export default function MatchedTherapist({
           {/* Previously Viewed Therapists section remains the same... */}
           {previouslyViewed.length > 0 && (
             <div className="mt-6">
-              <h3 className="very-vogue-title text-2xl text-gray-800 mb-4">Previously Viewed Therapists</h3>
+              <h3 className="very-vogue-title text-xl sm:text-2xl text-gray-800 mb-4">Previously Viewed Therapists</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {previouslyViewed.slice(0, 4).map((therapistData) => (
                   <button

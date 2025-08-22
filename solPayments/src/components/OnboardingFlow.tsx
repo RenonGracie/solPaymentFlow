@@ -735,7 +735,7 @@ export default function OnboardingFlow({
           <div className="flow-narrow w-full -mt-16 mx-auto">
             <div className="text-center mb-12">
               <span className="text-5xl mb-6 block">👋</span>
-              <h1 className="text-3xl md:text-4xl text-gray-800" 
+              <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What can we call you?
               </h1>
@@ -751,8 +751,8 @@ export default function OnboardingFlow({
                 onFocus={() => setShowKeyboard(true)}
                 onBlur={() => setShowKeyboard(false)}
                 placeholder=""
-                className="w-full text-2xl md:text-3xl font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
-                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', fontSize: '16px' }}
+                className="w-full text-base sm:text-lg font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
+                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="words"
@@ -841,7 +841,7 @@ export default function OnboardingFlow({
               <p className="text-lg md:text-xl text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
                 we're so happy you're here
               </p>
-              <h1 className="text-3xl md:text-4xl text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What brings you here today?
               </h1>
             </div>
@@ -932,7 +932,7 @@ export default function OnboardingFlow({
           <div className="flow-narrow w-full -mt-16 mx-auto">
             <div className="text-center mb-12">
               <span className="text-5xl mb-6 block">📧</span>
-              <h1 className="text-3xl md:text-4xl text-gray-800" 
+              <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What's Your Email?
               </h1>
@@ -948,8 +948,8 @@ export default function OnboardingFlow({
                 onFocus={() => setShowKeyboard(true)}
                 onBlur={() => setShowKeyboard(false)}
                 placeholder="well@being.com"
-                className="w-full text-2xl md:text-3xl font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
-                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', fontSize: '16px' }}
+                className="w-full text-base sm:text-lg font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
+                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
                 autoComplete="email"
                 autoCorrect="off"
                 autoCapitalize="off"
@@ -1031,7 +1031,7 @@ export default function OnboardingFlow({
           <div className="flow-narrow w-full -mt-12 mx-auto">
             <div className="text-center mb-6 md:mb-8">
               <span className="text-3xl md:text-5xl mb-3 md:mb-4 block">🎉</span>
-              <h1 className="text-2xl md:text-4xl mb-3 md:mb-4 text-gray-800" 
+              <h1 className="text-2xl sm:text-3xl md:text-4xl mb-3 md:mb-4 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 Welcome {displayName}
               </h1>
@@ -1239,7 +1239,7 @@ export default function OnboardingFlow({
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
           <div className="flow-narrow w-full mx-auto">
             <div className="text-center mb-6">
-              <h1 className="text-2xl md:text-3xl mb-3 text-gray-800" 
+              <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What State Are You In?
               </h1>
@@ -1443,7 +1443,7 @@ export default function OnboardingFlow({
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
           <div className="flow-narrow w-full -mt-12 mx-auto">
             <div className="text-center mb-6">
-              <h1 className="text-2xl md:text-3xl mb-3 text-gray-800" 
+              <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 Is Your Health Plan From New Jersey?
               </h1>
@@ -1600,7 +1600,7 @@ export default function OnboardingFlow({
         <div className="flex-1 flex items-center justify-center px-6 pb-14">
           <div className="flow-narrow w-full -mt-6 sm:-mt-8 mx-auto">
             <div className="text-center mb-8 flow-narrow mx-auto">
-              <h1 className="text-3xl md:text-4xl mb-4 text-gray-800" 
+              <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 Great, We're In Network!
               </h1>
@@ -1645,8 +1645,8 @@ export default function OnboardingFlow({
                       value={formData.firstName}
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
                       disabled={verificationStep === 'verifying'}
-                      className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
-                      style={{ fontFamily: 'var(--font-inter)', fontSize: '16px' }}
+                      className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-base sm:text-lg"
+                      style={{ fontFamily: 'var(--font-inter)' }}
                       placeholder="John"
                     />
                   </div>
@@ -1661,8 +1661,8 @@ export default function OnboardingFlow({
                       value={formData.lastName}
                       onChange={(e) => handleInputChange('lastName', e.target.value)}
                       disabled={verificationStep === 'verifying'}
-                      className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
-                      style={{ fontFamily: 'var(--font-inter)', fontSize: '16px' }}
+                      className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-base sm:text-lg"
+                      style={{ fontFamily: 'var(--font-inter)' }}
                       placeholder="Last Name"
                     />
                   </div>

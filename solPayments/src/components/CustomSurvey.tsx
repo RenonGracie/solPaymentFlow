@@ -383,7 +383,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               <div className="flex-1 flex flex-col justify-center items-center px-8 py-12">
                 <div className="max-w-md w-full space-y-8">
                   <h2 
-                    className="text-center text-4xl lg:text-5xl text-gray-800"
+                    className="text-center text-2xl sm:text-3xl md:text-4xl text-gray-800"
                     style={{ 
                       fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       lineHeight: '1.1'
@@ -428,7 +428,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               <div className="flex-1 flex flex-col justify-center items-center px-8 py-8 lg:py-10 min-h-[200px] max-h-[300px]">
                 <div className="max-w-2xl w-full space-y-6">
                   <h2 
-                    className="text-center text-3xl lg:text-4xl xl:text-5xl text-gray-800"
+                    className="text-center text-2xl sm:text-3xl md:text-4xl text-gray-800"
                     style={{ 
                       fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       lineHeight: '1.1'
@@ -474,7 +474,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
             <div className="w-1/4 flex flex-col justify-center items-center px-8 py-12">
               <div className="w-full max-w-sm space-y-6">
                 <h2 
-                  className="text-center text-3xl lg:text-4xl text-gray-800"
+                  className="text-center text-2xl sm:text-3xl md:text-4xl text-gray-800"
                   style={{ 
                     fontFamily: 'var(--font-very-vogue), Georgia, serif',
                     lineHeight: '1.1'
@@ -532,7 +532,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
-                    <h1 className="text-lg sm:text-xl md:text-2xl mb-4 sm:mb-6 text-gray-800 leading-[1.1]" 
+                    <h1 className="text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6 text-gray-800 leading-[1.1]" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Over the past 2 weeks, have you been actively suicidal or homicidal OR have you been experiencing hallucinations or delusions?
                     </h1>
@@ -589,7 +589,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+                <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                      style={{ 
                        fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                        fontWeight: 400,
@@ -710,7 +710,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     value={therapistSearchQuery}
                     onChange={(e) => setTherapistSearchQuery(e.target.value)}
                     placeholder="Start typing therapist name..."
-                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base shadow-[1px_1px_0_#5C3106]"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg shadow-[1px_1px_0_#5C3106]"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   />
                 </div>
@@ -790,7 +790,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                 {/* Therapist Specializations */}
                 <div className="mb-6 sm:mb-8">
-                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <h3 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that specializes in:
                   </h3>
                   <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
@@ -828,7 +828,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                           }`}
                           style={{ fontFamily: 'var(--font-inter)' }}
                         >
-                          <span className="absolute left-2 sm:left-3 text-sm sm:text-base leading-none">{specialization.emoji}</span>
+                          <span className="absolute left-2 sm:left-3 text-base sm:text-lg leading-none">{specialization.emoji}</span>
                           <span className="text-center truncate whitespace-nowrap leading-none px-2">
                             {specialization.name}
                           </span>
@@ -845,7 +845,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                 {/* Gender Preference */}
                 <div className="mb-6 sm:mb-8">
-                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <h3 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that identifies as <span className="text-red-500">*</span>
                   </h3>
                   <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
@@ -865,7 +865,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                         style={{ fontFamily: 'var(--font-inter)' }}
                       >
                         <div className="grid grid-cols-[20px,auto,20px] items-center gap-2">
-                          <span className="text-sm sm:text-base leading-none">{gender.emoji}</span>
+                          <span className="text-base sm:text-lg leading-none">{gender.emoji}</span>
                           <span className="text-center leading-none">{gender.name}</span>
                           <span />
                         </div>
@@ -876,14 +876,14 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                 {/* Lived Experiences */}
                 <div className="mb-6 sm:mb-8">
-                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <h3 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     Are there any lived experiences you identify with that you feel are important to your match?
                   </h3>
                   
                   <div className="space-y-4 sm:space-y-6">
                     {/* Family */}
                     <div>
-                      <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
+                      <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-base sm:text-lg" style={{ fontFamily: 'var(--font-inter)' }}>
                         Family
                       </h4>
                       <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
@@ -904,7 +904,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <span className="absolute left-2 sm:left-3 text-sm sm:text-base leading-none">{experience.emoji}</span>
+                              <span className="absolute left-2 sm:left-3 text-base sm:text-lg leading-none">{experience.emoji}</span>
                               <span className="text-center truncate whitespace-nowrap leading-none px-2">{experience.name}</span>
                               <Plus 
                                 className={`absolute right-2 sm:right-3 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
@@ -919,7 +919,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     {/* Upbringing */}
                     <div>
-                      <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
+                      <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-base sm:text-lg" style={{ fontFamily: 'var(--font-inter)' }}>
                         Upbringing
                       </h4>
                       <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
@@ -941,7 +941,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <span className="absolute left-2 sm:left-3 text-sm sm:text-base leading-none">{experience.emoji}</span>
+                              <span className="absolute left-2 sm:left-3 text-base sm:text-lg leading-none">{experience.emoji}</span>
                               <span className="text-center truncate whitespace-nowrap leading-none px-2">{experience.name}</span>
                               <Plus 
                                 className={`absolute right-2 sm:right-3 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
@@ -956,7 +956,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
 
                     {/* Identity and Experiences */}
                     <div>
-                      <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base" style={{ fontFamily: 'var(--font-inter)' }}>
+                      <h4 className="text-center font-medium text-gray-600 mb-2 sm:mb-3 text-base sm:text-lg" style={{ fontFamily: 'var(--font-inter)' }}>
                         Identity and Experiences
                       </h4>
                       <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
@@ -976,7 +976,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                               }`}
                               style={{ fontFamily: 'var(--font-inter)' }}
                             >
-                              <span className="absolute left-2 sm:left-3 text-sm sm:text-base leading-none">{experience.emoji}</span>
+                              <span className="absolute left-2 sm:left-3 text-base sm:text-lg leading-none">{experience.emoji}</span>
                               <span className="text-center truncate whitespace-nowrap leading-none px-2">{experience.name}</span>
                               <Plus 
                                 className={`absolute right-2 sm:right-3 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${
@@ -1228,7 +1228,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                     <div className="absolute inset-x-0 bottom-3 flex justify-center">
                       <Button
                         onClick={() => setShowPhq9Intro(false)}
-                        className="py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base bg-white/90 hover:bg-white text-gray-800"
+                        className="py-2 sm:py-2.5 px-5 rounded-full text-base sm:text-lg bg-white/90 hover:bg-white text-gray-800"
                          style={{ fontFamily: 'var(--font-inter)' }}
                        >
                          Continue
@@ -1328,7 +1328,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                             }}
                             onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
                             onTouchEnd={(e) => (e.currentTarget as HTMLButtonElement).blur()}
-                            className={`w-full max-w-sm mx-auto py-2.5 sm:py-3 px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
+                            className={`w-full max-w-sm mx-auto py-2.5 sm:py-3 px-4 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                               isSelected
                                 ? 'bg-[#5C3106] text-white border border-[#5C3106]'
                                 : 'bg-white border border-[#5C3106] text-gray-800 md:hover:bg-[#F5E8D1]'
@@ -1448,7 +1448,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
                      <Button
                        onClick={() => setShowGad7Intro(false)}
-                       className="py-2 sm:py-2.5 px-5 rounded-full text-sm sm:text-base bg-white/90 hover:bg-white text-gray-800"
+                       className="py-2 sm:py-2.5 px-5 rounded-full text-base sm:text-lg bg-white/90 hover:bg-white text-gray-800"
                          style={{ fontFamily: 'var(--font-inter)' }}
                        >
                          Continue
@@ -1551,7 +1551,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                            }}
                            onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
                            onTouchEnd={(e) => (e.currentTarget as HTMLButtonElement).blur()}
-                           className={`w-full max-w-sm mx-auto py-2.5 sm:py-3 px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
+                           className={`w-full max-w-sm mx-auto py-2.5 sm:py-3 px-4 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                              isSelected
                                ? 'bg-[#5C3106] text-white border border-[#5C3106]'
                                : 'bg-white border border-[#5C3106] text-gray-800 md:hover:bg-[#F5E8D1]'
@@ -1613,7 +1613,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
              />
              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
              <div className="absolute inset-0 flex items-center justify-center">
-               <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+               <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                    style={{ 
                      fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                      fontWeight: 400,
@@ -1646,7 +1646,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                    We're About To Match You!
                  </h1>
                  
-                 <p className="text-gray-600 text-sm sm:text-base mb-6 sm:mb-8 leading-relaxed px-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                 <p className="text-gray-600 text-base sm:text-lg mb-6 sm:mb-8 leading-relaxed px-4" style={{ fontFamily: 'var(--font-inter)' }}>
                    Please confirm your account details below.
                  </p>
                </div>
@@ -1673,7 +1673,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                            updateSurveyData('preferred_name', e.target.value);
                          }
                        }}
-                       className={`w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base shadow-[1px_1px_0_#5C3106] ${invalidFirst ? 'ring-1 ring-red-300 border-red-300' : ''}`}
+                       className={`w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg shadow-[1px_1px_0_#5C3106] ${invalidFirst ? 'ring-1 ring-red-300 border-red-300' : ''}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                      {surveyData.preferred_name && surveyData.preferred_name !== surveyData.first_name && (
@@ -1693,7 +1693,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        value={surveyData.preferred_name || ''}
                        onChange={(e) => updateSurveyData('preferred_name', e.target.value || surveyData.first_name)}
                        placeholder={`Leave empty to use "${surveyData.first_name}"`}
-                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg"
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                      <p className="text-xs text-gray-500 mt-1">
@@ -1710,7 +1710,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        type="text"
                        value={surveyData.last_name}
                        onChange={(e) => updateSurveyData('last_name', e.target.value)}
-                       className={`w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base ${invalidLast ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
+                       className={`w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg ${invalidLast ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                    </div>
@@ -1725,7 +1725,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        value={surveyData.phone || ''}
                        onChange={(e) => updateSurveyData('phone', e.target.value)}
                        placeholder="+11234567890"
-                       className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base ${invalidPhone ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
+                       className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg ${invalidPhone ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                    </div>
@@ -1739,7 +1739,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        <select
                          value={surveyData.gender}
                          onChange={(e) => updateSurveyData('gender', e.target.value)}
-                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base ${invalidGender ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
+                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg ${invalidGender ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                          style={{ fontFamily: 'var(--font-inter)' }}
                        >
                          <option value="">Select Gender</option>
@@ -1759,7 +1759,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                          type="date"
                          value={surveyData.date_of_birth || ''}
                          onChange={(e) => updateSurveyData('date_of_birth', e.target.value)}
-                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base ${invalidDob ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
+                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg ${invalidDob ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                          style={{ fontFamily: 'var(--font-inter)' }}
                        />
                      </div>
@@ -1819,7 +1819,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                        value={surveyData.university || ''}
                        onChange={(e) => updateSurveyData('university', e.target.value)}
                        placeholder="Optional"
-                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-sm sm:text-base"
+                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg"
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                    </div>
