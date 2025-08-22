@@ -703,7 +703,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+            <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal" 
                 style={{ 
                   fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                   fontWeight: 400,
@@ -823,6 +823,17 @@ export default function OnboardingFlow({
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal" 
+                style={{ 
+                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontWeight: 400,
+                  letterSpacing: '0.02em',
+                  lineHeight: '1.1'
+                }}>
+              WE'RE SO HAPPY<br/>YOU'RE HERE
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
@@ -838,9 +849,6 @@ export default function OnboardingFlow({
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-10">
           <div className="w-full max-w-md mx-auto">
             <div className="text-center mb-8">
-              <p className="text-lg md:text-xl text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
-                we're so happy you're here
-              </p>
               <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What brings you here today?
               </h1>
@@ -900,7 +908,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+            <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal" 
                 style={{ 
                   fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                   fontWeight: 400,
@@ -996,7 +1004,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+            <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal" 
                 style={{ 
                   fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                   fontWeight: 400,
@@ -1208,7 +1216,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+            <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal" 
                 style={{ 
                   fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                   fontWeight: 400,
@@ -1412,7 +1420,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+            <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal" 
                 style={{ 
                   fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                   fontWeight: 400,
@@ -1575,7 +1583,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal" 
+            <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal" 
                 style={{ 
                   fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                   fontWeight: 400,

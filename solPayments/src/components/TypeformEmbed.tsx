@@ -146,15 +146,14 @@ export default function TypeformEmbed({
         {/* Center Quote */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-6 text-center">
           <h2
+            className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal"
             style={{
               fontFamily: 'Very Vogue Text',
               fontWeight: 400,
               fontStyle: 'normal',
-              fontSize: '28px',
-              lineHeight: '80%',
-              letterSpacing: '0%'
+              letterSpacing: '0.02em',
+              lineHeight: '1.1'
             }}
-            className="text-gray-800"
           >
             <span>CHANGE CAN BE SUNSHINE</span><br />
             <span>IF YOU LET IT IN</span>
