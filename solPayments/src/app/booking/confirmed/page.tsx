@@ -230,14 +230,10 @@ function BookingConfirmedContent() {
     return '';
   };
 
-  // Handle navigation to forms
-  const handleSendMandatoryForms = () => {
-    // Route to the mandatory forms page - this would need to be implemented
-    // For now, we'll show an alert indicating the feature is coming
-    alert('Mandatory forms feature coming soon! You will receive an email with the forms shortly.');
-    
-    // In a real implementation, this might route to:
-    // router.push(`/forms/mandatory?response_id=${responseId}`);
+  // Handle navigation to client portal
+  const handleGoToClientPortal = () => {
+    // Open Sol Health IntakeQ client portal in new tab
+    window.open('https://solhealth.intakeq.com/connect', '_blank', 'noopener,noreferrer');
   };
 
   // Handle back navigation
@@ -408,20 +404,20 @@ function BookingConfirmedContent() {
               </h3>
               
               <p className="text-gray-600 mb-6" style={{ fontFamily: 'var(--font-inter)' }}>
-                To complete your setup, please fill out the mandatory intake forms. 
+                Complete your intake forms in the Sol Health client portal. 
                 These help your therapist prepare for your first session.
               </p>
 
               <Button
-                onClick={handleSendMandatoryForms}
+                onClick={handleGoToClientPortal}
                 className="w-full max-w-md bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106]"
                 style={{ fontFamily: 'var(--font-inter)' }}
               >
-                Send Mandatory Forms →
+                Go to Client Portal →
               </Button>
 
               <p className="text-sm text-gray-500 mt-4" style={{ fontFamily: 'var(--font-inter)' }}>
-                The forms will be sent to {bookingData.client.email}
+                Opens Sol Health client portal in a new tab
               </p>
             </CardContent>
           </Card>

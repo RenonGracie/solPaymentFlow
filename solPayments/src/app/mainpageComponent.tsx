@@ -158,28 +158,50 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
     return '';
   };
 
-  // Format appointment date and time
-  const formatAppointmentDateTime = (isoString: string) => {
-    const date = new Date(isoString);
+  // Format appointment date and time from booking data
+  const formatAppointmentDateTime = () => {
+    if (!bookingData?.StartDateIso) {
+      return { dateStr: '', timeStr: '', timezone: '' };
+    }
+    
+    const date = new Date(bookingData.StartDateIso);
     const dateStr = date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+      weekday: 'short', 
+      month: 'short', 
+      day: '2-digit'
     });
     const timeStr = date.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       hour12: true 
     });
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return { dateStr, timeStr, timezone };
+    const timezoneAbbr = date.toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'EST';
+    return { dateStr, timeStr, timezone: timezoneAbbr };
   };
 
-  // Handle portal setup
+  // Get therapist category from booking data
+  const getTherapistCategory = () => {
+    if (!currentUserData?.payment_type) return 'Graduate Therapist';
+    return currentUserData.payment_type === 'cash_pay' ? 'Graduate Therapist' : 'Associate Therapist';
+  };
+
+  // Handle portal setup with correct link logic
   const handlePortalSetup = () => {
-    // This would route to portal setup - placeholder for now
-    alert('Portal setup feature coming soon!');
+    const therapistCategory = getTherapistCategory();
+    const paymentType = currentUserData?.payment_type || 'cash_pay';
+    
+    let portalUrl = '';
+    
+    if (therapistCategory === 'Graduate Therapist' && paymentType === 'cash_pay') {
+      portalUrl = 'https://solhealth.intakeq.com/connect';
+    } else if (therapistCategory === 'Associate Therapist' && paymentType === 'insurance') {
+      portalUrl = 'https://solhealthnj.intakeq.com/connect';
+    } else {
+      // Default fallback
+      portalUrl = 'https://solhealth.intakeq.com/connect';
+    }
+    
+    window.open(portalUrl, '_blank');
   };
 
   if (!bookingData || !currentUserData) {
@@ -197,17 +219,13 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
     );
   }
 
-  const appointment = currentUserData.appointment;
-  const therapist = currentUserData.selected_therapist;
-  const { dateStr, timeStr, timezone } = appointment ? 
-    formatAppointmentDateTime(new Date(`${appointment.date} ${appointment.time}`).toISOString()) : 
-    { dateStr: '', timeStr: '', timezone: '' };
+  const { dateStr, timeStr, timezone } = formatAppointmentDateTime();
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
       {/* Header with Sol Health Logo */}
-      <div className="relative h-20 overflow-hidden flex-shrink-0 bg-white border-b border-gray-200">
-        <div className="flex items-center justify-between p-4 max-w-6xl mx-auto">
+      <div className="relative h-16 overflow-hidden flex-shrink-0 bg-white border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 max-w-md mx-auto">
           <button
             onClick={onBack}
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -216,9 +234,16 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
             <ArrowLeft className="w-5 h-5 text-gray-800" />
           </button>
           
-          {/* Sol Health Logo placeholder - you may need to add the actual logo */}
-          <div className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-            Sol Health
+          {/* Sol Health Logo with sun dot */}
+          <div className="flex items-center gap-2">
+            <Image
+              src="/sol-health-logo.svg"
+              alt="Sol Health"
+              width={100}
+              height={20}
+              className="h-5 w-auto"
+            />
+            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
           </div>
           
           <div className="w-9" /> {/* Spacer for centering */}
@@ -226,130 +251,143 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-4 md:px-6 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Welcome Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <CheckCircle className="w-16 h-16 text-green-500" />
+      <div className="flex-1 px-4 py-6 max-w-md mx-auto">
+        {/* Welcome Header */}
+        <div className="text-center mb-6">
+          <h1 className="very-vogue-title text-2xl text-gray-800 mb-4">
+            A Warm Welcome to Sol, {currentUserData.preferred_name || currentUserData.first_name}! 🌞
+          </h1>
+        </div>
+
+        {/* Therapist Card */}
+        <Card className="mb-6 bg-white border border-[#5C3106] rounded-2xl shadow-[1px_1px_0_#5C3106] overflow-hidden">
+          <CardContent className="p-0">
+            {/* Therapist Profile */}
+            <div className="p-4 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                {currentUserData.selected_therapist?.image_link && !imageError ? (
+                  <img
+                    src={getImageUrl(currentUserData.selected_therapist.image_link)}
+                    alt={bookingData.PractitionerName}
+                    className="w-12 h-12 rounded-full object-cover"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                    <User className="w-6 h-6 text-gray-500" />
+                  </div>
+                )}
+                
+                <div>
+                  <h2 className="very-vogue-title text-lg text-gray-800">
+                    {bookingData.PractitionerName || 'Your Therapist'}
+                  </h2>
+                  <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                    {getTherapistCategory()}
+                  </p>
+                </div>
+              </div>
             </div>
-            <h1 className="very-vogue-title text-3xl sm:text-4xl md:text-5xl text-gray-800 mb-2">
-              A Warm Welcome to Sol, {currentUserData.preferred_name || currentUserData.first_name}!
-            </h1>
+
+            {/* Session Information */}
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <p className="font-medium text-gray-800 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                  {dateStr}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-gray-500" />
+                <p className="font-medium text-gray-800 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                  {timeStr} - {new Date(new Date(bookingData.StartDateIso).getTime() + 45*60000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} {timezone}
+                </p>
+              </div>
+            </div>
+
+            {/* Video thumbnail with play button overlay */}
+            {currentUserData.selected_therapist?.image_link && (
+              <div className="relative h-32 bg-gray-100">
+                <img
+                  src={getImageUrl(currentUserData.selected_therapist.image_link)}
+                  alt=""
+                  className="w-full h-full object-cover opacity-50"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 bg-black bg-opacity-70 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* What to Expect Section */}
+        <Card className="mb-6 bg-white border border-[#5C3106] rounded-2xl shadow-[1px_1px_0_#5C3106]">
+          <CardContent className="p-4">
+            <h3 className="very-vogue-title text-lg text-gray-800 mb-4 text-center">
+              What To Expect
+            </h3>
+            
+            <div className="space-y-3 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+              <div className="flex items-start gap-2">
+                <span className="text-gray-500">📧</span>
+                <p className="text-gray-700">Your session confirmation and invite should land in your inbox shortly</p>
+              </div>
+              
+              <div className="flex items-start gap-2">
+                <span className="text-gray-500">📌</span>
+                <p className="text-gray-700">Fill out the Mandatory New Client form (also in your inbox)</p>
+              </div>
+              
+              <div className="flex items-start gap-2">
+                <span className="text-gray-500">⬇️</span>
+                <p className="text-gray-700">Register to your client portal below (takes 3 seconds!)</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Portal Setup Button */}
+        <Button
+          onClick={handlePortalSetup}
+          className="w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106] text-base py-3 mb-6"
+          style={{ fontFamily: 'var(--font-inter)' }}
+        >
+          Finish Portal Setup →
+        </Button>
+
+        {/* Contact Section */}
+        <div className="text-center space-y-4">
+          <p className="text-base font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+            Questions?
+          </p>
+          
+          <div>
+            <a 
+              href="mailto:contact@solhealth.co"
+              className="text-blue-600 hover:text-blue-800 transition-colors underline"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              Contact Us
+            </a>
           </div>
 
-          {/* Therapist and Appointment Info Card */}
-          <Card className="mb-8 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
-            <CardContent className="p-6 md:p-8">
-              <div className="text-center space-y-6">
-                {/* Therapist Profile */}
-                <div className="flex flex-col items-center space-y-4">
-                  {therapist?.image_link && !imageError ? (
-                    <img
-                      src={getImageUrl(therapist.image_link)}
-                      alt={therapist.name}
-                      className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-                      onError={() => setImageError(true)}
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
-                      <User className="w-12 h-12 text-gray-500" />
-                    </div>
-                  )}
-                  
-                  <div className="text-center">
-                    <h2 className="very-vogue-title text-2xl sm:text-3xl text-gray-800 mb-1">
-                      {therapist?.name || 'Your Therapist'}
-                    </h2>
-                    <p className="text-lg text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
-                      {therapist?.bio?.includes('Limited Permit') ? 'Associate Therapist' : 'Graduate Therapist'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Appointment Information */}
-                <div className="bg-yellow-50 rounded-2xl p-6 border border-yellow-200">
-                  <h3 className="very-vogue-title text-xl text-gray-800 mb-4">Your Session</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-center gap-3">
-                      <Calendar className="w-5 h-5 text-gray-500" />
-                      <p className="font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                        {dateStr}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-center gap-3">
-                      <Clock className="w-5 h-5 text-gray-500" />
-                      <p className="font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                        {timeStr} ({timezone})
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* What to Expect Section */}
-          <Card className="mb-8 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
-            <CardContent className="p-6 md:p-8">
-              <h3 className="very-vogue-title text-2xl sm:text-3xl text-gray-800 mb-6 text-center">
-                What to Expect
-              </h3>
-              
-              <div className="space-y-4 text-center max-w-2xl mx-auto">
-                <p className="text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
-                  Your session confirmation and invite should land in your inbox shortly
-                </p>
-                
-                <p className="text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
-                  Fill out the Mandatory New Client form (also in your inbox)
-                </p>
-                
-                <p className="text-gray-700 mb-6" style={{ fontFamily: 'var(--font-inter)' }}>
-                  Register to your new client portal below (takes 3 seconds!)
-                </p>
-
-                <Button
-                  onClick={handlePortalSetup}
-                  className="w-full max-w-md bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106] text-lg py-3"
-                  style={{ fontFamily: 'var(--font-inter)' }}
-                >
-                  Finish Portal Setup →
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Contact Section */}
-          <div className="text-center space-y-4">
-            <p className="text-lg text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-              Questions?
-            </p>
-            
-            <div className="space-y-2">
-              <a 
-                href="mailto:contact@solhealth.co"
-                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
-                style={{ fontFamily: 'var(--font-inter)' }}
-              >
-                <Mail className="w-4 h-4" />
-                Contact Us
-              </a>
-            </div>
-
-            {/* Instagram Link */}
-            <div className="mt-8">
-              <a 
-                href="https://instagram.com/solhealth" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-                style={{ fontFamily: 'var(--font-inter)' }}
-              >
-                <ExternalLink className="w-4 h-4" />
-                Follow us on Instagram
-              </a>
-            </div>
+          {/* Instagram Icon */}
+          <div className="pt-4">
+            <a 
+              href="https://instagram.com/solhealth" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-block p-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
           </div>
         </div>
       </div>

@@ -426,28 +426,10 @@ export default function MatchedTherapist({
     const normalizedTime = selectedTimeSlot.replace(/\s/g, '');
     const datetime = `${yyyy}-${mm}-${dd}T${convertTo24Hour(normalizedTime)}:00`;
     
-    try {
-      // Call the appointments endpoint directly
-      const response = await axios.post('/appointments', {
-        client_response_id: clientData.response_id,
-        therapist_email: therapist?.email,
-        therapist_name: therapist?.intern_name,
-        datetime: datetime,
-        payment_type: getSelectedPaymentType(),
-      });
-      
-      console.log('✅ Appointment booked:', response.data);
-      
-      // Call the parent callback if provided
-      if (onBookSession) {
-        onBookSession(currentTherapistData, datetime);
-      }
-    } catch (error) {
-      console.error('❌ Failed to book appointment:', error);
-      // Still call parent callback as fallback
-      if (onBookSession) {
-        onBookSession(currentTherapistData, datetime);
-      }
+    // Only call the parent callback - let the main component handle the booking
+    // This eliminates the duplicate API call that was causing double emails
+    if (onBookSession) {
+      onBookSession(currentTherapistData, datetime);
     }
   };
   
