@@ -2,6 +2,9 @@
 
 import { useCallback, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft, Calendar, Clock, User, Mail, CheckCircle, ExternalLink } from "lucide-react";
+import Image from "next/image";
 import CustomSurvey from "@/components/CustomSurvey";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import MatchedTherapist from "@/components/MatchedTherapist";
@@ -12,7 +15,7 @@ import {
 } from "@/api/services";
 import { usePollFormAndRequestMatch } from "@/api/hooks/usePollFormAndRequestMatch";
 import axiosInstance from "@/api/axios";
-import IntakeQService, { type IntakeQClientData } from "@/api/services/intakeqService";
+import IntakeQService from "@/api/services/intakeqService";
 import { sendMandatoryForm } from "@/app/api/intakeq";
 import { STEPS } from "@/constants";
 
@@ -135,9 +138,223 @@ interface ExtendedClientData extends ComprehensiveUserData {
   therapist_identifies_as?: string;
 }
 
-// Extended booking response that includes all possible fields
-interface ExtendedBookAppointmentResponse extends BookAppointmentResponse {
-  ClientResponseId?: string;
+// BookingConfirmation Component
+interface BookingConfirmationProps {
+  bookingData: BookAppointmentResponse | null;
+  currentUserData: ComprehensiveUserData | null;
+  onBack: () => void;
+}
+
+function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingConfirmationProps) {
+  const [imageError, setImageError] = useState(false);
+
+  // Handle image URL
+  const getImageUrl = (imageLink: string | null | undefined): string => {
+    if (!imageLink) return '';
+    if (imageLink.startsWith('http://') || imageLink.startsWith('https://')) {
+      return imageLink;
+    }
+    console.warn('Image link is not a full URL:', imageLink);
+    return '';
+  };
+
+  // Format appointment date and time
+  const formatAppointmentDateTime = (isoString: string) => {
+    const date = new Date(isoString);
+    const dateStr = date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    const timeStr = date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return { dateStr, timeStr, timezone };
+  };
+
+  // Handle portal setup
+  const handlePortalSetup = () => {
+    // This would route to portal setup - placeholder for now
+    alert('Portal setup feature coming soon!');
+  };
+
+  if (!bookingData || !currentUserData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3' }}>
+        <div className="text-center">
+          <p className="text-red-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
+            Booking information not available
+          </p>
+          <Button onClick={onBack} variant="outline">
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const appointment = currentUserData.appointment;
+  const therapist = currentUserData.selected_therapist;
+  const { dateStr, timeStr, timezone } = appointment ? 
+    formatAppointmentDateTime(new Date(`${appointment.date} ${appointment.time}`).toISOString()) : 
+    { dateStr: '', timeStr: '', timezone: '' };
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+      {/* Header with Sol Health Logo */}
+      <div className="relative h-20 overflow-hidden flex-shrink-0 bg-white border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 max-w-6xl mx-auto">
+          <button
+            onClick={onBack}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-800" />
+          </button>
+          
+          {/* Sol Health Logo placeholder - you may need to add the actual logo */}
+          <div className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+            Sol Health
+          </div>
+          
+          <div className="w-9" /> {/* Spacer for centering */}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 px-4 md:px-6 py-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Welcome Header */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center mb-4">
+              <CheckCircle className="w-16 h-16 text-green-500" />
+            </div>
+            <h1 className="very-vogue-title text-3xl sm:text-4xl md:text-5xl text-gray-800 mb-2">
+              A Warm Welcome to Sol, {currentUserData.preferred_name || currentUserData.first_name}!
+            </h1>
+          </div>
+
+          {/* Therapist and Appointment Info Card */}
+          <Card className="mb-8 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
+            <CardContent className="p-6 md:p-8">
+              <div className="text-center space-y-6">
+                {/* Therapist Profile */}
+                <div className="flex flex-col items-center space-y-4">
+                  {therapist?.image_link && !imageError ? (
+                    <img
+                      src={getImageUrl(therapist.image_link)}
+                      alt={therapist.name}
+                      className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
+                      <User className="w-12 h-12 text-gray-500" />
+                    </div>
+                  )}
+                  
+                  <div className="text-center">
+                    <h2 className="very-vogue-title text-2xl sm:text-3xl text-gray-800 mb-1">
+                      {therapist?.name || 'Your Therapist'}
+                    </h2>
+                    <p className="text-lg text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                      {therapist?.bio?.includes('Limited Permit') ? 'Associate Therapist' : 'Graduate Therapist'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Appointment Information */}
+                <div className="bg-yellow-50 rounded-2xl p-6 border border-yellow-200">
+                  <h3 className="very-vogue-title text-xl text-gray-800 mb-4">Your Session</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-3">
+                      <Calendar className="w-5 h-5 text-gray-500" />
+                      <p className="font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                        {dateStr}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center gap-3">
+                      <Clock className="w-5 h-5 text-gray-500" />
+                      <p className="font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                        {timeStr} ({timezone})
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* What to Expect Section */}
+          <Card className="mb-8 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
+            <CardContent className="p-6 md:p-8">
+              <h3 className="very-vogue-title text-2xl sm:text-3xl text-gray-800 mb-6 text-center">
+                What to Expect
+              </h3>
+              
+              <div className="space-y-4 text-center max-w-2xl mx-auto">
+                <p className="text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
+                  Your session confirmation and invite should land in your inbox shortly
+                </p>
+                
+                <p className="text-gray-700" style={{ fontFamily: 'var(--font-inter)' }}>
+                  Fill out the Mandatory New Client form (also in your inbox)
+                </p>
+                
+                <p className="text-gray-700 mb-6" style={{ fontFamily: 'var(--font-inter)' }}>
+                  Register to your new client portal below (takes 3 seconds!)
+                </p>
+
+                <Button
+                  onClick={handlePortalSetup}
+                  className="w-full max-w-md bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106] text-lg py-3"
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  Finish Portal Setup →
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contact Section */}
+          <div className="text-center space-y-4">
+            <p className="text-lg text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+              Questions?
+            </p>
+            
+            <div className="space-y-2">
+              <a 
+                href="mailto:contact@solhealth.co"
+                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                <Mail className="w-4 h-4" />
+                Contact Us
+              </a>
+            </div>
+
+            {/* Instagram Link */}
+            <div className="mt-8">
+              <a 
+                href="https://instagram.com/solhealth" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                <ExternalLink className="w-4 h-4" />
+                Follow us on Instagram
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 interface FormData {
@@ -227,7 +444,7 @@ interface SurveyData {
 export default function MainPageComponent() {
   // Add new state for onboarding
   const [showOnboarding, setShowOnboarding] = useState(true);
-  const [onboardingStep, setOnboardingStep] = useState(0); // Track which step we're on
+  const [onboardingStep] = useState(0); // Track which step we're on
   const [onboardingData, setOnboardingData] = useState<{
     firstName: string;
     lastName: string;
@@ -248,6 +465,8 @@ export default function MainPageComponent() {
   const [isSearchingAnotherTherapist, setIsSearchingAnotherTherapist] = useState(false);
   const [formData, setFormData] = useState<FormData | null>(null);
   const [isProcessingResponse, setIsProcessingResponse] = useState(false);
+  const [isBookingInProgress, setIsBookingInProgress] = useState(false);
+  const [isIntakeQProcessing, setIsIntakeQProcessing] = useState(false);
   
   // Comprehensive user data state
   const [currentUserData, setCurrentUserData] = useState<ComprehensiveUserData | null>(null);
@@ -336,7 +555,7 @@ export default function MainPageComponent() {
 
     try {
       // Generate a unique response ID
-      const responseId = `response_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const responseId = `response_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
       setClientResponseId(responseId);
 
       // Calculate assessment scores
@@ -558,9 +777,16 @@ export default function MainPageComponent() {
   };
 
   const handleBookSession = (bookedSession: BookAppointmentResponse) => {
+    // Prevent duplicate processing of the same booking
+    if (isBookingInProgress) {
+      console.warn('⚠️ Booking already in progress, ignoring duplicate call');
+      return;
+    }
+    
     console.log('✅ Session booked successfully:', bookedSession);
     setBookingData(bookedSession);
     setCurrentStep(STEPS.CONFIRMATION);
+    setIsBookingInProgress(false); // Reset booking state
     
     // Enrich current user data with booking information
     if (currentUserData) {
@@ -596,7 +822,14 @@ export default function MainPageComponent() {
   };
 
   const createComprehensiveIntakeQProfile = async (clientData: ComprehensiveUserData) => {
+    // Prevent duplicate IntakeQ profile creation
+    if (isIntakeQProcessing) {
+      console.warn('⚠️ IntakeQ profile creation already in progress, skipping duplicate call');
+      return;
+    }
+    
     try {
+      setIsIntakeQProcessing(true);
       console.log('🔄 =================================================');
       console.log('🔄 CREATING COMPREHENSIVE INTAKEQ PROFILE');
       console.log('🔄 =================================================');
@@ -794,6 +1027,8 @@ export default function MainPageComponent() {
         client_data_available: !!clientData,
         response_id: clientData?.response_id
       });
+    } finally {
+      setIsIntakeQProcessing(false);
     }
   };
 
@@ -933,13 +1168,15 @@ export default function MainPageComponent() {
   }
 
   // If we're in loading state, show loading
-  if (loading || isProcessingResponse) {
+  if (loading || isProcessingResponse || isBookingInProgress) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3' }}>
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full mx-auto mb-4"></div>
           <p className="text-lg font-medium">
-            {isProcessingResponse ? 'Processing your responses...' : 'Finding your perfect therapist match...'}
+            {isBookingInProgress ? 'Booking your session...' : 
+             isProcessingResponse ? 'Processing your responses...' : 
+             'Finding your perfect therapist match...'}
           </p>
         </div>
       </div>
@@ -1028,7 +1265,14 @@ export default function MainPageComponent() {
                     setClientResponseId(null);
                   }}
                   onBookSession={async (therapistData, slot) => {
+                    // Prevent duplicate booking attempts
+                    if (isBookingInProgress) {
+                      console.warn('⚠️ Booking already in progress, ignoring duplicate attempt');
+                      return;
+                    }
+                    
                     try {
+                      setIsBookingInProgress(true);
                       const therapist = therapistData.therapist;
                       
                       // Enrich current user data with selected therapist info BEFORE booking
@@ -1084,6 +1328,7 @@ export default function MainPageComponent() {
                       handleBookSession(bookedSession);
                     } catch (error) {
                       console.error('Error booking appointment:', error);
+                      setIsBookingInProgress(false); // Reset on error
                       alert('Failed to book appointment. Please try again.');
                     }
                   }}
@@ -1092,10 +1337,15 @@ export default function MainPageComponent() {
             })()}
                         
             {currentStep === STEPS.CONFIRMATION && (
-              <div className="text-center py-20">
-                <h2 className="text-2xl font-bold mb-4">Booking Confirmed!</h2>
-                <p className="text-gray-600">Your session has been booked successfully.</p>
-              </div>
+              <BookingConfirmation 
+                bookingData={bookingData}
+                currentUserData={currentUserData}
+                onBack={() => {
+                  setCurrentStep(null);
+                  setBookingData(null);
+                  setShowOnboarding(true);
+                }}
+              />
             )}
             
             {currentStep === STEPS.NO_MATCH && (
