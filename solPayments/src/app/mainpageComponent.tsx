@@ -221,6 +221,17 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
 
   const { dateStr, timeStr, timezone } = formatAppointmentDateTime();
 
+  // Debug therapist data
+  console.log('🎬 BOOKING CONFIRMATION DEBUG:', {
+    has_booking_data: !!bookingData,
+    practitioner_name: bookingData.PractitionerName,
+    has_current_user_data: !!currentUserData,
+    has_selected_therapist: !!currentUserData.selected_therapist,
+    selected_therapist_data: currentUserData.selected_therapist,
+    image_link: currentUserData.selected_therapist?.image_link,
+    imageError: imageError
+  });
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
       {/* Header with Sol Health Logo */}
@@ -270,7 +281,10 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                     src={getImageUrl(currentUserData.selected_therapist.image_link)}
                     alt={bookingData.PractitionerName}
                     className="w-12 h-12 rounded-full object-cover"
-                    onError={() => setImageError(true)}
+                    onError={() => {
+                      console.error('Failed to load therapist image:', currentUserData.selected_therapist?.image_link);
+                      setImageError(true);
+                    }}
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
@@ -306,22 +320,33 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
             </div>
 
             {/* Video thumbnail with play button overlay */}
-            {currentUserData.selected_therapist?.image_link && (
-              <div className="relative h-32 bg-gray-100">
+            <div className="relative h-32 bg-gray-100">
+              {currentUserData.selected_therapist?.image_link && !imageError ? (
                 <img
                   src={getImageUrl(currentUserData.selected_therapist.image_link)}
                   alt=""
                   className="w-full h-full object-cover opacity-50"
+                  onError={() => {
+                    console.error('Failed to load therapist video thumbnail:', currentUserData.selected_therapist?.image_link);
+                    setImageError(true);
+                  }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-black bg-opacity-70 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                    </svg>
+              ) : (
+                // Fallback background for video section
+                <div className="w-full h-full bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center opacity-50">
+                  <div className="text-gray-400 text-sm text-center">
+                    <p>Welcome Video</p>
                   </div>
                 </div>
+              )}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 bg-black bg-opacity-70 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                  </svg>
+                </div>
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 
@@ -332,20 +357,20 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
               What To Expect
             </h3>
             
-            <div className="space-y-3 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-              <div className="flex items-start gap-2">
+            <div className="space-y-3 text-sm text-center max-w-xs mx-auto" style={{ fontFamily: 'var(--font-inter)' }}>
+              <div className="flex items-center justify-center gap-2">
                 <span className="text-gray-500">📧</span>
-                <p className="text-gray-700">Your session confirmation and invite should land in your inbox shortly</p>
+                <p className="text-gray-700">Your session confirmation and invite<br />should land in your inbox shortly</p>
               </div>
               
-              <div className="flex items-start gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <span className="text-gray-500">📌</span>
-                <p className="text-gray-700">Fill out the Mandatory New Client form (also in your inbox)</p>
+                <p className="text-gray-700">Fill out the Mandatory New Client form<br />(also in your inbox)</p>
               </div>
               
-              <div className="flex items-start gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <span className="text-gray-500">⬇️</span>
-                <p className="text-gray-700">Register to your client portal below (takes 3 seconds!)</p>
+                <p className="text-gray-700">Register to your client portal below<br />(takes 3 seconds!)</p>
               </div>
             </div>
           </CardContent>
