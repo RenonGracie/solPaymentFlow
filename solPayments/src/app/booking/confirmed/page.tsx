@@ -194,7 +194,7 @@ function BookingConfirmedContent() {
   }, [responseId]);
 
   // Fixed video for booking confirmation page
-  const BOOKING_CONFIRMATION_VIDEO = 'https://drive.google.com/file/d/1nBP0ZCLJGUertyy7t8SFZ_hK4F5j1igX/view?usp=drivesdk';
+  const BOOKING_CONFIRMATION_VIDEO = 'https://youtu.be/q2dgtDe83uA';
   
   // Video analysis - always use the fixed confirmation video
   const videoAnalysis = useMemo(() => {
@@ -310,8 +310,8 @@ function BookingConfirmedContent() {
             </p>
           </div>
 
-          {/* Booking Details Card */}
-          <Card className="mb-8 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
+          {/* Therapist & Appointment Details Card */}
+          <Card className="mb-6 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
             <CardContent className="p-6 md:p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Therapist Info */}
@@ -343,18 +343,6 @@ function BookingConfirmedContent() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Confirmation Video Button */}
-                  {hasValidVideo && (
-                    <Button
-                      onClick={() => setShowVideo(true)}
-                      variant="outline"
-                      className="w-full mt-4 border-2 border-[#5C3106] hover:bg-yellow-50"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Watch Confirmation Video
-                    </Button>
-                  )}
                 </div>
 
                 {/* Appointment Info */}
@@ -396,6 +384,31 @@ function BookingConfirmedContent() {
             </CardContent>
           </Card>
 
+          {/* Welcome Video Card */}
+          <Card className="mb-8 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
+            <CardContent className="p-6 md:p-8 text-center">
+              <h3 className="very-vogue-title text-xl sm:text-2xl text-gray-800 mb-4">
+                A Warm Welcome to Sol! 🌞
+              </h3>
+              
+              <p className="text-gray-600 mb-6" style={{ fontFamily: 'var(--font-inter)' }}>
+                Watch this special welcome message about what to expect next
+              </p>
+
+              {/* Confirmation Video Button */}
+              {hasValidVideo && (
+                <Button
+                  onClick={() => setShowVideo(true)}
+                  className="bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106] px-8 py-3"
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Watch Welcome Video
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Next Steps Card */}
           <Card className="bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
             <CardContent className="p-6 md:p-8 text-center">
@@ -430,7 +443,7 @@ function BookingConfirmedContent() {
           <div className="bg-white rounded-lg p-4 w-full max-w-4xl mx-auto" onClick={e => e.stopPropagation()}>
             <div className="mb-4">
               <h3 className="text-lg font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                Booking Confirmation Video
+                A Warm Welcome to Sol! 🌞
               </h3>
             </div>
             

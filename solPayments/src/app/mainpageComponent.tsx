@@ -3,7 +3,7 @@
 import { useCallback, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Calendar, Clock, User, Mail, CheckCircle, ExternalLink } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, User, Mail, CheckCircle, ExternalLink, Play } from "lucide-react";
 import Image from "next/image";
 import CustomSurvey from "@/components/CustomSurvey";
 import OnboardingFlow from "@/components/OnboardingFlow";
@@ -147,6 +147,20 @@ interface BookingConfirmationProps {
 
 function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingConfirmationProps) {
   const [imageError, setImageError] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
+
+  // Fixed video for booking confirmation
+  const BOOKING_CONFIRMATION_VIDEO = 'https://youtu.be/q2dgtDe83uA';
+
+  // Extract YouTube video ID for embedding
+  const extractYouTubeId = (url: string): string => {
+    const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
+    const match = url.match(regex);
+    return match ? match[1] : '';
+  };
+
+  const videoId = extractYouTubeId(BOOKING_CONFIRMATION_VIDEO);
+  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1` : '';
 
   // Handle image URL
   const getImageUrl = (imageLink: string | null | undefined): string => {
@@ -270,42 +284,40 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
           </h1>
         </div>
 
-        {/* Therapist Card */}
-        <Card className="mb-6 bg-white border border-[#5C3106] rounded-2xl shadow-[1px_1px_0_#5C3106] overflow-hidden">
-          <CardContent className="p-0">
+        {/* Therapist & Appointment Details Card */}
+        <Card className="mb-4 bg-white border border-[#5C3106] rounded-2xl shadow-[1px_1px_0_#5C3106]">
+          <CardContent className="p-4">
             {/* Therapist Profile */}
-            <div className="p-4 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                {currentUserData.selected_therapist?.image_link && !imageError ? (
-                  <img
-                    src={getImageUrl(currentUserData.selected_therapist.image_link)}
-                    alt={bookingData.PractitionerName}
-                    className="w-12 h-12 rounded-full object-cover"
-                    onError={() => {
-                      console.error('Failed to load therapist image:', currentUserData.selected_therapist?.image_link);
-                      setImageError(true);
-                    }}
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                    <User className="w-6 h-6 text-gray-500" />
-                  </div>
-                )}
-                
-                <div>
-                  <h2 className="very-vogue-title text-lg text-gray-800">
-                    {bookingData.PractitionerName || 'Your Therapist'}
-                  </h2>
-                  <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
-                    {getTherapistCategory()}
-                  </p>
+            <div className="flex items-center gap-3 mb-4">
+              {currentUserData.selected_therapist?.image_link && !imageError ? (
+                <img
+                  src={getImageUrl(currentUserData.selected_therapist.image_link)}
+                  alt={bookingData.PractitionerName}
+                  className="w-12 h-12 rounded-full object-cover"
+                  onError={() => {
+                    console.error('Failed to load therapist image:', currentUserData.selected_therapist?.image_link);
+                    setImageError(true);
+                  }}
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="w-6 h-6 text-gray-500" />
                 </div>
+              )}
+              
+              <div>
+                <h2 className="very-vogue-title text-lg text-gray-800">
+                  {bookingData.PractitionerName || 'Your Therapist'}
+                </h2>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                  {getTherapistCategory()}
+                </p>
               </div>
             </div>
 
             {/* Session Information */}
-            <div className="p-4">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-gray-500" />
                 <p className="font-medium text-gray-800 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
                   {dateStr}
@@ -318,9 +330,17 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                 </p>
               </div>
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Welcome Video Card */}
+        <Card className="mb-6 bg-white border border-[#5C3106] rounded-2xl shadow-[1px_1px_0_#5C3106] overflow-hidden">
+          <CardContent className="p-0">
             {/* Video thumbnail with play button overlay */}
-            <div className="relative h-32 bg-gray-100">
+            <button 
+              onClick={() => setShowVideo(true)}
+              className="relative w-full h-32 bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
               {currentUserData.selected_therapist?.image_link && !imageError ? (
                 <img
                   src={getImageUrl(currentUserData.selected_therapist.image_link)}
@@ -340,13 +360,11 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                 </div>
               )}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 bg-black bg-opacity-70 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                  </svg>
+                <div className="w-12 h-12 bg-black bg-opacity-70 rounded-full flex items-center justify-center hover:bg-black hover:bg-opacity-80 transition-all">
+                  <Play className="w-6 h-6 text-white ml-1" />
                 </div>
               </div>
-            </div>
+            </button>
           </CardContent>
         </Card>
 
@@ -416,6 +434,33 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
           </div>
         </div>
       </div>
+
+      {/* Video Modal */}
+      {showVideo && embedUrl && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowVideo(false)}>
+          <div className="bg-white rounded-lg p-4 w-full max-w-4xl mx-auto" onClick={e => e.stopPropagation()}>
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                A Warm Welcome to Sol! 🌞
+              </h3>
+            </div>
+            
+            <div className="w-full" style={{ aspectRatio: '16/9' }}>
+              <iframe
+                src={embedUrl}
+                className="w-full h-full rounded"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                title="Welcome to Sol Video"
+              />
+            </div>
+            
+            <Button onClick={() => setShowVideo(false)} className="mt-4 w-full">
+              Close Video
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1435,4 +1480,4 @@ export default function MainPageComponent() {
       </div>
     </div>
   );
-} 
+}
