@@ -758,7 +758,7 @@ export default function MatchedTherapist({
     return 0;
   }, [availability?.days, currentYear, currentMonth, legacyDayCount]);
 
-  // Auto-select first available future date when availability data loads
+  // Auto-select first available future date and navigate to correct month
   useEffect(() => {
     if (!selectedDateObj && (availability?.days || Object.keys(fetchedSlots).length > 0)) {
       const today = new Date();
@@ -767,41 +767,60 @@ export default function MatchedTherapist({
       
       console.log(`[Calendar] Auto-selection starting from tomorrow: ${tomorrow.toDateString()}`);
       
-      // First, try to select tomorrow specifically if it has availability
-      const tomorrowAvailability = getDayAvailableCount(tomorrow);
-      if (tomorrowAvailability > 0) {
-        console.log(`[Calendar] Auto-selecting tomorrow: ${tomorrow.toDateString()} (${tomorrowAvailability} slots)`);
-        setSelectedDateObj(tomorrow);
+      // Search across multiple months for the first available date
+      let foundAvailableDate: Date | null = null;
+      
+      // Check up to 3 months ahead for availability
+      for (let monthOffset = 0; monthOffset < 3 && !foundAvailableDate; monthOffset++) {
+        const searchMonth = new Date(tomorrow.getFullYear(), tomorrow.getMonth() + monthOffset, 1);
+        const daysInMonth = new Date(searchMonth.getFullYear(), searchMonth.getMonth() + 1, 0).getDate();
         
-        // If tomorrow is in a different month, update the calendar view
-        if (tomorrow.getFullYear() !== currentYear || tomorrow.getMonth() !== currentMonth) {
-          console.log(`[Calendar] Tomorrow is in different month, updating calendar view to ${tomorrow.getFullYear()}-${tomorrow.getMonth() + 1}`);
-          setCalendarDate(new Date(tomorrow.getFullYear(), tomorrow.getMonth(), 1));
+        console.log(`[Calendar] Searching month ${searchMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} for availability...`);
+        
+        // For current month, start from tomorrow; for future months, start from day 1
+        const startDay = monthOffset === 0 ? tomorrow.getDate() : 1;
+        
+        for (let day = startDay; day <= daysInMonth; day++) {
+          const checkDate = new Date(searchMonth.getFullYear(), searchMonth.getMonth(), day);
+          
+          // Skip if it's today or earlier
+          if (checkDate <= today) continue;
+          
+          const availableCount = getDayAvailableCount(checkDate);
+          if (availableCount > 0) {
+            foundAvailableDate = checkDate;
+            console.log(`[Calendar] Found first available date: ${checkDate.toDateString()} (${availableCount} slots) in month ${monthOffset + 1}`);
+            break;
+          }
         }
-        return;
       }
       
-      // If tomorrow doesn't have availability, find the first available date starting from tomorrow
-      for (let i = 1; i < 30; i++) { // Start from day after tomorrow (i=1)
-        const checkDate = new Date(tomorrow);
-        checkDate.setDate(tomorrow.getDate() + i);
+      if (foundAvailableDate) {
+        // Auto-navigate to the month with availability
+        const targetYear = foundAvailableDate.getFullYear();
+        const targetMonth = foundAvailableDate.getMonth();
         
-        // Check availability regardless of which month it's in (could cross month boundaries)
-        const availableCount = getDayAvailableCount(checkDate);
-        if (availableCount > 0) {
-          console.log(`[Calendar] Auto-selecting first available date after tomorrow: ${checkDate.toDateString()} (${availableCount} slots)`);
-          setSelectedDateObj(checkDate);
-          
-          // If the selected date is in a different month, update the calendar view
-          if (checkDate.getFullYear() !== currentYear || checkDate.getMonth() !== currentMonth) {
-            console.log(`[Calendar] Selected date is in different month, updating calendar view to ${checkDate.getFullYear()}-${checkDate.getMonth() + 1}`);
-            setCalendarDate(new Date(checkDate.getFullYear(), checkDate.getMonth(), 1));
-          }
-          break;
+        console.log(`[Calendar] Auto-navigating to month with availability: ${foundAvailableDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
+        
+        // Update calendar view to the month with availability
+        if (targetYear !== currentYear || targetMonth !== currentMonth) {
+          console.log(`[Calendar] Updating calendar view from ${currentYear}-${currentMonth + 1} to ${targetYear}-${targetMonth + 1}`);
+          setCalendarDate(new Date(targetYear, targetMonth, 1));
         }
+        
+        // Select the available date
+        setSelectedDateObj(foundAvailableDate);
+        console.log(`[Calendar] Auto-selected: ${foundAvailableDate.toDateString()}`);
+      } else {
+        console.warn(`[Calendar] No availability found in next 3 months for ${therapist?.intern_name}`);
+        
+        // Navigate to next month as fallback (away from current month with no availability)
+        const nextMonth = new Date(currentYear, currentMonth + 1, 1);
+        console.log(`[Calendar] Fallback: navigating to next month ${nextMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
+        setCalendarDate(nextMonth);
       }
     }
-  }, [availability?.days, fetchedSlots, selectedDateObj, currentYear, currentMonth, getDayAvailableCount]);
+  }, [availability?.days, fetchedSlots, selectedDateObj, currentYear, currentMonth, getDayAvailableCount, therapist?.intern_name]);
 
   // Build time slots for the selected day with time restrictions and extensive logging
   const slotsForDay = useMemo(() => {
