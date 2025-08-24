@@ -321,17 +321,11 @@ export default function MatchedTherapist({
           }
         });
         
-        // Log specific warnings for invalid time slots
-        Object.entries(timeAnalysis).forEach(([dayStr, analysis]) => {
-          if (analysis.before7am > 0 || analysis.after10pm > 0) {
-            console.warn(`[Backend Calendar Issue] ${email} - Day ${dayStr}:`, {
-              slotsBefor7am: analysis.before7am,
-              slotsAfter10pm: analysis.after10pm,
-              validSlots: analysis.validHours,
-              recommendation: 'Backend should filter slots to 7AM-10PM range before sending to frontend'
-            });
-          }
-        });
+        // Log summary of out-of-hours slots (only if significant)
+        const totalOutOfHours = Object.values(timeAnalysis).reduce((sum, analysis) => sum + analysis.before7am + analysis.after10pm, 0);
+        if (totalOutOfHours > 10) {
+          console.warn(`[Calendar] ${email}: ${totalOutOfHours} out-of-hours slots filtered (backend should filter to 7AM-10PM)`);
+        }
 
         setAvailabilityCache(prev => ({ ...prev, [avKey]: data }));
       } catch (e) {
@@ -930,35 +924,16 @@ export default function MatchedTherapist({
     // Filter for 7 AM - 10 PM (7:00 - 21:59)
     const filteredSlots = rawSlots.filter(dt => {
       const hour = dt.getHours();
-      const isInRange = hour >= 7 && hour < 22;
-      
-      if (!isInRange) {
-        console.warn(`[Calendar] Slot outside 7AM-10PM range filtered:`, {
-          therapist: therapist?.intern_name,
-          date: selectedDateObj.toDateString(),
-          slot: dt.toLocaleString(),
-          hour24: hour,
-          timeDisplay: dt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }),
-          timezone: timezoneDisplay,
-          reason: hour < 7 ? 'before-7am' : 'after-10pm'
-        });
-      }
-      
-      return isInRange;
+      return hour >= 7 && hour < 22; // Filter to 7AM-10PM range silently
     });
 
-    console.log(`[Calendar Debug] After time filtering (7AM-10PM):`, {
-      therapist: therapist?.intern_name,
-      date: selectedDateObj.toDateString(),
-      filteredCount: filteredSlots.length,
-      filteredSlots: filteredSlots.map(s => s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })),
-      removedCount: rawSlots.length - filteredSlots.length,
-      removalDetails: rawSlots.length !== filteredSlots.length ? {
-        originalSlots: rawSlots.map(s => s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })),
-        removedSlots: rawSlots.filter(dt => dt.getHours() < 7 || dt.getHours() >= 22)
-          .map(s => ({ time: s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }), hour: s.getHours() }))
-      } : 'none'
-    });
+    // Only log if there are issues or no slots available
+    const removedCount = rawSlots.length - filteredSlots.length;
+    if (filteredSlots.length === 0 && rawSlots.length > 0) {
+      console.log(`[Calendar] ${therapist?.intern_name} on ${selectedDateObj.toDateString()}: All ${rawSlots.length} slots filtered out (outside 7AM-10PM)`);
+    } else if (removedCount > 0) {
+      console.log(`[Calendar] ${therapist?.intern_name}: ${removedCount} out-of-hours slots filtered, ${filteredSlots.length} available`);
+    }
 
     return filteredSlots.sort((a, b) => a.getTime() - b.getTime());
   }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, therapist?.available_slots, therapist?.intern_name, timezoneDisplay, timezone]);
