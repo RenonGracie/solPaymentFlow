@@ -348,9 +348,17 @@ export default function MatchedTherapist({
   );
   
   const handleFindAnother = () => {
+    console.log(`[Find Another] Current therapist: ${therapist?.intern_name} (index ${currentIndex})`);
+    console.log(`[Find Another] Total therapists available: ${therapistsList.length}`);
+    
     const nextIndex = (currentIndex + 1) % therapistsList.length;
+    const nextTherapist = therapistsList[nextIndex]?.therapist;
+    
+    console.log(`[Find Another] Moving to: ${nextTherapist?.intern_name} (index ${nextIndex})`);
+    
     setCurrentIndex(nextIndex);
     setSelectedTimeSlot(null);
+    setSelectedDateObj(null); // Also reset selected date
     setImageError({});
     setHasRecordedSelection(false); // Reset for new therapist
   };
@@ -446,11 +454,19 @@ export default function MatchedTherapist({
 
   // Function to handle image URL - S3 presigned URLs should be used directly
   const getImageUrl = (imageLink: string | null | undefined): string => {
-    if (!imageLink) return '';
+    if (!imageLink) {
+      console.log('[Image] No image link provided');
+      return '';
+    }
+    
+    console.log(`[Image] Processing image link: ${imageLink}`);
+    
     if (imageLink.startsWith('http://') || imageLink.startsWith('https://')) {
+      console.log(`[Image] Valid URL detected: ${imageLink}`);
       return imageLink;
     }
-    console.warn('Image link is not a full URL:', imageLink);
+    
+    console.warn(`[Image] Image link is not a full URL: ${imageLink}`);
     return '';
   };
 
@@ -505,7 +521,10 @@ export default function MatchedTherapist({
 
   // Handle image loading error
   const handleImageError = (therapistId: string) => {
-    console.error(`Failed to load image for therapist ${therapistId}`);
+    const therapistData = therapistsList.find(t => t.therapist.id === therapistId);
+    const imageUrl = therapistData?.therapist?.image_link;
+    console.error(`[Image Error] Failed to load image for therapist ${therapistId} (${therapistData?.therapist?.intern_name})`);
+    console.error(`[Image Error] Image URL was: ${imageUrl}`);
     setImageError(prev => ({ ...prev, [therapistId]: true }));
   };
 
@@ -673,15 +692,59 @@ export default function MatchedTherapist({
   });
 
   const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+  
+  // Helper function to find earliest available date in a given month
+  const findEarliestAvailableDateInMonth = (year: number, month: number): Date | null => {
+    const today = new Date();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const checkDate = new Date(year, month, day);
+      
+      // Skip if it's today or earlier
+      if (checkDate <= today) continue;
+      
+      const availableCount = getDayAvailableCount(checkDate);
+      if (availableCount > 0) {
+        console.log(`[Calendar Navigation] Found earliest available date in ${year}-${month + 1}: ${checkDate.toDateString()} (${availableCount} slots)`);
+        return checkDate;
+      }
+    }
+    
+    console.log(`[Calendar Navigation] No availability found in ${year}-${month + 1}`);
+    return null;
+  };
+  
   const goPrevMonth = () => {
     const next = new Date(currentYear, currentMonth - 1, 1);
     setCalendarDate(next);
-    setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
+    
+    // Find earliest available date in the new month
+    const earliestAvailable = findEarliestAvailableDateInMonth(next.getFullYear(), next.getMonth());
+    if (earliestAvailable) {
+      setSelectedDateObj(earliestAvailable);
+      console.log(`[Calendar Navigation] Auto-selected earliest date in previous month: ${earliestAvailable.toDateString()}`);
+    } else {
+      // Fallback to first day if no availability
+      setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
+      console.log(`[Calendar Navigation] No availability in previous month, defaulting to first day`);
+    }
   };
+  
   const goNextMonth = () => {
     const next = new Date(currentYear, currentMonth + 1, 1);
     setCalendarDate(next);
-    setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
+    
+    // Find earliest available date in the new month
+    const earliestAvailable = findEarliestAvailableDateInMonth(next.getFullYear(), next.getMonth());
+    if (earliestAvailable) {
+      setSelectedDateObj(earliestAvailable);
+      console.log(`[Calendar Navigation] Auto-selected earliest date in next month: ${earliestAvailable.toDateString()}`);
+    } else {
+      // Fallback to first day if no availability
+      setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
+      console.log(`[Calendar Navigation] No availability in next month, defaulting to first day`);
+    }
   };
 
   // Pull availability for this therapist + month (if fetched)
