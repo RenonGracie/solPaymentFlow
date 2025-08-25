@@ -22,6 +22,7 @@ export default function MatchPage() {
   const [client, setClient] = useState<ClientInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [excludedTherapistIds, setExcludedTherapistIds] = useState<string[]>([]);
   const router = useRouter();
 
   const responseId =
@@ -42,6 +43,51 @@ export default function MatchPage() {
       )
       .finally(() => setLoading(false));
   }, [responseId]);
+
+  const onFindAnother = async () => {
+    if (!responseId) return;
+    
+    // Track current therapist ID to exclude from next search
+    const currentTherapistId = therapists[0]?.therapist?.id;
+    if (currentTherapistId) {
+      setExcludedTherapistIds(prev => [...prev, currentTherapistId]);
+    }
+    
+    console.log('[Find Another] Fetching new therapists, excluding:', excludedTherapistIds);
+    
+    try {
+      // Build exclusion list
+      const allExcluded = currentTherapistId 
+        ? [...excludedTherapistIds, currentTherapistId] 
+        : excludedTherapistIds;
+      
+      // Fetch new therapists with exclusions passed to backend
+      const { client: newClient, therapists: newTherapists } = await fetchMatches(
+        responseId, 
+        10, // limit
+        allExcluded // excluded therapist IDs
+      );
+      
+      // Double-check filtering on frontend as well (belt and suspenders)
+      const filteredTherapists = (newTherapists || []).filter(t => 
+        !allExcluded.includes(t.therapist.id)
+      );
+      
+      console.log('[Find Another] Got new therapists:', filteredTherapists.length);
+      
+      if (filteredTherapists.length > 0) {
+        setClient(newClient);
+        setTherapists(filteredTherapists);
+      } else {
+        // If no new therapists, show a message or fallback
+        console.warn('[Find Another] No new therapists available');
+        alert('No additional therapists available at this time. Please try again later.');
+      }
+    } catch (error) {
+      console.error('[Find Another] Failed to fetch new therapists:', error);
+      setError('Failed to find additional therapists. Please try again.');
+    }
+  };
 
   const onBookSession = async (
     match: TMatchedTherapistData,
@@ -131,6 +177,7 @@ export default function MatchPage() {
       therapistsList={therapists}
       clientData={client || undefined}
       onBookSession={onBookSession}
+      onFindAnother={onFindAnother}
     />
   );
 }

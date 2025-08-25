@@ -13,11 +13,19 @@ export type MatchResponse = {
   therapists: TMatchedTherapistData[];
 };
 
-export async function fetchMatches(responseId: string, limit = 10) {
-  const url = `${API_BASE}/therapists/match?response_id=${encodeURIComponent(
-    responseId,
-  )}&limit=${limit}`;
-  const res = await fetch(url, { cache: "no-store" });
+export async function fetchMatches(responseId: string, limit = 10, excludeTherapistIds?: string[]) {
+  const url = new URL(`${API_BASE}/therapists/match`);
+  url.searchParams.set('response_id', responseId);
+  url.searchParams.set('limit', String(limit));
+  
+  // Add excluded therapist IDs if provided
+  if (excludeTherapistIds && excludeTherapistIds.length > 0) {
+    excludeTherapistIds.forEach(id => {
+      url.searchParams.append('exclude_therapist_id', id);
+    });
+  }
+  
+  const res = await fetch(url.toString(), { cache: "no-store" });
   const data: MatchResponse = await res.json();
   if (!res.ok) {
     throw new Error((data as unknown as string) || "Failed to fetch matches");

@@ -21,9 +21,11 @@ export const useTherapistSearch = ({ paymentType, clientState }: UseTherapistSea
   const [searchResults, setSearchResults] = useState<SearchedTherapist[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
 
-  const searchTherapists = useCallback(async (query: string) => {
-    if (!query || query.length < 2) {
+  const searchTherapists = useCallback(async (query: string, isInitialLoad = false) => {
+    // Allow initial load with empty query, but regular search needs 2+ characters
+    if (!isInitialLoad && (!query || query.length < 2)) {
       setSearchResults([]);
       return;
     }
@@ -40,10 +42,11 @@ export const useTherapistSearch = ({ paymentType, clientState }: UseTherapistSea
     try {
       const response = await axiosInstance.get('/therapists/search', {
         params: {
-          q: query,
+          q: query || '', // Allow empty query for initial load
           payment_type: paymentType,
           state: clientState, // Pass the client's state
           accepting_new_clients: true,
+          limit: isInitialLoad ? 10 : undefined, // Get more results for initial load
         }
       });
 
@@ -55,7 +58,12 @@ export const useTherapistSearch = ({ paymentType, clientState }: UseTherapistSea
       setSearchResults(filtered);
       
       if (filtered.length === 0) {
-        setSearchError(`No therapists found matching "${query}" in ${clientState}`);
+        const message = isInitialLoad 
+          ? `No therapists available in ${clientState} for ${paymentType} payment`
+          : `No therapists found matching "${query}" in ${clientState}`;
+        setSearchError(message);
+      } else if (isInitialLoad) {
+        console.log(`[Initial Load] Found ${filtered.length} therapists in ${clientState} for ${paymentType}`);
       }
     } catch (error) {
       console.error('Error searching therapists:', error);
@@ -65,6 +73,15 @@ export const useTherapistSearch = ({ paymentType, clientState }: UseTherapistSea
       setIsSearching(false);
     }
   }, [paymentType, clientState]);
+
+  // Load initial therapists when component mounts
+  useEffect(() => {
+    if (clientState && paymentType && !hasInitialLoad) {
+      console.log(`[Initial Load] Loading therapists for ${clientState}, ${paymentType}`);
+      searchTherapists('', true); // Empty query, initial load
+      setHasInitialLoad(true);
+    }
+  }, [clientState, paymentType, hasInitialLoad, searchTherapists]);
 
   // Debounced search
   useEffect(() => {
@@ -85,6 +102,7 @@ export const useTherapistSearch = ({ paymentType, clientState }: UseTherapistSea
     setSearchQuery,
     searchResults,
     isSearching,
-    searchError
+    searchError,
+    hasInitialLoad
   };
 };
