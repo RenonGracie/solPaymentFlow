@@ -864,6 +864,11 @@ export default function MainPageComponent() {
 
       console.log('📦 Complete client data being sent:', completeClientData);
       console.log('📦 Payment type in client data:', completeClientData.payment_type);
+      console.log('🎯 SPECIFIC THERAPIST DEBUG:', {
+        matching_preference: completeClientData.matching_preference,
+        selected_therapist: completeClientData.selected_therapist,
+        selected_therapist_email: (completeClientData as any).selected_therapist_email
+      });
 
       // Store the client response directly in our backend
       const response = await axiosInstance.post('/clients_signup', completeClientData);
