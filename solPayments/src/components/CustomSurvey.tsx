@@ -15,7 +15,8 @@ interface SurveyData {
   
   // Therapist Matching
   matching_preference: string; // 'match_me' | 'requesting_specific' | ''
-  selected_therapist?: string; // For specific therapist requests
+  selected_therapist?: string; // For specific therapist requests (name)
+  selected_therapist_email?: string; // For specific therapist requests (email)
   
   // Therapist Preferences (for matching algorithm)
   therapist_gender_preference: string; // 'Female' | 'Male' | 'No preference'
@@ -93,6 +94,17 @@ interface CustomSurveyProps {
       [key: string]: unknown;
     };
   };
+  existingUserData?: {
+    therapist_gender_preference?: string;
+    therapist_specialization?: string[];
+    therapist_lived_experiences?: string[];
+    matching_preference?: string;
+    selected_therapist?: {
+      name: string;
+      email: string;
+    };
+    [key: string]: any;
+  };
   onSubmit: (surveyData: SurveyData) => void;
   onBack: () => void;
 }
@@ -122,8 +134,10 @@ function getSlogan(key: string): string {
   return SLOGANS[sum % SLOGANS.length];
 }
 
-export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }: CustomSurveyProps) {
-  const [currentStep, setCurrentStep] = useState<SurveyStep>('video');
+export default function CustomSurvey({ paymentType, formData, existingUserData, onSubmit, onBack }: CustomSurveyProps) {
+  const [currentStep, setCurrentStep] = useState<SurveyStep>(
+    existingUserData ? 'therapist_preferences' : 'video'
+  );
   const [isPortrait, setIsPortrait] = useState(false);
   const [screenType, setScreenType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [isWideScreen, setIsWideScreen] = useState(false);
@@ -162,51 +176,54 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
   
   const [surveyData, setSurveyData] = useState<SurveyData>({
     // Safety Screening
-    safety_screening: '',
+    safety_screening: existingUserData?.safety_screening || '',
     
-    // Therapist Matching
-    matching_preference: '',
-    selected_therapist: '',
+    // Therapist Matching - preserve existing preferences
+    matching_preference: existingUserData?.matching_preference || '',
+    selected_therapist: existingUserData?.selected_therapist?.name || '',
+    selected_therapist_email: existingUserData?.selected_therapist?.email || '',
     
-    // Therapist Preferences
-    therapist_gender_preference: '',
-    therapist_specialization: [],
-    therapist_lived_experiences: [],
+    // Therapist Preferences - preserve existing preferences
+    therapist_gender_preference: existingUserData?.therapist_gender_preference || '',
+    therapist_specialization: existingUserData?.therapist_specialization || [],
+    therapist_lived_experiences: existingUserData?.therapist_lived_experiences || [],
     
-    // Alcohol and Drugs Screening
-    alcohol_frequency: '',
-    recreational_drugs_frequency: '',
+    // Alcohol and Drugs Screening - preserve existing data
+    alcohol_frequency: existingUserData?.alcohol_frequency || '',
+    recreational_drugs_frequency: existingUserData?.recreational_drugs_frequency || '',
     
-    // Pre-fill from form data
-    first_name: formData.firstName,
-    last_name: formData.lastName,
-    email: formData.email,
-    preferred_name: formData.preferredName || formData.firstName, // Add preferred name with fallback
-    phone: '',
-    age: '',
-    date_of_birth: '',
-    gender: '',
-    state: formData.state || '', // Pre-fill state if passed from onboarding
-    race_ethnicity: [],
-    pleasure_doing_things: '',
-    feeling_down: '',
-    trouble_falling: '',
-    feeling_tired: '',
-    poor_appetite: '',
-    feeling_bad_about_yourself: '',
-    trouble_concentrating: '',
-    moving_or_speaking_so_slowly: '',
-    suicidal_thoughts: '',
-    feeling_nervous: '',
-    not_control_worrying: '',
-    worrying_too_much: '',
-    trouble_relaxing: '',
-    being_so_restless: '',
-    easily_annoyed: '',
-    feeling_afraid: '',
-    lived_experiences: [],
-    university: '',
-    referred_by: '',
+    // Pre-fill from form data or existing data
+    first_name: existingUserData?.first_name || formData.firstName,
+    last_name: existingUserData?.last_name || formData.lastName,
+    email: existingUserData?.email || formData.email,
+    preferred_name: existingUserData?.preferred_name || formData.preferredName || formData.firstName,
+    phone: existingUserData?.phone || '',
+    age: existingUserData?.age || '',
+    date_of_birth: existingUserData?.date_of_birth || '',
+    gender: existingUserData?.gender || '',
+    state: existingUserData?.state || formData.state || '',
+    race_ethnicity: existingUserData?.race_ethnicity || [],
+    
+    // Mental health screening - preserve existing data
+    pleasure_doing_things: existingUserData?.phq9_scores?.pleasure_doing_things || '',
+    feeling_down: existingUserData?.phq9_scores?.feeling_down || '',
+    trouble_falling: existingUserData?.phq9_scores?.trouble_falling || '',
+    feeling_tired: existingUserData?.phq9_scores?.feeling_tired || '',
+    poor_appetite: existingUserData?.phq9_scores?.poor_appetite || '',
+    feeling_bad_about_yourself: existingUserData?.phq9_scores?.feeling_bad_about_yourself || '',
+    trouble_concentrating: existingUserData?.phq9_scores?.trouble_concentrating || '',
+    moving_or_speaking_so_slowly: existingUserData?.phq9_scores?.moving_or_speaking_so_slowly || '',
+    suicidal_thoughts: existingUserData?.phq9_scores?.suicidal_thoughts || '',
+    feeling_nervous: existingUserData?.gad7_scores?.feeling_nervous || '',
+    not_control_worrying: existingUserData?.gad7_scores?.not_control_worrying || '',
+    worrying_too_much: existingUserData?.gad7_scores?.worrying_too_much || '',
+    trouble_relaxing: existingUserData?.gad7_scores?.trouble_relaxing || '',
+    being_so_restless: existingUserData?.gad7_scores?.being_so_restless || '',
+    easily_annoyed: existingUserData?.gad7_scores?.easily_annoyed || '',
+    feeling_afraid: existingUserData?.gad7_scores?.feeling_afraid || '',
+    lived_experiences: existingUserData?.lived_experiences || [],
+    university: existingUserData?.university || '',
+    referred_by: existingUserData?.referred_by || '',
     
     // Terms and Conditions
     terms_accepted: false
@@ -729,6 +746,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
                         key={therapist.id}
                         onClick={() => {
                           updateSurveyData('selected_therapist', therapist.name);
+                          updateSurveyData('selected_therapist_email', therapist.email);
                           setCurrentStep('alcohol_drugs');
                         }}
                         className="p-3 hover:bg-gray-50 border-b border-gray-100 cursor-pointer"
@@ -1948,7 +1966,7 @@ export default function CustomSurvey({ paymentType, formData, onSubmit, onBack }
      case 'therapist_matching':
        return surveyData.matching_preference !== '';
      case 'therapist_search':
-       return surveyData.selected_therapist !== '';
+       return surveyData.selected_therapist !== '' && surveyData.selected_therapist_email !== '';
      case 'therapist_preferences':
        return surveyData.therapist_gender_preference !== '';
      case 'alcohol_drugs':

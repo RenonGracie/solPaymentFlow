@@ -578,6 +578,9 @@ export default function MainPageComponent() {
   
   // Comprehensive user data state
   const [currentUserData, setCurrentUserData] = useState<ComprehensiveUserData | null>(null);
+  
+  // Track whether user is changing preferences vs starting fresh
+  const [isChangingPreferences, setIsChangingPreferences] = useState(false);
 
   // Appointments service
   const { bookAppointment } = useAppointmentsService();
@@ -660,6 +663,7 @@ export default function MainPageComponent() {
     
     setCurrentStep(null); // Hide survey, show loading
     setIsProcessingResponse(true);
+    setIsChangingPreferences(false); // Reset changing preferences state
 
     try {
       // Generate a unique response ID
@@ -881,7 +885,15 @@ export default function MainPageComponent() {
     setCurrentStep(null);
     setSelectedPaymentType(null);
     setFormData(null);
+    setCurrentUserData(null);
+    setIsChangingPreferences(false);
     setShowOnboarding(true);
+  };
+
+  const handleChangePreferences = () => {
+    setIsChangingPreferences(true);
+    setCurrentStep(STEPS.TYPEFORM);
+    setClientResponseId(null);
   };
 
   const handleBookSession = (bookedSession: BookAppointmentResponse) => {
@@ -1323,8 +1335,9 @@ export default function MainPageComponent() {
           memberId: formData?.memberId || "", // Insurance member ID
           verificationData: formData?.verificationData || undefined // Insurance verification response
         }}
+        existingUserData={isChangingPreferences && currentUserData ? currentUserData : undefined}
         onSubmit={handleSurveySubmit}
-        onBack={handleBackFromSurvey}
+        onBack={isChangingPreferences ? handleBackFromSurvey : handleBackFromSurvey}
       />
     );
   }
@@ -1368,10 +1381,7 @@ export default function MainPageComponent() {
                   therapistsList={matchData.therapists}
                   clientData={clientData}
                   initialIndex={0}
-                  onBack={() => {
-                    setCurrentStep(STEPS.TYPEFORM);
-                    setClientResponseId(null);
-                  }}
+                  onBack={handleChangePreferences}
                   onBookSession={async (therapistData, slot) => {
                     // Prevent duplicate booking attempts
                     if (isBookingInProgress) {
@@ -1460,8 +1470,11 @@ export default function MainPageComponent() {
               <div className="text-center py-20">
                 <h2 className="text-2xl font-bold mb-4">No matches found</h2>
                 <p className="text-gray-600 mb-4">We couldn't find any therapists matching your preferences for {selectedPaymentType} clients.</p>
-                <Button onClick={handleBackFromSurvey}>
-                  Update Preferences
+                <Button onClick={handleChangePreferences} className="mb-2">
+                  Change Preferences
+                </Button>
+                <Button onClick={handleBackFromSurvey} variant="outline">
+                  Start Over
                 </Button>
               </div>
             )}
