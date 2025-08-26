@@ -760,9 +760,9 @@ export default function MatchedTherapist({
       setSelectedDateObj(earliestAvailable);
       console.log(`[Calendar Navigation] Auto-selected earliest date in previous month: ${earliestAvailable.toDateString()}`);
     } else {
-      // Fallback to first day if no availability
-      setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
-      console.log(`[Calendar Navigation] No availability in previous month, defaulting to first day`);
+      // Clear selection if no availability in this month
+      setSelectedDateObj(null);
+      console.log(`[Calendar Navigation] No availability in previous month, clearing date selection`);
     }
   };
   
@@ -776,9 +776,9 @@ export default function MatchedTherapist({
       setSelectedDateObj(earliestAvailable);
       console.log(`[Calendar Navigation] Auto-selected earliest date in next month: ${earliestAvailable.toDateString()}`);
     } else {
-      // Fallback to first day if no availability
-      setSelectedDateObj(new Date(next.getFullYear(), next.getMonth(), 1));
-      console.log(`[Calendar Navigation] No availability in next month, defaulting to first day`);
+      // Clear selection if no availability in this month
+      setSelectedDateObj(null);
+      console.log(`[Calendar Navigation] No availability in next month, clearing date selection`);
     }
   };
 
@@ -919,11 +919,40 @@ export default function MatchedTherapist({
         const nextMonth = new Date(currentYear, currentMonth + 1, 1);
         console.log(`[Calendar] Fallback: navigating to next month ${nextMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
         setCalendarDate(nextMonth);
+        
+        // Clear any invalid date selection when falling back
+        setSelectedDateObj(null);
+        console.log(`[Calendar] Cleared date selection during fallback navigation`);
       } else {
         console.warn(`[Calendar] Already attempted fallback. No further calendar navigation to prevent infinite loop.`);
       }
     }
   }, [availability?.days, fetchedSlots, selectedDateObj, currentYear, currentMonth, getDayAvailableCount, therapist?.intern_name, hasAttemptedFallback]);
+
+  // Validate selected date when month changes or availability updates
+  useEffect(() => {
+    if (selectedDateObj) {
+      const selectedMonth = selectedDateObj.getMonth();
+      const selectedYear = selectedDateObj.getFullYear();
+      
+      // Check if selected date is in a different month than current calendar view
+      if (selectedMonth !== currentMonth || selectedYear !== currentYear) {
+        console.log(`[Calendar Validation] Selected date ${selectedDateObj.toDateString()} is not in current month (${currentYear}-${currentMonth + 1}), clearing selection`);
+        setSelectedDateObj(null);
+        return;
+      }
+      
+      // Check if selected date is actually available
+      const availableCount = getDayAvailableCount(selectedDateObj);
+      const today = new Date();
+      const isNotFuture = selectedDateObj <= today;
+      
+      if (isNotFuture || availableCount === 0) {
+        console.log(`[Calendar Validation] Selected date ${selectedDateObj.toDateString()} is not available (future: ${!isNotFuture}, slots: ${availableCount}), clearing selection`);
+        setSelectedDateObj(null);
+      }
+    }
+  }, [selectedDateObj, currentMonth, currentYear, getDayAvailableCount]);
 
   // Build time slots for the selected day with time restrictions and extensive logging
   const slotsForDay = useMemo(() => {
