@@ -160,7 +160,8 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
   };
 
   const videoId = extractYouTubeId(BOOKING_CONFIRMATION_VIDEO);
-  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1` : '';
+  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=1` : '';
+  const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
 
   // Handle image URL
   const getImageUrl = (imageLink: string | null | undefined): string => {
@@ -341,19 +342,18 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
               onClick={() => setShowVideo(true)}
               className="relative w-full h-32 bg-gray-100 hover:bg-gray-200 transition-colors"
             >
-              {currentUserData.selected_therapist?.image_link && !imageError ? (
+              {thumbnailUrl ? (
                 <img
-                  src={getImageUrl(currentUserData.selected_therapist.image_link)}
-                  alt=""
-                  className="w-full h-full object-cover opacity-50"
+                  src={thumbnailUrl}
+                  alt="Welcome Video Thumbnail"
+                  className="w-full h-full object-cover"
                   onError={() => {
-                    console.error('Failed to load therapist video thumbnail:', currentUserData.selected_therapist?.image_link);
-                    setImageError(true);
+                    console.error('Failed to load YouTube video thumbnail:', thumbnailUrl);
                   }}
                 />
               ) : (
                 // Fallback background for video section
-                <div className="w-full h-full bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center opacity-50">
+                <div className="w-full h-full bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center">
                   <div className="text-gray-400 text-sm text-center">
                     <p>Welcome Video</p>
                   </div>
