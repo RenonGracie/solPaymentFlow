@@ -21,6 +21,7 @@ export type MatchResponse = {
   therapists: Array<{
     therapist: {
       id: string;
+      name?: string;
       intern_name?: string;
       age?: string;
       email?: string;

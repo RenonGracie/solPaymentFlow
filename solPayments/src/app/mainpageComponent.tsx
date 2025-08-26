@@ -1420,7 +1420,7 @@ export default function MainPageComponent() {
                       if (currentUserData) {
                         const therapistInfo = {
                           id: therapist.id || therapist.email || 'unknown',
-                          name: therapist.intern_name || 'Unknown',
+                          name: therapist.name || 'Unknown',
                           email: therapist.email || '',
                           bio: therapist.biography || '',
                           specialties: therapist.specialities || [],
@@ -1458,7 +1458,7 @@ export default function MainPageComponent() {
                         data: {
                           client_response_id: clientResponseId as string,
                           therapist_email: therapist.email || '',
-                          therapist_name: therapist.intern_name || '',
+                          therapist_name: therapist.name || '',
                           datetime: slot,
                           send_client_email_notification: true,
                           reminder_type: 'email',

@@ -568,9 +568,9 @@ export default function MatchedTherapist({
     return category;
   };
 
-  // Function to extract YouTube video ID from URL
+  // Function to extract YouTube video ID from URL (including YouTube Shorts)
   const extractYouTubeId = (url: string): string => {
-    const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
+    const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#]+)/;
     const match = url.match(regex);
     return match ? match[1] : '';
   };
