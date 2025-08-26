@@ -467,7 +467,19 @@ export default function MatchedTherapist({
     const mm = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(selectedDateObj.getDate()).padStart(2, '0');
     const normalizedTime = selectedTimeSlot.replace(/\s/g, '');
-    const datetime = `${yyyy}-${mm}-${dd}T${convertTo24Hour(normalizedTime)}:00`;
+    
+    // Create a proper Date object with timezone information
+    const timeIn24Hour = convertTo24Hour(normalizedTime);
+    const [hour, minute] = timeIn24Hour.split(':').map(Number);
+    
+    // Create Date object in local timezone, then convert to ISO string with timezone offset
+    const localDateTime = new Date(yyyy, selectedDateObj.getMonth(), selectedDateObj.getDate(), hour, minute, 0);
+    const datetime = localDateTime.toISOString().slice(0, -1) + getTimezoneOffset();
+    
+    console.log('🕐 TIMEZONE FIX DEBUG:');
+    console.log(`  Original construction: ${yyyy}-${mm}-${dd}T${timeIn24Hour}:00`);
+    console.log(`  Local DateTime: ${localDateTime}`);
+    console.log(`  Final datetime with timezone: ${datetime}`);
     
     // Only call the parent callback - let the main component handle the booking
     // This eliminates the duplicate API call that was causing double emails
@@ -476,6 +488,15 @@ export default function MatchedTherapist({
     }
   };
   
+  const getTimezoneOffset = () => {
+    // Get timezone offset in minutes and convert to hours:minutes format
+    const offsetMinutes = new Date().getTimezoneOffset();
+    const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+    const offsetMins = Math.abs(offsetMinutes) % 60;
+    const sign = offsetMinutes > 0 ? '-' : '+'; // Note: getTimezoneOffset returns positive for behind UTC
+    return `${sign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+  };
+
   const convertTo24Hour = (time: string) => {
     const [hour, period] = time.split(/(?=[ap]m)/i);
     const parts = hour.split(':');

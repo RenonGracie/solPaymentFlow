@@ -867,7 +867,8 @@ export default function MainPageComponent() {
       console.log('🎯 SPECIFIC THERAPIST DEBUG:', {
         matching_preference: completeClientData.matching_preference,
         selected_therapist: completeClientData.selected_therapist,
-        selected_therapist_email: 'selected_therapist_email' in completeClientData ? completeClientData.selected_therapist_email : undefined      });
+        selected_therapist_email: 'selected_therapist_email' in completeClientData ? completeClientData.selected_therapist_email : undefined
+      });
 
       // Store the client response directly in our backend
       const response = await axiosInstance.post('/clients_signup', completeClientData);
@@ -908,6 +909,24 @@ export default function MainPageComponent() {
     }
     
     console.log('✅ Session booked successfully:', bookedSession);
+    
+    // Log appointment info after successful booking
+    console.log('📅 APPOINTMENT INFO (AFTER BOOKING):', {
+      has_appointment: true,
+      start_date_iso: bookedSession.StartDateIso,
+      end_date_iso: bookedSession.EndDateIso,
+      start_date_local: bookedSession.StartDateLocal,
+      end_date_local: bookedSession.EndDateLocal,
+      therapist_name: bookedSession.PractitionerName,
+      therapist_email: bookedSession.PractitionerEmail,
+      appointment_id: bookedSession.Id,
+      client_id: bookedSession.ClientId,
+      client_name: bookedSession.ClientName,
+      session_duration: bookedSession.Duration,
+      booked_by_client: bookedSession.BookedByClient,
+      status: bookedSession.Status
+    });
+    
     setBookingData(bookedSession);
     setCurrentStep(STEPS.CONFIRMATION);
     setIsBookingInProgress(false); // Reset booking state
