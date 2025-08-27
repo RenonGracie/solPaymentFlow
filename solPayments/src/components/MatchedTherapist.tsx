@@ -154,7 +154,7 @@ export default function MatchedTherapist({
   const getSelectedPaymentType = useCallback((): 'insurance' | 'cash_pay' => {
     // First check client data
     if (clientData?.payment_type === 'insurance' || clientData?.payment_type === 'cash_pay') {
-      console.log('✅ Found payment type in clientData:', clientData.payment_type);
+      // Payment type found in clientData
       return clientData.payment_type;
     }
     
@@ -162,21 +162,21 @@ export default function MatchedTherapist({
     const altPaymentType = (clientData as { paymentType?: string; payment_method?: string })?.paymentType || 
                           (clientData as { paymentType?: string; payment_method?: string })?.payment_method;
     if (altPaymentType === 'insurance' || altPaymentType === 'cash_pay') {
-      console.log('✅ Found payment type in clientData (alt field):', altPaymentType);
+      // Payment type found in clientData (alt field)
       return altPaymentType;
     }
     
     // Then query param
     if (typeof window !== 'undefined') {
       const qp = new URLSearchParams(window.location.search).get('payment_type');
-      console.log('URL payment_type param:', qp);
+      // Check URL payment_type param
       if (qp === 'cash_pay' || qp === 'insurance') {
-        console.log('✅ Found payment type in URL:', qp);
+        // Payment type found in URL
         return qp;
       }
     }
     
-    console.log('⚠️ Defaulting to insurance - no payment type found');
+    // Defaulting to insurance - no payment type found
     return 'insurance';
   }, [clientData]);
 
@@ -215,7 +215,7 @@ export default function MatchedTherapist({
           therapist_name: therapist.intern_name,
           therapist_id: therapist.id,
         });
-        console.log(`✅ Recorded therapist selection: ${therapist.intern_name}`);
+        // Recorded therapist selection
         setHasRecordedSelection(true);
       } catch (error) {
         console.error('Failed to record therapist selection:', error);
@@ -468,9 +468,16 @@ export default function MatchedTherapist({
     const dd = String(selectedDateObj.getDate()).padStart(2, '0');
     const normalizedTime = selectedTimeSlot.replace(/\s/g, '');
     
+    console.log('🕐 BOOKING TIME DEBUG:');
+    console.log(`  Selected time slot: "${selectedTimeSlot}"`);
+    console.log(`  Normalized time: "${normalizedTime}"`);
+    
     // Create a proper Date object with timezone information
     const timeIn24Hour = convertTo24Hour(normalizedTime);
+    console.log(`  Converted to 24-hour: "${timeIn24Hour}"`);
+    
     const [hour, minute] = timeIn24Hour.split(':').map(Number);
+    console.log(`  Parsed hour: ${hour}, minute: ${minute}`);
     
     // Create Date object in the therapist's timezone (not browser timezone)
     // This ensures appointments are scheduled at the correct time regardless of where the client is located
@@ -538,14 +545,40 @@ export default function MatchedTherapist({
   };
 
   const convertTo24Hour = (time: string) => {
-    const [hour, period] = time.split(/(?=[ap]m)/i);
-    const parts = hour.split(':');
-    let h = parts[0];
-    const m = parts[1] || '00';
+    console.log(`[Time Conversion] Converting: "${time}"`);
     
-    if (period.toLowerCase() === 'pm' && h !== '12') h = String(Number(h) + 12);
-    if (period.toLowerCase() === 'am' && h === '12') h = '00';
-    return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
+    // Handle different time formats: "3:45pm", "3:45 pm", "15:45", etc.
+    const cleanTime = time.toLowerCase().trim();
+    
+    // If already in 24-hour format, return as-is
+    if (/^\d{1,2}:\d{2}$/.test(cleanTime) && !cleanTime.includes('am') && !cleanTime.includes('pm')) {
+      console.log(`[Time Conversion] Already 24-hour format: "${cleanTime}"`);
+      return cleanTime;
+    }
+    
+    // Extract hour, minute, and period (am/pm)
+    const match = cleanTime.match(/^(\d{1,2}):?(\d{2})?\s*(am|pm)$/i);
+    if (!match) {
+      console.error(`[Time Conversion] Invalid time format: "${time}"`);
+      return '12:00'; // Default fallback
+    }
+    
+    let h = parseInt(match[1], 10);
+    const m = match[2] || '00';
+    const period = match[3].toLowerCase();
+    
+    console.log(`[Time Conversion] Parsed - Hour: ${h}, Minute: ${m}, Period: ${period}`);
+    
+    // Convert to 24-hour format
+    if (period === 'pm' && h !== 12) {
+      h = h + 12;
+    } else if (period === 'am' && h === 12) {
+      h = 0;
+    }
+    
+    const result = `${h.toString().padStart(2, '0')}:${m}`;
+    console.log(`[Time Conversion] Result: "${result}"`);
+    return result;
   };
 
   // Function to handle image URL - S3 presigned URLs should be used directly
@@ -602,7 +635,7 @@ export default function MatchedTherapist({
         recommendation: 'Check therapist data or payment type assignment'
       });
     } else {
-      console.log(`[Category Verified] ${therapist?.intern_name}: ${category} matches ${paymentType} payment type ✓`);
+      // Category verified: therapist matches payment type
     }
     
     return category;
@@ -987,9 +1020,14 @@ export default function MatchedTherapist({
   useEffect(() => {
     if (!selectedDateObj && (availability?.days || Object.keys(fetchedSlots).length > 0)) {
       const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0); // Start of tomorrow
+      
       const minimumBookingDate = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
       
       console.log(`[Calendar] Auto-selection starting from minimum booking time (24hr lead): ${minimumBookingDate.toLocaleString()}`);
+      console.log(`[Calendar] Tomorrow is: ${tomorrow.toDateString()}`);
       
       // Search across multiple months for the first available date
       let foundAvailableDate: Date | null = null;
@@ -999,14 +1037,26 @@ export default function MatchedTherapist({
       
       console.log(`[Calendar] Searching within 14-day booking window: ${minimumBookingDate.toLocaleDateString()} to ${maximumBookingDate.toLocaleDateString()}`);
       
-      // Search day by day within the 14-day window
-      let currentSearchDate = new Date(minimumBookingDate);
+      // Search day by day within the 14-day window, starting from tomorrow if it meets the 24hr requirement
+      let currentSearchDate = new Date(Math.max(tomorrow.getTime(), minimumBookingDate.getTime()));
+      
+      // Check if tomorrow is unavailable and should be skipped
+      if (tomorrow.getTime() >= minimumBookingDate.getTime()) {
+        const tomorrowAvailability = getDayAvailableCount(tomorrow);
+        if (tomorrowAvailability === 0) {
+          console.log(`[Calendar] Tomorrow (${tomorrow.toDateString()}) has no available slots, auto-skipping to next available date`);
+        } else {
+          console.log(`[Calendar] Tomorrow (${tomorrow.toDateString()}) has ${tomorrowAvailability} available slots`);
+        }
+      } else {
+        console.log(`[Calendar] Tomorrow (${tomorrow.toDateString()}) is within 24-hour lead time, starting search from ${currentSearchDate.toDateString()}`);
+      }
       
       while (currentSearchDate.getTime() <= maximumBookingDate.getTime() && !foundAvailableDate) {
         const availableCount = getDayAvailableCount(currentSearchDate);
         if (availableCount > 0) {
           foundAvailableDate = new Date(currentSearchDate);
-          console.log(`[Calendar] Found first available date: ${foundAvailableDate.toDateString()} (${availableCount} slots)`);
+          console.log(`[Calendar] Found first available date: ${foundAvailableDate.toDateString()} (${availableCount} slots)${foundAvailableDate.toDateString() !== tomorrow.toDateString() ? ' - skipped tomorrow as it was unavailable' : ''}`);
           break;
         }
         
@@ -1174,8 +1224,11 @@ export default function MatchedTherapist({
     return filteredSlots.sort((a, b) => a.getTime() - b.getTime());
   }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, timezoneDisplay, timezone, therapist, getTherapistCategory]);
 
-  const formatTimeLabel = (date: Date) =>
-    date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const formatTimeLabel = (date: Date) => {
+    const timeString = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+    console.log(`[Format Time] ${date.toISOString()} -> "${timeString}"`);
+    return timeString;
+  };
 
   // Get session duration based on payment type
   const getSessionDuration = () => {
@@ -1542,20 +1595,23 @@ export default function MatchedTherapist({
                         );
                       })
                     ) : (
-                      ['1:00pm', '2:00pm', '5:00pm', '6:00pm', '7:00pm', '8:00pm'].map((time) => (
-                        <button
-                          key={`time-${time}`}
-                          onClick={() => setSelectedTimeSlot(time)}
-                          className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
-                            selectedTimeSlot === time
-                              ? 'border-yellow-400 bg-yellow-50'
-                              : 'border-[#5C3106] bg-white hover:bg-yellow-50'
-                          }`}
-                          style={{ fontFamily: 'var(--font-inter)' }}
-                        >
-                          {time}
-                        </button>
-                      ))
+                      ['1:00pm', '2:00pm', '5:00pm', '6:00pm', '7:00pm', '8:00pm'].map((time) => {
+                        const normalized = time.replace(/\s/g, '').toLowerCase();
+                        return (
+                          <button
+                            key={`time-${time}`}
+                            onClick={() => setSelectedTimeSlot(normalized)}
+                            className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
+                              selectedTimeSlot === normalized
+                                ? 'border-yellow-400 bg-yellow-50'
+                                : 'border-[#5C3106] bg-white hover:bg-yellow-50'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            {time}
+                          </button>
+                        );
+                      })
                     )}
                   </div>
 
