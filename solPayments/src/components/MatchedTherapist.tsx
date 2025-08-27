@@ -829,6 +829,15 @@ export default function MatchedTherapist({
   
   const goNextMonth = () => {
     const next = new Date(currentYear, currentMonth + 1, 1);
+    const now = new Date();
+    const maximumBookingDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+    
+    // Don't navigate to a month that's entirely beyond the 14-day window
+    if (next.getTime() > maximumBookingDate.getTime()) {
+      console.log(`[Calendar Navigation] Cannot navigate beyond 14-day booking window`);
+      return;
+    }
+    
     setCalendarDate(next);
     
     // Find earliest available date in the new month
@@ -900,58 +909,113 @@ export default function MatchedTherapist({
     const dateMonth = date.getMonth();
     const isSameMonth = (dateYear === currentYear && dateMonth === currentMonth);
     
+    // 24-hour minimum lead time check
+    const now = new Date();
+    const minimumBookingTime = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
+    const dateEndOfDay = new Date(date);
+    dateEndOfDay.setHours(23, 59, 59, 999); // End of the selected day
+    
+    // 14-day advance limit check
+    const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+    const dateStartOfDay = new Date(date);
+    dateStartOfDay.setHours(0, 0, 0, 0); // Start of the selected day
+    
+    // If the entire day is within the 24-hour lead time or beyond 14 days, return 0
+    if (dateEndOfDay.getTime() < minimumBookingTime.getTime() || dateStartOfDay.getTime() > maximumBookingTime.getTime()) {
+      return 0;
+    }
+    
     if (isSameMonth && availability?.days && availability.days[dayNum]) {
       const payload = availability.days[dayNum];
       const sessions = payload.sessions ?? [];
-      if (sessions.length > 0) return sessions.length;
-      const freeSlots = (payload.slots || []).filter(s => s.is_free);
-      return freeSlots.length;
+      
+      // Filter sessions to respect 24-hour lead time
+      let availableSessions = sessions.length > 0 ? sessions : (payload.slots || []).filter(s => s.is_free).map(s => ({ start: s.start, end: s.end }));
+      
+      // Apply 24-hour lead time and 14-day advance limit filter
+      const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+      availableSessions = availableSessions.filter(session => {
+        const sessionTime = new Date(session.start);
+        return sessionTime.getTime() >= minimumBookingTime.getTime() && sessionTime.getTime() <= maximumBookingTime.getTime();
+      });
+      
+      // Apply hourly restriction for Associate Therapists
+      const therapistCategory = getTherapistCategory(therapist);
+      if (therapistCategory === 'Associate Therapist') {
+        availableSessions = availableSessions.filter(session => {
+          const sessionTime = new Date(session.start);
+          return sessionTime.getMinutes() === 0; // Only hourly slots
+        });
+      }
+      
+      return availableSessions.length;
     }
     
     // For legacy fallback, only use if it's the same month
     if (isSameMonth) {
-      return legacyDayCount[dayNum] ?? 0;
+      const legacyCount = legacyDayCount[dayNum] ?? 0;
+      
+      // For legacy slots, we need to check each slot individually for lead time
+      if (legacyCount > 0) {
+        const calendarAvailableSlotsLegacy = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
+        const daySlots = calendarAvailableSlotsLegacy
+          .map((iso: string) => new Date(iso))
+          .filter((dt: Date) => dt.toDateString() === date.toDateString());
+        
+        // Apply filters
+        const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+        let filteredSlots = daySlots.filter(dt => 
+          dt.getTime() >= minimumBookingTime.getTime() && dt.getTime() <= maximumBookingTime.getTime()
+        );
+        
+        const therapistCategory = getTherapistCategory(therapist);
+        if (therapistCategory === 'Associate Therapist') {
+          filteredSlots = filteredSlots.filter(dt => dt.getMinutes() === 0);
+        }
+        
+        return filteredSlots.length;
+      }
+      
+      return legacyCount;
     }
     
     // For dates in different months, return 0 (will need to fetch availability when calendar changes)
     return 0;
-  }, [availability?.days, currentYear, currentMonth, legacyDayCount]);
+  }, [availability?.days, currentYear, currentMonth, legacyDayCount, therapist, fetchedSlots, emailForSlots]);
 
   // Auto-select first available future date and navigate to correct month
   useEffect(() => {
     if (!selectedDateObj && (availability?.days || Object.keys(fetchedSlots).length > 0)) {
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
+      const now = new Date();
+      const minimumBookingDate = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
       
-      console.log(`[Calendar] Auto-selection starting from tomorrow: ${tomorrow.toDateString()}`);
+      console.log(`[Calendar] Auto-selection starting from minimum booking time (24hr lead): ${minimumBookingDate.toLocaleString()}`);
       
       // Search across multiple months for the first available date
       let foundAvailableDate: Date | null = null;
       
-      // Check up to 3 months ahead for availability
-      for (let monthOffset = 0; monthOffset < 3 && !foundAvailableDate; monthOffset++) {
-        const searchMonth = new Date(tomorrow.getFullYear(), tomorrow.getMonth() + monthOffset, 1);
-        const daysInMonth = new Date(searchMonth.getFullYear(), searchMonth.getMonth() + 1, 0).getDate();
-        
-        console.log(`[Calendar] Searching month ${searchMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} for availability...`);
-        
-        // For current month, start from tomorrow; for future months, start from day 1
-        const startDay = monthOffset === 0 ? tomorrow.getDate() : 1;
-        
-        for (let day = startDay; day <= daysInMonth; day++) {
-          const checkDate = new Date(searchMonth.getFullYear(), searchMonth.getMonth(), day);
-          
-          // Skip if it's today or earlier
-          if (checkDate <= today) continue;
-          
-          const availableCount = getDayAvailableCount(checkDate);
-          if (availableCount > 0) {
-            foundAvailableDate = checkDate;
-            console.log(`[Calendar] Found first available date: ${checkDate.toDateString()} (${availableCount} slots) in month ${monthOffset + 1}`);
-            break;
-          }
+      // Only search within the 14-day booking window
+      const maximumBookingDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+      
+      console.log(`[Calendar] Searching within 14-day booking window: ${minimumBookingDate.toLocaleDateString()} to ${maximumBookingDate.toLocaleDateString()}`);
+      
+      // Search day by day within the 14-day window
+      let currentSearchDate = new Date(minimumBookingDate);
+      
+      while (currentSearchDate.getTime() <= maximumBookingDate.getTime() && !foundAvailableDate) {
+        const availableCount = getDayAvailableCount(currentSearchDate);
+        if (availableCount > 0) {
+          foundAvailableDate = new Date(currentSearchDate);
+          console.log(`[Calendar] Found first available date: ${foundAvailableDate.toDateString()} (${availableCount} slots)`);
+          break;
         }
+        
+        // Move to next day
+        currentSearchDate.setDate(currentSearchDate.getDate() + 1);
+      }
+      
+      if (!foundAvailableDate) {
+        console.log(`[Calendar] No availability found within 14-day booking window`);
       }
       
       if (foundAvailableDate) {
@@ -1058,21 +1122,57 @@ export default function MatchedTherapist({
     });
 
     // Filter for 7 AM - 10 PM (7:00 - 21:59)
-    const filteredSlots = rawSlots.filter(dt => {
+    let filteredSlots = rawSlots.filter(dt => {
       const hour = dt.getHours();
       return hour >= 7 && hour < 22; // Filter to 7AM-10PM range silently
     });
 
+    // 24-HOUR MINIMUM LEAD TIME & 14-DAY ADVANCE LIMIT: Only show slots within booking window
+    const now = new Date();
+    const minimumBookingTime = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
+    const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+    
+    const beforeTimeWindowFilter = filteredSlots.length;
+    filteredSlots = filteredSlots.filter(dt => {
+      return dt.getTime() >= minimumBookingTime.getTime() && dt.getTime() <= maximumBookingTime.getTime();
+    });
+    
+    const removedByTimeWindowFilter = beforeTimeWindowFilter - filteredSlots.length;
+    if (removedByTimeWindowFilter > 0) {
+      console.log(`[Booking Time Window Filter] ${therapist?.intern_name}: Filtered out ${removedByTimeWindowFilter} slots outside 24hr-14day window (${minimumBookingTime.toLocaleString()} to ${maximumBookingTime.toLocaleString()})`);
+    }
+
+    // ASSOCIATE THERAPIST RESTRICTION: Only allow on-the-hour slots (12pm, 1pm, 2pm, NO in-betweens)
+    const therapistCategory = getTherapistCategory(therapist);
+    if (therapistCategory === 'Associate Therapist') {
+      const beforeHourlyFilter = filteredSlots.length;
+      filteredSlots = filteredSlots.filter(dt => {
+        const minutes = dt.getMinutes();
+        return minutes === 0; // Only allow slots at exact hour (no :15, :30, :45)
+      });
+      
+      const removedByHourlyFilter = beforeHourlyFilter - filteredSlots.length;
+      if (removedByHourlyFilter > 0) {
+        console.log(`[Associate Therapist Filter] ${therapist?.intern_name}: Filtered out ${removedByHourlyFilter} non-hourly slots (only on-the-hour allowed for Associate Therapists)`);
+      }
+      
+      console.log(`[Associate Therapist Filter] Available hourly slots:`, filteredSlots.map(s => ({
+        time: s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }),
+        hour: s.getHours(),
+        minute: s.getMinutes()
+      })));
+    }
+
     // Only log if there are issues or no slots available
     const removedCount = rawSlots.length - filteredSlots.length;
     if (filteredSlots.length === 0 && rawSlots.length > 0) {
-      console.log(`[Calendar] ${therapist?.intern_name} on ${selectedDateObj.toDateString()}: All ${rawSlots.length} slots filtered out (outside 7AM-10PM)`);
+      console.log(`[Calendar] ${therapist?.intern_name} on ${selectedDateObj.toDateString()}: All ${rawSlots.length} slots filtered out (outside 7AM-10PM or non-hourly for Associate Therapists)`);
     } else if (removedCount > 0) {
-      console.log(`[Calendar] ${therapist?.intern_name}: ${removedCount} out-of-hours slots filtered, ${filteredSlots.length} available`);
+      console.log(`[Calendar] ${therapist?.intern_name}: ${removedCount} slots filtered (time restrictions + hourly filter for Associates), ${filteredSlots.length} available`);
     }
 
     return filteredSlots.sort((a, b) => a.getTime() - b.getTime());
-  }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, therapist?.available_slots, therapist?.intern_name, timezoneDisplay, timezone]);
+  }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, therapist?.available_slots, therapist?.intern_name, timezoneDisplay, timezone, therapist]);
 
   const formatTimeLabel = (date: Date) =>
     date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -1313,7 +1413,17 @@ export default function MatchedTherapist({
                         <button onClick={goPrevMonth} className="p-1 hover:bg-gray-100 rounded border border-gray-200" aria-label="Previous month">
                           <ChevronLeft className="w-4 h-4" />
                         </button>
-                        <button onClick={goNextMonth} className="p-1 hover:bg-gray-100 rounded border border-gray-200" aria-label="Next month">
+                        <button 
+                          onClick={goNextMonth} 
+                          className="p-1 hover:bg-gray-100 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+                          aria-label="Next month"
+                          disabled={(() => {
+                            const now = new Date();
+                            const maximumBookingDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
+                            const nextMonth = new Date(currentYear, currentMonth + 1, 1);
+                            return nextMonth.getTime() > maximumBookingDate.getTime();
+                          })()}
+                        >
                           <ChevronRight className="w-4 h-4" />
                         </button>
                       </div>
@@ -1327,22 +1437,26 @@ export default function MatchedTherapist({
                       <div className="grid grid-cols-7 gap-1 text-center text-sm">
                         {calendarCells.map((cell) => {
                           const selected = selectedDateObj ? isSameDay(cell.date, selectedDateObj) : false;
-                          const today = new Date();
-                          const isToday = isSameDay(cell.date, today);
-                          const isPastOrToday = cell.date <= today; // Today and past are both non-selectable
+                          const now = new Date();
+                          const minimumBookingTime = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+                          const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
+                          const isToday = isSameDay(cell.date, now);
+                          const isWithinLeadTime = cell.date.getTime() < minimumBookingTime.getTime();
+                          const isBeyond14Days = cell.date.getTime() > maximumBookingTime.getTime();
+                          const isOutsideBookingWindow = isWithinLeadTime || isBeyond14Days;
                           
                           let bgClass = 'bg-white';
                           let isUnavailable = false;
                           let textClass = '';
                           
                           if (cell.inMonth) {
-                            if (isPastOrToday) {
-                              // Past dates and today are greyed out and disabled
+                            if (isOutsideBookingWindow) {
+                              // Dates outside booking window (within 24hrs or beyond 14 days) are greyed out and disabled
                               bgClass = 'bg-gray-100';
                               textClass = 'text-gray-400';
                               isUnavailable = true;
                             } else {
-                              // Future dates use availability color-coding
+                              // Future dates within booking window use availability color-coding
                               const count = getDayAvailableCount(cell.date);
                               const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
                               isUnavailable = color === 'red';
@@ -1355,8 +1469,16 @@ export default function MatchedTherapist({
 
                           const getTitle = () => {
                             if (!cell.inMonth) return undefined;
-                            if (isPastOrToday) {
-                              return isToday ? 'Today - earliest booking is tomorrow at 7 AM' : 'Past date - not available';
+                            if (isOutsideBookingWindow) {
+                              if (isToday) {
+                                return 'Today - earliest booking is 24 hours from now';
+                              } else if (isWithinLeadTime) {
+                                return 'Within 24-hour minimum lead time - not available';
+                              } else if (isBeyond14Days) {
+                                return 'Beyond 14-day advance limit - not available';
+                              } else {
+                                return 'Past date - not available';
+                              }
                             }
                             return `Available slots: ${getDayAvailableCount(cell.date)}`;
                           };
@@ -1377,14 +1499,14 @@ export default function MatchedTherapist({
                                     : 'bg-white text-gray-300 cursor-not-allowed opacity-60 border-transparent'
                               }`}
                             >
-                              <span className={isUnavailable && cell.inMonth && !isPastOrToday ? 'relative' : ''}>
+                              <span className={isUnavailable && cell.inMonth && !isOutsideBookingWindow ? 'relative' : ''}>
                                 {cell.day}
-                                {isUnavailable && cell.inMonth && !isPastOrToday && (
+                                {isUnavailable && cell.inMonth && !isOutsideBookingWindow && (
                                   <span className="absolute inset-0 flex items-center justify-center">
                                     <span className="block w-full h-0.5 bg-red-500 transform rotate-45 absolute"></span>
                                   </span>
                                 )}
-                                {isPastOrToday && cell.inMonth && (
+                                {isOutsideBookingWindow && cell.inMonth && (
                                   <span className="absolute inset-0 flex items-center justify-center">
                                     <span className="block w-full h-0.5 bg-gray-400 transform rotate-45 absolute"></span>
                                     <span className="block w-full h-0.5 bg-gray-400 transform -rotate-45 absolute"></span>

@@ -173,25 +173,77 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
     return '';
   };
 
-  // Format appointment date and time from booking data
+  // State to timezone mapping for consistency with MatchedTherapist
+  const STATE_TIMEZONE_MAP: Record<string, string> = {
+    // Eastern
+    CT: "America/New_York", DE: "America/New_York", DC: "America/New_York", FL: "America/New_York",
+    GA: "America/New_York", ME: "America/New_York", MD: "America/New_York", MA: "America/New_York",
+    NH: "America/New_York", NJ: "America/New_York", NY: "America/New_York", NC: "America/New_York",
+    OH: "America/New_York", PA: "America/New_York", RI: "America/New_York", SC: "America/New_York",
+    VT: "America/New_York", VA: "America/New_York", WV: "America/New_York", MI: "America/New_York",
+    IN: "America/New_York", KY: "America/New_York",
+    // Central
+    AL: "America/Chicago", AR: "America/Chicago", IL: "America/Chicago", IA: "America/Chicago",
+    LA: "America/Chicago", MN: "America/Chicago", MS: "America/Chicago", MO: "America/Chicago",
+    OK: "America/Chicago", WI: "America/Chicago", TX: "America/Chicago", TN: "America/Chicago",
+    KS: "America/Chicago", NE: "America/Chicago", SD: "America/Chicago", ND: "America/Chicago",
+    // Mountain
+    AZ: "America/Phoenix", CO: "America/Denver", ID: "America/Denver", MT: "America/Denver",
+    NM: "America/Denver", UT: "America/Denver", WY: "America/Denver",
+    // Pacific
+    CA: "America/Los_Angeles", NV: "America/Los_Angeles", OR: "America/Los_Angeles", WA: "America/Los_Angeles",
+    // Alaska/Hawaii
+    AK: "America/Anchorage", HI: "Pacific/Honolulu",
+  };
+
+  // Timezone display names for consistency
+  const TIMEZONE_DISPLAY_MAP: Record<string, string> = {
+    "America/New_York": "EST",
+    "America/Chicago": "CST", 
+    "America/Denver": "MST",
+    "America/Phoenix": "MST",
+    "America/Los_Angeles": "PST",
+    "America/Anchorage": "AK",
+    "Pacific/Honolulu": "HI",
+  };
+
+  // Format appointment date and time with consistent timezone handling
   const formatAppointmentDateTime = () => {
     if (!bookingData?.StartDateIso) {
       return { dateStr: '', timeStr: '', timezone: '' };
     }
     
+    // Get user's timezone based on their state for consistency
+    let userTimezone = "America/New_York"; // Default to EST
+    if (currentUserData?.state) {
+      const stateUpper = String(currentUserData.state).toUpperCase().trim();
+      userTimezone = STATE_TIMEZONE_MAP[stateUpper] || userTimezone;
+    }
+    
     const date = new Date(bookingData.StartDateIso);
+    
+    // Format in user's timezone for consistency with booking page
     const dateStr = date.toLocaleDateString('en-US', { 
       weekday: 'short', 
       month: 'short', 
-      day: '2-digit'
+      day: '2-digit',
+      timeZone: userTimezone
     });
+    
     const timeStr = date.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
-      hour12: true 
+      hour12: true,
+      timeZone: userTimezone
     });
-    const timezoneAbbr = date.toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'EST';
-    return { dateStr, timeStr, timezone: timezoneAbbr };
+    
+    // Use consistent timezone display
+    const timezoneDisplay = TIMEZONE_DISPLAY_MAP[userTimezone] || 'EST';
+    
+    console.log(`[Booking Confirmation Time Consistency] User state: ${currentUserData?.state}, Timezone: ${userTimezone}, Display: ${timezoneDisplay}`);
+    console.log(`[Booking Confirmation Time] Original ISO: ${bookingData.StartDateIso}, Formatted: ${dateStr} ${timeStr} ${timezoneDisplay}`);
+    
+    return { dateStr, timeStr, timezone: timezoneDisplay };
   };
 
   // Get therapist category from booking data
@@ -260,8 +312,8 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
             <ArrowLeft className="w-5 h-5 text-gray-800" />
           </button>
           
-          {/* Sol Health Logo with sun dot */}
-          <div className="flex items-center gap-2">
+          {/* Sol Health Logo */}
+          <div className="flex items-center">
             <Image
               src="/sol-health-logo.svg"
               alt="Sol Health"
@@ -269,7 +321,6 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
               height={20}
               className="h-5 w-auto"
             />
-            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
           </div>
           
           <div className="w-9" /> {/* Spacer for centering */}
@@ -422,7 +473,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
           {/* Instagram Icon */}
           <div className="pt-4">
             <a 
-              href="https://instagram.com/solhealth" 
+              href="https://www.instagram.com/solhealth.co/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-block p-2 text-gray-600 hover:text-gray-800 transition-colors"
