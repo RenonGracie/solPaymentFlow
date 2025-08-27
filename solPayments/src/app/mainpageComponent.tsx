@@ -3,7 +3,7 @@
 import { useCallback, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Calendar, Clock, User, Mail, CheckCircle, ExternalLink, Play } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Play, Volume2, VolumeX } from "lucide-react";
 import Image from "next/image";
 import CustomSurvey from "@/components/CustomSurvey";
 import OnboardingFlow from "@/components/OnboardingFlow";
@@ -148,19 +148,28 @@ interface BookingConfirmationProps {
 function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingConfirmationProps) {
   const [imageError, setImageError] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [isMuted, setIsMuted] = useState(true); // Start muted for autoplay compliance
 
-  // Fixed video for booking confirmation
-  const BOOKING_CONFIRMATION_VIDEO = 'https://youtu.be/q2dgtDe83uA';
-
-  // Extract YouTube video ID for embedding
+  // Welcome video configuration (YouTube with clean embed)
+  const WELCOME_VIDEO_URL = 'https://youtu.be/q2dgtDe83uA';
+  
+  // Extract YouTube video ID for clean embedding
   const extractYouTubeId = (url: string): string => {
     const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
     const match = url.match(regex);
     return match ? match[1] : '';
   };
-
-  const videoId = extractYouTubeId(BOOKING_CONFIRMATION_VIDEO);
-  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=1` : '';
+  
+  const videoId = extractYouTubeId(WELCOME_VIDEO_URL);
+  
+  // Toggle mute function
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
+  
+  // Clean embed URL with minimal YouTube interface (dynamic mute based on state)
+  const cleanEmbedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0&modestbranding=1&showinfo=0&controls=1&iv_load_policy=3&disablekb=1&fs=1&cc_load_policy=0` : '';
+  // High quality thumbnail
   const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
 
   // Handle image URL
@@ -296,6 +305,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
     has_selected_therapist: !!currentUserData.selected_therapist,
     selected_therapist_data: currentUserData.selected_therapist,
     image_link: currentUserData.selected_therapist?.image_link,
+    image_url_processed: currentUserData.selected_therapist?.image_link ? getImageUrl(currentUserData.selected_therapist.image_link) : 'No image link',
     imageError: imageError
   });
 
@@ -345,15 +355,18 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                 <img
                   src={getImageUrl(currentUserData.selected_therapist.image_link)}
                   alt={bookingData.PractitionerName}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
                   onError={() => {
                     console.error('Failed to load therapist image:', currentUserData.selected_therapist?.image_link);
+                    console.error('Processed image URL:', currentUserData.selected_therapist?.image_link ? getImageUrl(currentUserData.selected_therapist.image_link) : 'N/A');
                     setImageError(true);
                   }}
                 />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="w-6 h-6 text-gray-500" />
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-2 border-gray-100">
+                  <span className="text-lg font-medium text-gray-600">
+                    {bookingData.PractitionerName?.charAt(0) || 'T'}
+                  </span>
                 </div>
               )}
               
@@ -391,7 +404,8 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
             {/* Video thumbnail with play button overlay */}
             <button 
               onClick={() => setShowVideo(true)}
-              className="relative w-full h-32 bg-gray-100 hover:bg-gray-200 transition-colors"
+              className="relative w-full h-48 md:h-56 bg-gray-100 hover:bg-gray-200 transition-colors"
+              style={{ aspectRatio: '16/9' }}
             >
               {thumbnailUrl ? (
                 <img
@@ -403,7 +417,6 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                   }}
                 />
               ) : (
-                // Fallback background for video section
                 <div className="w-full h-full bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center">
                   <div className="text-gray-400 text-sm text-center">
                     <p>Welcome Video</p>
@@ -426,20 +439,32 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
               What To Expect
             </h3>
             
-            <div className="space-y-3 text-sm text-center max-w-xs mx-auto" style={{ fontFamily: 'var(--font-inter)' }}>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-gray-500">📧</span>
-                <p className="text-gray-700">Your session confirmation and invite<br />should land in your inbox shortly</p>
+            <div className="space-y-4 text-sm max-w-sm mx-auto" style={{ fontFamily: 'var(--font-inter)' }}>
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center">
+                  <span className="text-lg">📧</span>
+                </div>
+                <div className="text-left">
+                  <p className="text-gray-700 leading-relaxed">Your session confirmation and invite should land in your inbox shortly</p>
+                </div>
               </div>
               
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-gray-500">📌</span>
-                <p className="text-gray-700">Fill out the Mandatory New Client form<br />(also in your inbox)</p>
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-red-50 rounded-full flex items-center justify-center">
+                  <span className="text-lg">📝</span>
+                </div>
+                <div className="text-left">
+                  <p className="text-gray-700 leading-relaxed">Fill out the Mandatory New Client form (also in your inbox)</p>
+                </div>
               </div>
               
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-gray-500">⬇️</span>
-                <p className="text-gray-700">Register to your client portal below<br />(takes 3 seconds!)</p>
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
+                  <span className="text-lg">📱</span>
+                </div>
+                <div className="text-left">
+                  <p className="text-gray-700 leading-relaxed">Register to your client portal below (takes 3 seconds!)</p>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -487,7 +512,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
       </div>
 
       {/* Video Modal */}
-      {showVideo && embedUrl && (
+      {showVideo && cleanEmbedUrl && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowVideo(false)}>
           <div className="bg-white rounded-lg p-4 w-full max-w-4xl mx-auto" onClick={e => e.stopPropagation()}>
             <div className="mb-4">
@@ -496,14 +521,31 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
               </h3>
             </div>
             
-            <div className="w-full" style={{ aspectRatio: '16/9' }}>
+            <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
               <iframe
-                src={embedUrl}
-                className="w-full h-full rounded"
+                key={`video-${isMuted}`}
+                src={cleanEmbedUrl}
+                className="w-full h-full rounded border-0"
                 allowFullScreen
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 title="Welcome to Sol Video"
               />
+              
+              {/* Prominent Mute/Unmute Button */}
+              <button
+                onClick={toggleMute}
+                className={`absolute top-4 right-4 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full p-3 transition-all duration-200 hover:scale-110 shadow-lg z-10 ${isMuted ? 'animate-pulse' : ''}`}
+                title={isMuted ? 'Click to unmute video' : 'Click to mute video'}
+              >
+                {isMuted ? (
+                  <div className="flex items-center space-x-2">
+                    <VolumeX className="w-5 h-5" />
+                    <span className="text-sm font-medium">Tap for Sound</span>
+                  </div>
+                ) : (
+                  <Volume2 className="w-5 h-5" />
+                )}
+              </button>
             </div>
             
             <Button onClick={() => setShowVideo(false)} className="mt-4 w-full">
@@ -658,7 +700,7 @@ export default function MainPageComponent() {
     }
   ) => {
     console.log('🎯 ONBOARDING COMPLETE - Data received:', data);
-    console.log('🎯 Payment type from onboarding:', data.paymentType);
+    // Payment type from onboarding
     
     setOnboardingData({
       firstName: data.firstName,
@@ -670,7 +712,7 @@ export default function MainPageComponent() {
     
     // Set payment type from onboarding data
     const paymentType = data.paymentType as PaymentType;
-    console.log('🎯 Setting selectedPaymentType to:', paymentType);
+    // Setting selectedPaymentType
     setSelectedPaymentType(paymentType);
     
     setFormData({
@@ -914,7 +956,7 @@ export default function MainPageComponent() {
       };
 
       console.log('📦 Complete client data being sent:', completeClientData);
-      console.log('📦 Payment type in client data:', completeClientData.payment_type);
+      // Payment type in client data
       console.log('🎯 SPECIFIC THERAPIST DEBUG:', {
         matching_preference: completeClientData.matching_preference,
         selected_therapist: completeClientData.selected_therapist,
@@ -923,7 +965,7 @@ export default function MainPageComponent() {
 
       // Store the client response directly in our backend
       const response = await axiosInstance.post('/clients_signup', completeClientData);
-      console.log('✅ Client data stored:', response.data);
+      // Client data stored successfully
 
       // Both insurance and cash_pay flows use the SAME therapist-matching API call
       await pollFormAndRequestMatch(responseId);
@@ -959,7 +1001,7 @@ export default function MainPageComponent() {
       return;
     }
     
-    console.log('✅ Session booked successfully:', bookedSession);
+    // Session booked successfully
     
     // Log appointment info after successful booking
     console.log('📅 APPOINTMENT INFO (AFTER BOOKING):', {
@@ -1148,10 +1190,8 @@ export default function MainPageComponent() {
       });
       
       if (intakeQResult.success) {
-        console.log('✅ =================================================');
-        console.log('✅ INTAKEQ PROFILE CREATED SUCCESSFULLY!');
-        console.log('✅ =================================================');
-        console.log('✅ Profile Details:', {
+        // IntakeQ profile created successfully
+        console.log('IntakeQ Profile Details:', {
           client_id: intakeQResult.client_id,
           intake_url: intakeQResult.intake_url,
           total_fields_sent: Object.keys(intakeQData).length,
@@ -1193,7 +1233,7 @@ export default function MainPageComponent() {
               intakeq_client_id: intakeQResult.client_id,
               intakeq_intake_url: intakeQResult.intake_url
             });
-            console.log('✅ Database updated with IntakeQ client ID');
+            // Database updated with IntakeQ client ID
           } catch (error) {
             console.warn('⚠️ Failed to update database with IntakeQ ID:', error);
           }
@@ -1235,7 +1275,7 @@ export default function MainPageComponent() {
       
       // Determine payment type from client data
       const paymentType = clientData.payment_type || 'cash_pay';
-      console.log('💳 Payment type:', paymentType);
+      // Payment type for mandatory form
       
       // Prepare form data
       const formData = {
@@ -1262,10 +1302,8 @@ export default function MainPageComponent() {
       });
       
       if (formResult.success) {
-        console.log('✅ =================================================');
-        console.log('✅ MANDATORY FORM SENT SUCCESSFULLY!');
-        console.log('✅ =================================================');
-        console.log('✅ Form Details:', {
+        // Mandatory form sent successfully
+        console.log('Form Details:', {
           intake_id: formResult.intake_id,
           intake_url: formResult.intake_url,
           client_id: clientId,
@@ -1295,7 +1333,7 @@ export default function MainPageComponent() {
               // mandatory_form_intake_url: formResult.intake_url,
               // mandatory_form_sent_at: new Date().toISOString()
             });
-            console.log('✅ Database updated (mandatory form tracking temporarily disabled)');
+            // Database updated (mandatory form tracking temporarily disabled)
           } catch (dbError) {
             console.warn('⚠️ Failed to update database:', dbError);
             // Don't fail the flow if database update fails
