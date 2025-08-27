@@ -209,6 +209,10 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
   const [phq9IntroTimerReady, setPhq9IntroTimerReady] = useState(false);
   const [gad7IntroTimerReady, setGad7IntroTimerReady] = useState(false);
   
+  // Video loading states for bloom animation
+  const [phq9VideoLoaded, setPhq9VideoLoaded] = useState(false);
+  const [gad7VideoLoaded, setGad7VideoLoaded] = useState(false);
+  
   const [surveyData, setSurveyData] = useState<SurveyData>({
     // Safety Screening
     safety_screening: existingUserData?.safety_screening || '',
@@ -1258,9 +1262,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12 pb-2 sm:pb-4">
                 <div className="max-w-md w-full">
                   {/* Title duplicated in video artwork; removing per design */}
-                  <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
+                  <div className={`relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden transition-all duration-600 ${phq9VideoLoaded ? 'bg-transparent animate-in fade-in' : 'bg-white'}`}>
                     <video
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover transition-opacity duration-600 ${phq9VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
                       src={VIDEOS.emotionalWellBeing}
                       autoPlay
                       muted
@@ -1268,6 +1272,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                       loop={false}
                       controls={false}
                       preload="auto"
+                      onLoadedData={() => setPhq9VideoLoaded(true)}
                       onPlay={() => {
                         setPhq9IntroTimerReady(false);
                         setTimeout(() => setPhq9IntroTimerReady(true), 2500);
@@ -1479,9 +1484,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12 pb-2 sm:pb-4">
                <div className="max-w-md w-full">
                  {/* Title duplicated in video artwork; removing per design */}
-                 <div className="relative bg-transparent border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden">
+                 <div className={`relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden transition-all duration-600 ${gad7VideoLoaded ? 'bg-transparent animate-in fade-in' : 'bg-white'}`}>
                    <video
-                     className="w-full h-full object-cover"
+                     className={`w-full h-full object-cover transition-opacity duration-600 ${gad7VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
                      src={VIDEOS.measuringAnxiety}
                      autoPlay
                      muted
@@ -1489,6 +1494,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                      loop={false}
                      controls={false}
                      preload="auto"
+                     onLoadedData={() => setGad7VideoLoaded(true)}
                      onPlay={() => {
                        setGad7IntroTimerReady(false);
                        setTimeout(() => setGad7IntroTimerReady(true), 2500);
