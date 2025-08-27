@@ -1264,20 +1264,28 @@ export default function OnboardingFlow({
 
             {/* Featured States - 3-Column Grid Layout */}
             <div className="grid grid-cols-3 gap-2 mb-4 px-4">
-              {featuredStates.map((stateCode) => {
+              {featuredStates.map((stateCode, index) => {
                 const stateName = allStates.find(s => s.code === stateCode)?.name || stateCode;
+                // Calculate animation delay based on position (cascade from top-left to bottom-right)
+                const row = Math.floor(index / 3);
+                const col = index % 3;
+                const animationDelay = (row + col) * 100; // Staggered delay in milliseconds
+                
                 return (
                   <button
                     key={stateCode}
                     onClick={() => handleStateSelection(stateCode)}
-                    className={`relative py-2 px-1 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center transform hover:scale-[1.02] min-h-[70px] ${
+                    className={`relative py-2 px-1 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center transform hover:scale-[1.02] min-h-[70px] animate-in fade-in slide-in-from-top-2 ${
                       selectedState === stateCode
                         ? 'border-[#5C3106] text-white shadow-lg' 
                         : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
                     }`}
                     style={{
-                      backgroundColor: selectedState === stateCode ? '#5C3106' : 'white'
-                    }}
+                      backgroundColor: selectedState === stateCode ? '#5C3106' : 'white',
+                      animationDelay: `${animationDelay}ms`,
+                      animationDuration: '600ms',
+                      animationFillMode: 'both'
+                    } as React.CSSProperties}
                   >
                     <div className={`w-5 h-5 flex items-center justify-center mb-1 ${selectedState === stateCode ? '' : 'opacity-60'}`}>
                       <img 
