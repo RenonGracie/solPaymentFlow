@@ -584,7 +584,7 @@ export default function OnboardingFlow({
           <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
             <Button
               onClick={handleContinue}
-              className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all min-w-[200px] max-w-[300px]"
+              className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors min-w-[200px] max-w-[300px]"
               style={{ fontFamily: 'var(--font-inter)' }}
             >
               Continue
@@ -625,7 +625,7 @@ export default function OnboardingFlow({
           <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
             <Button
               onClick={handleContinue}
-              className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all min-w-[200px] max-w-[300px]"
+              className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors min-w-[200px] max-w-[300px]"
               style={{ fontFamily: 'var(--font-inter)' }}
             >
               Continue
@@ -657,7 +657,7 @@ export default function OnboardingFlow({
           <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
             <Button
               onClick={handleContinue}
-              className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all min-w-[200px] max-w-[300px]"
+              className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors min-w-[200px] max-w-[300px]"
               style={{ fontFamily: 'var(--font-inter)' }}
             >
               Continue
@@ -688,7 +688,7 @@ export default function OnboardingFlow({
         <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
           <Button
             onClick={handleContinue}
-            className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all min-w-[200px] max-w-[300px]"
+            className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors min-w-[200px] max-w-[300px]"
             style={{ fontFamily: 'var(--font-inter)' }}
           >
             Continue

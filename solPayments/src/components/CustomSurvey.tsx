@@ -404,7 +404,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8">
                 <Button
                     onClick={handleVideoContinue}
-                    className="w-full py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-all"
+                    className="w-full py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >
                   Continue
@@ -584,7 +584,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6 text-gray-800 leading-[1.1]" 
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-6 text-gray-800 leading-[1.1]" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Over the past 2 weeks, have you been actively suicidal or homicidal OR have you been experiencing hallucinations or delusions?
                     </h1>
@@ -835,7 +835,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             <div className="flex-1 px-4 sm:px-6 pb-10 sm:pb-14 overflow-y-auto">
               <div className="flow-narrow mx-auto -mt-4">
                 <div className="text-center mb-4 sm:mb-6 mt-2 flow-narrow mx-auto">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl mb-3 sm:mb-4 text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                     Therapist Preferences
                   </h1>
@@ -1049,7 +1049,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                   <div className="fixed bottom-4 left-1/2 -translate-x-1/2 transform z-20">
                     <Button
                       onClick={() => setCurrentStep('alcohol_drugs')}
-                      className="pointer-events-auto bg-yellow-100 hover:bg-yellow-300 text-gray-800 rounded-full text-sm md:text-base font-medium transition-all px-5 md:px-6 py-2 md:py-2.5 shadow-[1px_1px_0_#5C3106] border border-[#5C3106]"
+                      className="pointer-events-auto bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-sm md:text-base font-medium transition-colors px-5 md:px-6 py-2 md:py-2.5 shadow-[1px_1px_0_#5C3106] border border-[#5C3106]"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       Continue →
@@ -1102,7 +1102,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="flex-1 flex items-center justify-center">
                 <div className="max-w-md w-full">
                   <div className="text-center mb-4 sm:mb-6">
-                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 text-gray-800" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Alcohol and Recreational Drugs
                     </h1>
@@ -1183,7 +1183,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                       setPhq9IntroEnded(false);
                       setCurrentStep('phq9');
                     }}
-                    className="max-w-md py-4 px-6 bg-yellow-100 hover:bg-yellow-300 text-gray-800 rounded-full text-base font-medium transition-all shadow-[1px_1px_0_#5C3106] border border-[#5C3106] min-w-[200px]"
+                    className="max-w-md py-4 px-6 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] border border-[#5C3106] min-w-[200px]"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >
                     Continue →
@@ -1341,7 +1341,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="flex-1 flex items-start justify-center">
                 <div className="max-w-md w-full">
                   <div className="text-center mb-4 sm:mb-6">
-                    <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 text-gray-800" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Over the last 2 weeks, how often have you been bothered by any of the following?
                     </h1>
@@ -1561,7 +1561,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              <div className="flex-1 flex items-start justify-center">
                <div className="max-w-md w-full">
                  <div className="text-center mb-4 sm:mb-6">
-                   <h1 className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3 text-gray-800" 
+                   <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 text-gray-800" 
                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                      {showGad7Intro ? 'Measuring Anxiety' : 'Over the last 2 weeks, how often have you been bothered by any of the following?'}
                    </h1>
@@ -2091,7 +2091,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                  onClick={() => {
                    window.open('https://solhealth.co/resources', '_blank');
                  }}
-                 className="w-full py-4 px-6 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-lg font-medium transition-all border-2 border-gray-800"
+                 className="w-full py-4 px-6 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-lg font-medium transition-colors border-2 border-gray-800"
                  style={{ fontFamily: 'var(--font-inter)' }}
                >
                  Referrals Resource List →
