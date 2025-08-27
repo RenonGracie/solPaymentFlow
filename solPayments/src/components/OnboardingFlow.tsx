@@ -1262,15 +1262,15 @@ export default function OnboardingFlow({
               </h1>
             </div>
 
-            {/* Featured States - 2x2 Grid Layout */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            {/* Featured States - 3-Column Grid Layout */}
+            <div className="grid grid-cols-3 gap-2 mb-4 px-4">
               {featuredStates.map((stateCode) => {
                 const stateName = allStates.find(s => s.code === stateCode)?.name || stateCode;
                 return (
                   <button
                     key={stateCode}
                     onClick={() => handleStateSelection(stateCode)}
-                    className={`relative py-3 px-2 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center justify-center transform hover:scale-[1.02] min-h-[80px] ${
+                    className={`relative py-2 px-1 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center transform hover:scale-[1.02] min-h-[70px] ${
                       selectedState === stateCode
                         ? 'border-[#5C3106] text-white shadow-lg' 
                         : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
@@ -1279,14 +1279,14 @@ export default function OnboardingFlow({
                       backgroundColor: selectedState === stateCode ? '#5C3106' : 'white'
                     }}
                   >
-                    <div className={`w-6 h-6 flex items-center justify-center mb-1 ${selectedState === stateCode ? '' : 'opacity-60'}`}>
+                    <div className={`w-5 h-5 flex items-center justify-center mb-1 ${selectedState === stateCode ? '' : 'opacity-60'}`}>
                       <img 
                         src={statesWithIcons.includes(stateCode) 
                           ? `/state-icons/${stateCode.toLowerCase()}.svg` 
                           : '/state-icons/default.svg'
                         }
                         alt={stateName}
-                        className="w-5 h-5"
+                        className="w-4 h-4"
                         style={{
                           filter: selectedState === stateCode ? 'brightness(0) invert(1)' : 'none'
                         }}
@@ -1296,14 +1296,14 @@ export default function OnboardingFlow({
                       />
                     </div>
                     
-                    <span className={`text-sm font-medium text-center ${selectedState === stateCode ? 'text-white' : 'text-gray-800'}`}>
+                    <span className={`text-xs font-medium text-center ${selectedState === stateCode ? 'text-white' : 'text-gray-800'}`}>
                       {stateCode}
                     </span>
                     
                     {selectedState === stateCode && (
-                      <div className="absolute top-2 right-2">
-                        <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
-                          <Check className="w-3 h-3" style={{ color: '#5C3106' }} />
+                      <div className="absolute top-1 right-1">
+                        <div className="bg-white rounded-full p-0.5 animate-in zoom-in-50 duration-300">
+                          <Check className="w-2.5 h-2.5" style={{ color: '#5C3106' }} />
                         </div>
                       </div>
                     )}
@@ -1313,7 +1313,7 @@ export default function OnboardingFlow({
             </div>
 
             {/* Other State Option - Full Width Below Grid */}
-            <div className="mb-6">
+            <div className="mb-6 px-4">
               <button
                 onClick={() => setShowOtherStateInput(!showOtherStateInput)}
                 className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
