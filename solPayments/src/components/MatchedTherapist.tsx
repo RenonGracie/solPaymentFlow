@@ -567,7 +567,7 @@ export default function MatchedTherapist({
   };
 
   // Map program to display category based on database program field
-  const getTherapistCategory = (t: { program?: string; cohort?: string } | undefined): string => {
+  const getTherapistCategory = useCallback((t: { program?: string; cohort?: string } | undefined): string => {
     const program = (t?.program ?? '').trim();
     const paymentType = getSelectedPaymentType();
     
@@ -606,7 +606,7 @@ export default function MatchedTherapist({
     }
     
     return category;
-  };
+  }, [getSelectedPaymentType, therapist?.intern_name, therapist?.id]);
 
   // Function to extract YouTube video ID from URL (including YouTube Shorts)
   const extractYouTubeId = (url: string): string => {
@@ -981,7 +981,7 @@ export default function MatchedTherapist({
     
     // For dates in different months, return 0 (will need to fetch availability when calendar changes)
     return 0;
-  }, [availability?.days, currentYear, currentMonth, legacyDayCount, therapist, fetchedSlots, emailForSlots]);
+  }, [availability?.days, currentYear, currentMonth, legacyDayCount, therapist, fetchedSlots, emailForSlots, getTherapistCategory]);
 
   // Auto-select first available future date and navigate to correct month
   useEffect(() => {
@@ -1010,8 +1010,8 @@ export default function MatchedTherapist({
           break;
         }
         
-        // Move to next day
-        currentSearchDate.setDate(currentSearchDate.getDate() + 1);
+        // Move to next day (create new date instead of mutating)
+        currentSearchDate = new Date(currentSearchDate.getTime() + (24 * 60 * 60 * 1000));
       }
       
       if (!foundAvailableDate) {
@@ -1172,7 +1172,7 @@ export default function MatchedTherapist({
     }
 
     return filteredSlots.sort((a, b) => a.getTime() - b.getTime());
-  }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, therapist?.available_slots, therapist?.intern_name, timezoneDisplay, timezone, therapist]);
+  }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, timezoneDisplay, timezone, therapist, getTherapistCategory]);
 
   const formatTimeLabel = (date: Date) =>
     date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
