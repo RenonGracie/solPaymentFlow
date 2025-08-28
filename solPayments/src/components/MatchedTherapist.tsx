@@ -8,6 +8,7 @@ import { TMatchedTherapistData } from "@/api/types/therapist.types";
 import type { SlotsResponse } from "@/api/services";
 import { useTherapistsService } from "@/api/services";
 import axios from "@/api/axios"; // Import axios for API calls
+import { TherapistSearchModal } from "@/components/TherapistSearchModal";
 
 /** ---- Availability types (from new backend endpoint) ---- */
 type AvSlot = { start: string; end: string; free_ratio: number; is_free: boolean };
@@ -138,6 +139,7 @@ export default function MatchedTherapist({
   const [fetchingSlots, setFetchingSlots] = useState<Record<string, boolean>>({});
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
   const [hasRecordedSelection, setHasRecordedSelection] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   /** New: cache monthly availability by therapist + month + tz */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
@@ -349,21 +351,35 @@ export default function MatchedTherapist({
     console.log(`[Find Another] Current therapist: ${therapist?.intern_name} (index ${currentIndex})`);
     console.log(`[Find Another] Total therapists available: ${therapistsList.length}`);
     
-    // If we have multiple therapists already loaded, cycle through them first
-    if (therapistsList.length > 1) {
-      const nextIndex = (currentIndex + 1) % therapistsList.length;
-      const nextTherapist = therapistsList[nextIndex]?.therapist;
+    // Show the search modal first
+    setShowSearchModal(true);
+    
+    // Wait for 3 seconds (modal duration) before proceeding
+    setTimeout(() => {
+      setShowSearchModal(false);
       
-      console.log(`[Find Another] Moving to: ${nextTherapist?.intern_name} (index ${nextIndex})`);
+      // If we have multiple therapists already loaded, cycle through them first
+      if (therapistsList.length > 1) {
+        const nextIndex = (currentIndex + 1) % therapistsList.length;
+        const nextTherapist = therapistsList[nextIndex]?.therapist;
+        
+        console.log(`[Find Another] Moving to: ${nextTherapist?.intern_name} (index ${nextIndex})`);
+        
+        setCurrentIndex(nextIndex);
+        setSelectedTimeSlot(null);
+        setSelectedDateObj(null);
+        setImageError({});
+        setHasRecordedSelection(false);
+        setHasAttemptedFallback(false); // Reset fallback flag when switching therapists
+        return;
+      }
       
-      setCurrentIndex(nextIndex);
-      setSelectedTimeSlot(null);
-      setSelectedDateObj(null);
-      setImageError({});
-      setHasRecordedSelection(false);
-      setHasAttemptedFallback(false); // Reset fallback flag when switching therapists
-      return;
-    }
+      // Continue with existing fallback logic if needed
+      handleFindAnotherFallback();
+    }, 3000);
+  };
+  
+  const handleFindAnotherFallback = async () => {
     
     // If we only have 1 therapist or want fresh matches, fetch new ones
     if (onFindAnother) {
@@ -1275,7 +1291,7 @@ export default function MatchedTherapist({
       {/* Heading below banner */}
       <div className="px-4 md:px-6 py-3">
         <h2 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800">
-          We Found the <em>Best Therapist</em> for You
+          A Therapist We Think You'll <em>Click With</em>
         </h2>
       </div>
 
@@ -1803,6 +1819,12 @@ export default function MatchedTherapist({
           </div>
         </div>
       )}
+      
+      {/* Therapist Search Modal */}
+      <TherapistSearchModal
+        isVisible={showSearchModal}
+        onComplete={() => setShowSearchModal(false)}
+      />
     </div>
   );
 }

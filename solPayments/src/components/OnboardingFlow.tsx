@@ -870,7 +870,7 @@ export default function OnboardingFlow({
                     setFormData((prev) => ({ ...prev, whatBringsYou: opt.title }));
                     setCurrentStep(3); // go straight to email step
                   }}
-                  className={`relative w-80 max-w-full text-left ${opt.color} rounded-xl pt-1.5 pb-2.5 px-2.5 md:pt-2 md:pb-3 md:px-3.5 hover:brightness-95 transition-colors`}
+                  className={`relative w-80 max-w-full text-left ${opt.color} rounded-xl pt-1.5 pb-8 px-2.5 md:pt-2 md:pb-10 md:px-3.5 hover:brightness-95 transition-colors`}
                   style={{ 
                     fontFamily: 'var(--font-inter)',
                     backgroundColor: opt.bgColor,
@@ -1370,7 +1370,7 @@ export default function OnboardingFlow({
                           selectedState === state.code ? 'bg-blue-100 text-blue-800' : 'text-gray-700'
                         }`}
                       >
-                        {state.name}
+                        {state.code}
                       </button>
                     ))}
                   </div>
