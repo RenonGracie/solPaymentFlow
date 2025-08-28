@@ -8,6 +8,7 @@ import Image from "next/image";
 import CustomSurvey from "@/components/CustomSurvey";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import MatchedTherapist from "@/components/MatchedTherapist";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { TherapistProvider } from "@/providers/TherapistProvider";
 import { 
   useAppointmentsService,
@@ -174,28 +175,35 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
 
   // Enhanced image URL handling (consistent with MatchedTherapist.tsx)
   const getImageUrl = (imageLink: string | null | undefined): string => {
+    console.log(`[Booking Confirmation getImageUrl] Input: "${imageLink}", type: ${typeof imageLink}`);
+    
     if (!imageLink || typeof imageLink !== 'string') {
+      console.log(`[Booking Confirmation getImageUrl] Empty or invalid input, returning empty string`);
       return '';
     }
     
     const cleanLink = imageLink.trim();
+    console.log(`[Booking Confirmation getImageUrl] Cleaned link: "${cleanLink}"`);
+    
     if (!cleanLink) {
+      console.log(`[Booking Confirmation getImageUrl] Empty after trim, returning empty string`);
       return '';
     }
     
     // Check if it's already a valid URL
     if (cleanLink.startsWith('http://') || cleanLink.startsWith('https://')) {
+      console.log(`[Booking Confirmation getImageUrl] Valid HTTP/HTTPS URL detected: "${cleanLink}"`);
       return cleanLink;
     }
     
     // Handle relative URLs or paths that might need a base URL
     if (cleanLink.startsWith('/')) {
       // If it starts with /, it might be a relative path from a CDN
-      console.warn(`[Booking Confirmation Image] Relative path detected: ${cleanLink} - might need base URL`);
+      console.warn(`[Booking Confirmation getImageUrl] Relative path detected: "${cleanLink}" - might need base URL`);
       return cleanLink; // Return as-is, let the browser handle it
     }
     
-    console.warn(`[Booking Confirmation Image] Invalid image URL format: "${cleanLink}"`);
+    console.warn(`[Booking Confirmation getImageUrl] Invalid image URL format: "${cleanLink}", returning empty string`);
     return '';
   };
 
@@ -423,33 +431,34 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
         <Card className="mb-6 bg-white border border-[#5C3106] rounded-2xl shadow-[1px_1px_0_#5C3106] overflow-hidden">
           <CardContent className="p-0">
             {/* Video thumbnail with play button overlay */}
-            <button 
-              onClick={() => setShowVideo(true)}
-              className="relative w-full h-48 md:h-56 bg-gray-100 hover:bg-gray-200 transition-colors"
-              style={{ aspectRatio: '16/9' }}
-            >
-              {thumbnailUrl ? (
-                <img
-                  src={thumbnailUrl}
-                  alt="Welcome Video Thumbnail"
-                  className="w-full h-full object-cover"
-                  onError={() => {
-                    console.error('Failed to load YouTube video thumbnail:', thumbnailUrl);
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center">
-                  <div className="text-gray-400 text-sm text-center">
-                    <p>Welcome Video</p>
+            <div className="relative w-full bg-gray-100" style={{ aspectRatio: '16/9' }}>
+              <button 
+                onClick={() => setShowVideo(true)}
+                className="absolute inset-0 w-full h-full hover:bg-gray-200 hover:bg-opacity-50 transition-colors group"
+              >
+                {thumbnailUrl ? (
+                  <img
+                    src={thumbnailUrl}
+                    alt="Welcome Video Thumbnail"
+                    className="w-full h-full object-cover"
+                    onError={() => {
+                      console.error('Failed to load YouTube video thumbnail:', thumbnailUrl);
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center">
+                    <div className="text-gray-400 text-sm text-center">
+                      <p>Welcome Video</p>
+                    </div>
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 bg-black bg-opacity-70 rounded-full flex items-center justify-center group-hover:bg-black group-hover:bg-opacity-80 transition-all group-hover:scale-110">
+                    <Play className="w-6 h-6 text-white ml-1" />
                   </div>
                 </div>
-              )}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 bg-black bg-opacity-70 rounded-full flex items-center justify-center hover:bg-black hover:bg-opacity-80 transition-all">
-                  <Play className="w-6 h-6 text-white ml-1" />
-                </div>
-              </div>
-            </button>
+              </button>
+            </div>
           </CardContent>
         </Card>
 
@@ -466,7 +475,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                   <span className="text-lg">📧</span>
                 </div>
                 <div className="text-left">
-                  <p className="text-gray-700 leading-relaxed">Your session confirmation and invite should land in your inbox shortly</p>
+                  <p className="text-gray-700 leading-relaxed">Your session confirmation and invite<br />should land in your inbox shortly</p>
                 </div>
               </div>
               
@@ -475,7 +484,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                   <span className="text-lg">📝</span>
                 </div>
                 <div className="text-left">
-                  <p className="text-gray-700 leading-relaxed">Fill out the Mandatory New Client form (also in your inbox)</p>
+                  <p className="text-gray-700 leading-relaxed">Fill out the Mandatory New Client form<br />(also in your inbox)</p>
                 </div>
               </div>
               
@@ -484,7 +493,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                   <span className="text-lg">📱</span>
                 </div>
                 <div className="text-left">
-                  <p className="text-gray-700 leading-relaxed">Register to your client portal below (takes 3 seconds!)</p>
+                  <p className="text-gray-700 leading-relaxed">Register to your client portal below<br />(takes 3 seconds!)</p>
                 </div>
               </div>
             </div>
@@ -1422,18 +1431,7 @@ export default function MainPageComponent() {
 
   // If we're in loading state, show loading
   if (loading || isProcessingResponse || isBookingInProgress) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3' }}>
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full mx-auto mb-4"></div>
-          <p className="text-lg font-medium">
-            {isBookingInProgress ? 'Booking your session...' : 
-             isProcessingResponse ? 'Processing your responses...' : 
-             'Finding your perfect therapist match...'}
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // If we have an error, show error
@@ -1489,12 +1487,7 @@ export default function MainPageComponent() {
         utmUserId={utmUserId}
       >
         {isSearchingAnotherTherapist ? (
-          <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3' }}>
-            <div className="text-center">
-              <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full mx-auto mb-4"></div>
-              <p className="text-lg font-medium">Finding another therapist...</p>
-            </div>
-          </div>
+          <LoadingScreen />
         ) : (
           <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3' }}>
             {currentStep === STEPS.MATCHED_THERAPIST && matchData?.therapists && matchData.therapists.length > 0 && (() => {
