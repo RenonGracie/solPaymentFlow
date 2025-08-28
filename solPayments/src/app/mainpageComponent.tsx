@@ -172,13 +172,30 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
   // High quality thumbnail
   const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
 
-  // Handle image URL
+  // Enhanced image URL handling (consistent with MatchedTherapist.tsx)
   const getImageUrl = (imageLink: string | null | undefined): string => {
-    if (!imageLink) return '';
-    if (imageLink.startsWith('http://') || imageLink.startsWith('https://')) {
-      return imageLink;
+    if (!imageLink || typeof imageLink !== 'string') {
+      return '';
     }
-    console.warn('Image link is not a full URL:', imageLink);
+    
+    const cleanLink = imageLink.trim();
+    if (!cleanLink) {
+      return '';
+    }
+    
+    // Check if it's already a valid URL
+    if (cleanLink.startsWith('http://') || cleanLink.startsWith('https://')) {
+      return cleanLink;
+    }
+    
+    // Handle relative URLs or paths that might need a base URL
+    if (cleanLink.startsWith('/')) {
+      // If it starts with /, it might be a relative path from a CDN
+      console.warn(`[Booking Confirmation Image] Relative path detected: ${cleanLink} - might need base URL`);
+      return cleanLink; // Return as-is, let the browser handle it
+    }
+    
+    console.warn(`[Booking Confirmation Image] Invalid image URL format: "${cleanLink}"`);
     return '';
   };
 
@@ -351,21 +368,25 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
           <CardContent className="p-4">
             {/* Therapist Profile */}
             <div className="flex items-center gap-3 mb-4">
-              {currentUserData.selected_therapist?.image_link && !imageError ? (
-                <img
-                  src={getImageUrl(currentUserData.selected_therapist.image_link)}
-                  alt={bookingData.PractitionerName}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
-                  onError={() => {
-                    console.error('Failed to load therapist image:', currentUserData.selected_therapist?.image_link);
-                    console.error('Processed image URL:', currentUserData.selected_therapist?.image_link ? getImageUrl(currentUserData.selected_therapist.image_link) : 'N/A');
-                    setImageError(true);
-                  }}
-                />
+              {currentUserData.selected_therapist?.image_link && !imageError && getImageUrl(currentUserData.selected_therapist.image_link) ? (
+                <div className="relative w-12 h-12">
+                  <img
+                    src={getImageUrl(currentUserData.selected_therapist.image_link)}
+                    alt={bookingData.PractitionerName}
+                    className="w-full h-full rounded-full object-cover border-2 border-gray-200 shadow-sm"
+                    onError={() => {
+                      console.error('[Booking Confirmation] Failed to load therapist image:', currentUserData.selected_therapist?.image_link);
+                      console.error('[Booking Confirmation] Processed image URL:', currentUserData.selected_therapist?.image_link ? getImageUrl(currentUserData.selected_therapist.image_link) : 'N/A');
+                      setImageError(true);
+                    }}
+                    onLoad={() => console.log(`[Booking Confirmation] Successfully loaded therapist image for ${bookingData.PractitionerName}`)}
+                    loading="lazy"
+                  />
+                </div>
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-2 border-gray-100">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-2 border-gray-200 shadow-sm">
                   <span className="text-lg font-medium text-gray-600">
-                    {bookingData.PractitionerName?.charAt(0) || 'T'}
+                    {(bookingData.PractitionerName?.charAt(0) || currentUserData.selected_therapist?.name?.charAt(0) || currentUserData.preferred_name?.charAt(0) || currentUserData.first_name?.charAt(0) || 'T').toUpperCase()}
                   </span>
                 </div>
               )}

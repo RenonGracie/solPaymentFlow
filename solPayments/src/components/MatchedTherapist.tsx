@@ -583,19 +583,28 @@ export default function MatchedTherapist({
 
   // Function to handle image URL - S3 presigned URLs should be used directly
   const getImageUrl = (imageLink: string | null | undefined): string => {
-    if (!imageLink) {
-      console.log('[Image] No image link provided');
+    if (!imageLink || typeof imageLink !== 'string') {
       return '';
     }
     
-    console.log(`[Image] Processing image link: ${imageLink}`);
-    
-    if (imageLink.startsWith('http://') || imageLink.startsWith('https://')) {
-      console.log(`[Image] Valid URL detected: ${imageLink}`);
-      return imageLink;
+    const cleanLink = imageLink.trim();
+    if (!cleanLink) {
+      return '';
     }
     
-    console.warn(`[Image] Image link is not a full URL: ${imageLink}`);
+    // Check if it's already a valid URL
+    if (cleanLink.startsWith('http://') || cleanLink.startsWith('https://')) {
+      return cleanLink;
+    }
+    
+    // Handle relative URLs or paths that might need a base URL
+    if (cleanLink.startsWith('/')) {
+      // If it starts with /, it might be a relative path from a CDN
+      console.warn(`[Image] Relative path detected: ${cleanLink} - might need base URL`);
+      return cleanLink; // Return as-is, let the browser handle it
+    }
+    
+    console.warn(`[Image] Invalid image URL format: "${cleanLink}"`);
     return '';
   };
 
@@ -1282,15 +1291,19 @@ export default function MatchedTherapist({
                     onClick={() => setShowVideo(!showVideo)}
                     className="absolute top-3 right-3 md:top-4 md:right-4 w-56 h-32 md:w-64 md:h-40 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106] z-10"
                   >
-                    {therapist.image_link && !imageError[therapist.id] && (
+                    {therapist.image_link && !imageError[therapist.id] && getImageUrl(therapist.image_link) && (
                       <img
                         src={getImageUrl(therapist.image_link)}
                         alt=""
-                        className="absolute inset-0 w-full h-full object-cover opacity-50"
-                        onError={() => {}}
+                        className="absolute inset-0 w-full h-full object-cover opacity-30"
+                        onError={() => console.log(`[Video Preview] Image failed for ${therapist.intern_name}`)}
+                        loading="lazy"
                       />
                     )}
-                    <Play className="w-7 h-7 md:w-8 md:h-8 text-white relative z-10" />
+                    <div className="relative z-10 flex flex-col items-center gap-2">
+                      <Play className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                      <span className="text-white text-xs font-medium">Watch Video</span>
+                    </div>
                   </button>
                 )}
                 <CardContent className="p-4 md:p-6 md:h-full md:overflow-y-auto">
@@ -1298,16 +1311,20 @@ export default function MatchedTherapist({
                   <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
                     <div className="flex-shrink-0">
                       {therapist.image_link && !imageError[therapist.id] ? (
-                        <img
-                          src={getImageUrl(therapist.image_link)}
-                          alt={therapist.intern_name}
-                          className="w-24 h-24 rounded-full object-cover"
-                          onError={() => handleImageError(therapist.id)}
-                        />
+                        <div className="relative w-24 h-24">
+                          <img
+                            src={getImageUrl(therapist.image_link)}
+                            alt={therapist.intern_name}
+                            className="w-full h-full rounded-full object-cover shadow-sm border border-gray-200"
+                            onError={() => handleImageError(therapist.id)}
+                            onLoad={() => console.log(`[Image] Successfully loaded: ${therapist.intern_name}`)}
+                            loading="lazy"
+                          />
+                        </div>
                       ) : (
-                        <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-2xl text-gray-500">
-                            {therapist.intern_name?.charAt(0)}
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-sm border border-gray-200">
+                          <span className="text-2xl font-medium text-gray-600">
+                            {therapist.intern_name?.charAt(0)?.toUpperCase() || '?'}
                           </span>
                         </div>
                       )}
@@ -1651,17 +1668,18 @@ export default function MatchedTherapist({
                     onClick={() => handleSelectPreviousTherapist(therapistData.therapist.id)}
                     className="p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-center"
                   >
-                    {therapistData.therapist.image_link && !imageError[therapistData.therapist.id] ? (
+                    {therapistData.therapist.image_link && !imageError[therapistData.therapist.id] && getImageUrl(therapistData.therapist.image_link) ? (
                       <img
                         src={getImageUrl(therapistData.therapist.image_link)}
                         alt={therapistData.therapist.intern_name}
-                        className="w-20 h-20 rounded-full object-cover mx-auto mb-2"
+                        className="w-20 h-20 rounded-full object-cover mx-auto mb-2 shadow-sm border border-gray-200"
                         onError={() => handleImageError(therapistData.therapist.id)}
+                        loading="lazy"
                       />
                     ) : (
-                      <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-2">
-                        <span className="text-xl text-gray-500">
-                          {therapistData.therapist.intern_name?.charAt(0)}
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-2 shadow-sm border border-gray-200">
+                        <span className="text-xl font-medium text-gray-600">
+                          {therapistData.therapist.intern_name?.charAt(0)?.toUpperCase() || '?'}
                         </span>
                       </div>
                     )}
@@ -1675,113 +1693,113 @@ export default function MatchedTherapist({
         </div>
       </div>
 
-      {/* Enhanced Video Modal with Smart Sizing */}
+      {/* Simple Video Modal */}
       {showVideo && hasValidVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowVideo(false)}>
-          <div className="bg-white rounded-lg p-4 w-full max-w-4xl mx-auto" onClick={e => e.stopPropagation()}>
-            <div className="mb-4">
-              <h3 className="text-lg font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                Welcome Video - {therapist?.intern_name}
-              </h3>
-            </div>
-            
-            {(() => {
-              switch (videoAnalysis.videoType) {
-                case 'youtube-short':
-                  // YouTube Shorts - use 9:16 aspect ratio
-                  return (
-                    <div className="flex justify-center">
-                      <div className="w-full max-w-sm" style={{ aspectRatio: '9/16' }}>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowVideo(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-auto overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                  Welcome from {therapist?.intern_name}
+                </h3>
+                <button 
+                  onClick={() => setShowVideo(false)}
+                  className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {(() => {
+                switch (videoAnalysis.videoType) {
+                  case 'youtube-short':
+                    return (
+                      <div className="flex justify-center">
+                        <div className="w-full max-w-sm" style={{ aspectRatio: '9/16' }}>
+                          <iframe
+                            src={`${videoAnalysis.embedUrl}?rel=0&modestbranding=1&controls=1`}
+                            className="w-full h-full rounded-lg"
+                            allowFullScreen
+                            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            title={`Welcome video from ${therapist?.intern_name}`}
+                          />
+                        </div>
+                      </div>
+                    );
+                  
+                  case 'youtube-regular':
+                    return (
+                      <div className="w-full" style={{ aspectRatio: '16/9' }}>
                         <iframe
-                          src={`${videoAnalysis.embedUrl}?rel=0&modestbranding=1`}
-                          className="w-full h-full rounded"
+                          src={`${videoAnalysis.embedUrl}?rel=0&modestbranding=1&controls=1`}
+                          className="w-full h-full rounded-lg"
                           allowFullScreen
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           title={`Welcome video from ${therapist?.intern_name}`}
                         />
                       </div>
-                    </div>
-                  );
-                
-                case 'youtube-regular':
-                  // Regular YouTube videos - use 16:9 aspect ratio
-                  return (
-                    <div className="w-full" style={{ aspectRatio: '16/9' }}>
-                      <iframe
-                        src={`${videoAnalysis.embedUrl}?rel=0&modestbranding=1`}
-                        className="w-full h-full rounded"
-                        allowFullScreen
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        title={`Welcome video from ${therapist?.intern_name}`}
-                      />
-                    </div>
-                  );
-                
-                case 'vimeo':
-                  // Vimeo videos - use 16:9 aspect ratio
-                  return (
-                    <div className="w-full" style={{ aspectRatio: '16/9' }}>
-                      <iframe
+                    );
+                  
+                  case 'vimeo':
+                    return (
+                      <div className="w-full" style={{ aspectRatio: '16/9' }}>
+                        <iframe
+                          src={videoAnalysis.embedUrl}
+                          className="w-full h-full rounded-lg"
+                          allowFullScreen
+                          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          title={`Welcome video from ${therapist?.intern_name}`}
+                        />
+                      </div>
+                    );
+                  
+                  case 'direct':
+                    return (
+                      <video
                         src={videoAnalysis.embedUrl}
-                        className="w-full h-full rounded"
-                        allowFullScreen
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        className="w-full max-h-[500px] rounded-lg"
+                        controls
+                        preload="metadata"
                         title={`Welcome video from ${therapist?.intern_name}`}
-                      />
-                    </div>
-                  );
-                
-                case 'direct':
-                  // Direct video files
-                  return (
-                    <video
-                      src={videoAnalysis.embedUrl}
-                      className="w-full max-h-[500px] rounded"
-                      controls
-                      preload="metadata"
-                      title={`Welcome video from ${therapist?.intern_name}`}
-                    >
-                      Your browser does not support the video tag.
-                    </video>
-                  );
-                
-                case 'other-platform':
-                  // Other platforms - try iframe first, fallback to link
-                  return (
-                    <div className="text-center">
-                      <iframe
-                        src={videoAnalysis.embedUrl}
-                        className="w-full h-[400px] rounded"
-                        allowFullScreen
-                        title={`Welcome video from ${therapist?.intern_name}`}
-                        onError={() => console.error(`[Video] Failed to load iframe for ${videoAnalysis.platform}`)}
-                      />
-                      <p className="mt-2 text-sm text-gray-600">
-                        If the video doesn't load, <a href={videoAnalysis.embedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">click here to view it directly</a>.
-                      </p>
-                    </div>
-                  );
-                
-                default:
-                  return (
-                    <div className="text-center py-8">
-                      <p className="text-gray-600 mb-4">Unable to display this video format.</p>
-                      <a 
-                        href={welcomeVideoLink} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
                       >
-                        View video in new tab
-                      </a>
-                    </div>
-                  );
-              }
-            })()}
-            
-            <Button onClick={() => setShowVideo(false)} className="mt-4 w-full">
-              Close Video
-            </Button>
+                        Your browser does not support the video tag.
+                      </video>
+                    );
+                  
+                  case 'other-platform':
+                    return (
+                      <div>
+                        <iframe
+                          src={videoAnalysis.embedUrl}
+                          className="w-full h-[400px] rounded-lg"
+                          allowFullScreen
+                          title={`Welcome video from ${therapist?.intern_name}`}
+                        />
+                        <p className="mt-3 text-sm text-gray-600 text-center">
+                          If the video doesn't load, <a href={videoAnalysis.embedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">click here to view it directly</a>.
+                        </p>
+                      </div>
+                    );
+                  
+                  default:
+                    return (
+                      <div className="text-center py-12">
+                        <p className="text-gray-600 mb-4">Unable to display this video format.</p>
+                        <a 
+                          href={welcomeVideoLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          View video in new tab
+                        </a>
+                      </div>
+                    );
+                }
+              })()}
+            </div>
           </div>
         </div>
       )}
