@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { checkEligibility } from "../app/api/eligibility.js";
 import { PAYER_ID_BY_PROVIDER, NPI, getSessionCostForPayer } from "@/api/eligibilityConfig";
 import { useInputFocus } from "@/hooks/useInputFocus";
+import { useAvailableStates } from "@/api/hooks/useAvailableStates";
 
 interface EligibilityBenefits {
   copay: string;
@@ -194,9 +195,12 @@ export default function OnboardingFlow({
   // NJ insurance plan verification
   const [njInsurancePlan, setNjInsurancePlan] = useState<'yes' | 'no' | null>(null);
 
-  // Define featured states (supported states) in 2x2 grid layout with specific ordering
-  // Starting with 2x2 base: NY, NJ, FL, TX, then extending dynamically
-  const featuredStates = ['NY', 'NJ', 'FL', 'TX', 'CA', 'CT', 'GA', 'NV', 'VT', 'MA', 'IL', 'PA', 'RI', 'VA', 'WI', 'NC', 'CO', 'OR', 'WA', 'ME', 'NH'];
+  // Use dynamic state availability based on payment type and accepting therapists
+  const { availableStates, stateCounts, isLoading: statesLoading } = useAvailableStates('cash_pay');
+  
+  // Fallback to previous featured states if API fails
+  const fallbackStates = ['NY', 'NJ', 'FL', 'TX', 'CA', 'CT', 'GA', 'NV', 'VT', 'MA', 'IL', 'PA', 'RI', 'VA', 'WI', 'NC', 'CO', 'OR', 'WA', 'ME', 'NH'];
+  const featuredStates = availableStates.length > 0 ? availableStates : fallbackStates;
   
   // States that have explicit SVG icons (others will use default.svg)
   const statesWithIcons = ['NY', 'NJ', 'FL', 'TX', 'CA'];
@@ -1179,12 +1183,24 @@ export default function OnboardingFlow({
                      
                      <div>
                        <p className="text-sm font-medium text-gray-800 mb-2">States we currently serve:</p>
-                       <p className="text-sm text-gray-600">
-                         {featuredStates.map(stateCode => {
-                           const state = allStates.find(s => s.code === stateCode);
-                           return state?.name;
-                         }).join(', ')}
-                       </p>
+                       {statesLoading ? (
+                         <div className="flex items-center space-x-2">
+                           <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                           <p className="text-sm text-gray-500">Loading available states...</p>
+                         </div>
+                       ) : (
+                         <p className="text-sm text-gray-600">
+                           {featuredStates.map(stateCode => {
+                             const state = allStates.find(s => s.code === stateCode);
+                             return state?.name;
+                           }).filter(Boolean).join(', ')}
+                           {availableStates.length > 0 && (
+                             <span className="ml-2 inline-block rounded-full bg-green-100 text-green-800 px-2 py-0.5 text-xs font-medium">
+                               {availableStates.length} states available
+                             </span>
+                           )}
+                         </p>
+                       )}
                      </div>
                      
                      <div>
@@ -1262,63 +1278,82 @@ export default function OnboardingFlow({
               </h1>
             </div>
 
+            {/* Loading States */}
+            {statesLoading && (
+              <div className="text-center py-8">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                  <span className="text-sm text-gray-600">Loading available states...</span>
+                </div>
+              </div>
+            )}
+
             {/* Featured States - 3-Column Grid Layout */}
-            <div className="grid grid-cols-3 gap-2 mb-4 px-4">
-              {featuredStates.map((stateCode, index) => {
-                const stateName = allStates.find(s => s.code === stateCode)?.name || stateCode;
-                // Calculate animation delay based on position (cascade from top-left to bottom-right)
-                const row = Math.floor(index / 3);
-                const col = index % 3;
-                const animationDelay = (row + col) * 100; // Staggered delay in milliseconds
-                
-                return (
-                  <button
-                    key={stateCode}
-                    onClick={() => handleStateSelection(stateCode)}
-                    className={`relative py-2 px-1 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center transform hover:scale-[1.02] min-h-[70px] animate-in fade-in slide-in-from-top-2 ${
-                      selectedState === stateCode
-                        ? 'border-[#5C3106] text-white shadow-lg' 
-                        : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
-                    }`}
-                    style={{
-                      backgroundColor: selectedState === stateCode ? '#5C3106' : 'white',
-                      animationDelay: `${animationDelay}ms`,
-                      animationDuration: '600ms',
-                      animationFillMode: 'both'
-                    } as React.CSSProperties}
-                  >
-                    <div className={`w-5 h-5 flex items-center justify-center mb-1 ${selectedState === stateCode ? '' : 'opacity-60'}`}>
-                      <img 
-                        src={statesWithIcons.includes(stateCode) 
-                          ? `/state-icons/${stateCode.toLowerCase()}.svg` 
-                          : '/state-icons/default.svg'
-                        }
-                        alt={stateName}
-                        className="w-4 h-4"
-                        style={{
-                          filter: selectedState === stateCode ? 'brightness(0) invert(1)' : 'none'
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.src = '/state-icons/default.svg';
-                        }}
-                      />
-                    </div>
-                    
-                    <span className={`text-xs font-medium text-center ${selectedState === stateCode ? 'text-white' : 'text-gray-800'}`}>
-                      {stateCode}
-                    </span>
-                    
-                    {selectedState === stateCode && (
-                      <div className="absolute top-1 right-1">
-                        <div className="bg-white rounded-full p-0.5 animate-in zoom-in-50 duration-300">
-                          <Check className="w-2.5 h-2.5" style={{ color: '#5C3106' }} />
-                        </div>
+            {!statesLoading && (
+              <div className="grid grid-cols-3 gap-2 mb-4 px-4">
+                {featuredStates.map((stateCode, index) => {
+                  const stateName = allStates.find(s => s.code === stateCode)?.name || stateCode;
+                  const therapistCount = stateCounts[stateCode];
+                  // Calculate animation delay based on position (cascade from top-left to bottom-right)
+                  const row = Math.floor(index / 3);
+                  const col = index % 3;
+                  const animationDelay = (row + col) * 100; // Staggered delay in milliseconds
+                  
+                  return (
+                    <button
+                      key={stateCode}
+                      onClick={() => handleStateSelection(stateCode)}
+                      className={`relative py-2 px-1 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center transform hover:scale-[1.02] min-h-[70px] animate-in fade-in slide-in-from-top-2 ${
+                        selectedState === stateCode
+                          ? 'border-[#5C3106] text-white shadow-lg' 
+                          : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                      }`}
+                      style={{
+                        backgroundColor: selectedState === stateCode ? '#5C3106' : 'white',
+                        animationDelay: `${animationDelay}ms`,
+                        animationDuration: '600ms',
+                        animationFillMode: 'both'
+                      } as React.CSSProperties}
+                    >
+                      <div className={`w-5 h-5 flex items-center justify-center mb-1 ${selectedState === stateCode ? '' : 'opacity-60'}`}>
+                        <img 
+                          src={statesWithIcons.includes(stateCode) 
+                            ? `/state-icons/${stateCode.toLowerCase()}.svg` 
+                            : '/state-icons/default.svg'
+                          }
+                          alt={stateName}
+                          className="w-4 h-4"
+                          style={{
+                            filter: selectedState === stateCode ? 'brightness(0) invert(1)' : 'none'
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.src = '/state-icons/default.svg';
+                          }}
+                        />
                       </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                      
+                      <span className={`text-xs font-medium text-center ${selectedState === stateCode ? 'text-white' : 'text-gray-800'}`}>
+                        {stateCode}
+                      </span>
+                      
+                      {therapistCount && therapistCount > 0 && (
+                        <span className={`text-[10px] ${selectedState === stateCode ? 'text-white/80' : 'text-gray-500'}`}>
+                          {therapistCount} therapist{therapistCount > 1 ? 's' : ''}
+                        </span>
+                      )}
+                      
+                      {selectedState === stateCode && (
+                        <div className="absolute top-1 right-1">
+                          <div className="bg-white rounded-full p-0.5 animate-in zoom-in-50 duration-300">
+                            <Check className="w-2.5 h-2.5" style={{ color: '#5C3106' }} />
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Other State Option - Full Width Below Grid */}
             <div className="mb-6 px-4">
