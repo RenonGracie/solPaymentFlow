@@ -9,6 +9,7 @@ import type { SlotsResponse } from "@/api/services";
 import { useTherapistsService } from "@/api/services";
 import axios from "@/api/axios"; // Import axios for API calls
 import { TherapistSearchModal } from "@/components/TherapistSearchModal";
+import { TherapistConfirmationModal } from "@/components/TherapistConfirmationModal";
 
 /** ---- Availability types (from new backend endpoint) ---- */
 type AvSlot = { start: string; end: string; free_ratio: number; is_free: boolean };
@@ -140,6 +141,7 @@ export default function MatchedTherapist({
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
   const [hasRecordedSelection, setHasRecordedSelection] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   /** New: cache monthly availability by therapist + month + tz */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
@@ -354,7 +356,7 @@ export default function MatchedTherapist({
     // Show the search modal first
     setShowSearchModal(true);
     
-    // Wait for 3 seconds (modal duration) before proceeding
+    // Wait for 2 seconds (modal duration) before proceeding
     setTimeout(() => {
       setShowSearchModal(false);
       
@@ -376,7 +378,7 @@ export default function MatchedTherapist({
       
       // Continue with existing fallback logic if needed
       handleFindAnotherFallback();
-    }, 3000);
+    }, 2000);
   };
   
   const handleFindAnotherFallback = async () => {
@@ -441,6 +443,15 @@ export default function MatchedTherapist({
         selectedDateObj: selectedDateObj?.toISOString(),
         responseId: clientData?.response_id
       });
+      return;
+    }
+    
+    // Show confirmation modal instead of booking immediately
+    setShowConfirmationModal(true);
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!selectedTimeSlot || !selectedDateObj || !clientData?.response_id) {
       return;
     }
     
@@ -521,6 +532,9 @@ export default function MatchedTherapist({
     console.log(`  Therapist timezone offset: ${therapistTimezoneOffset}`);
     console.log(`  UTC DateTime: ${utcDateTime}`);
     console.log(`  Final datetime with timezone: ${datetime}`);
+    
+    // Close the confirmation modal
+    setShowConfirmationModal(false);
     
     // Only call the parent callback - let the main component handle the booking
     // This eliminates the duplicate API call that was causing double emails
@@ -1824,6 +1838,16 @@ export default function MatchedTherapist({
       <TherapistSearchModal
         isVisible={showSearchModal}
         onComplete={() => setShowSearchModal(false)}
+      />
+      
+      {/* Therapist Confirmation Modal */}
+      <TherapistConfirmationModal
+        isVisible={showConfirmationModal}
+        therapist={currentTherapistData}
+        selectedDate={selectedDateObj}
+        selectedTimeSlot={selectedTimeSlot}
+        onConfirm={handleConfirmBooking}
+        onCancel={() => setShowConfirmationModal(false)}
       />
     </div>
   );

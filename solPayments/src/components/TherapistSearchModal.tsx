@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 interface TherapistSearchModalProps {
   isVisible: boolean;
@@ -8,32 +8,15 @@ interface TherapistSearchModalProps {
 }
 
 export const TherapistSearchModal = ({ isVisible, onComplete }: TherapistSearchModalProps) => {
-  const [progress, setProgress] = useState(0);
-
   useEffect(() => {
     if (!isVisible) return;
 
-    const duration = 3000; // 3 seconds
-    const interval = 50; // Update every 50ms
-    const increment = (interval / duration) * 100;
-
-    const timer = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          setTimeout(() => {
-            onComplete();
-            setProgress(0); // Reset for next use
-          }, 100);
-          return 100;
-        }
-        return prev + increment;
-      });
-    }, interval);
+    const timer = setTimeout(() => {
+      onComplete();
+    }, 2000);
 
     return () => {
-      clearInterval(timer);
-      setProgress(0);
+      clearTimeout(timer);
     };
   }, [isVisible, onComplete]);
 
@@ -52,32 +35,25 @@ export const TherapistSearchModal = ({ isVisible, onComplete }: TherapistSearchM
             therapist match...
           </h2>
           
-          {/* Radial progress spinner */}
-          <div className="relative w-16 h-16 mx-auto">
-            {/* Background circle */}
-            <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 64 64">
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                stroke="#D2B48C"
-                strokeWidth="4"
-                fill="none"
-              />
-              {/* Progress circle */}
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                stroke="#8B4513"
-                strokeWidth="4"
-                fill="none"
-                strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 28}`}
-                strokeDashoffset={`${2 * Math.PI * 28 * (1 - progress / 100)}`}
-                className="transition-all duration-75 ease-linear"
-              />
-            </svg>
+          {/* Sun-like radial dial animation */}
+          <div className="relative w-12 h-12 mx-auto">
+            {/* Outer rays */}
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: '2s' }}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1 h-4 bg-[#8B4513] rounded-full"
+                  style={{
+                    top: '0px',
+                    left: '50%',
+                    transformOrigin: '50% 24px',
+                    transform: `translateX(-50%) rotate(${i * 45}deg)`,
+                  }}
+                />
+              ))}
+            </div>
+            {/* Inner circle */}
+            <div className="absolute inset-2 bg-[#8B4513] rounded-full"></div>
           </div>
         </div>
       </div>
