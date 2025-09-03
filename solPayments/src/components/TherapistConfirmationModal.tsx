@@ -83,7 +83,7 @@ export const TherapistConfirmationModal = ({
         <div className="p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="very-vogue-title text-3xl text-gray-800">
+            <h2 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800">
               Confirm <em>your</em> Selection
             </h2>
           </div>

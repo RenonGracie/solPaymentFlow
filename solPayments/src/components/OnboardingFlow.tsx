@@ -836,7 +836,7 @@ export default function OnboardingFlow({
           <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+            <p className="text-center text-2xl sm:text-3xl md:text-4xl text-gray-800 font-normal px-4" 
                 style={{ 
                   fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
                   fontWeight: 400,

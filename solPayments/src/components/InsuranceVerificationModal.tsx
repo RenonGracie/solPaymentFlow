@@ -213,7 +213,7 @@ export default function InsuranceVerificationModal({
         {modalState === "insurance-form" && (
           <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
             <div className="text-center space-y-4">
-              <h1 className="very-vogue-title text-4xl text-gray-800" style={{ fontSize: '30px', lineHeight: '1.1' }}>
+              <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ lineHeight: '1.1' }}>
                 Great, We're In Network!
               </h1>
               <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
@@ -358,7 +358,7 @@ export default function InsuranceVerificationModal({
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                 </div>
               </div>
-              <h2 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.2' }}>
+              <h2 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ lineHeight: '1.2' }}>
                 Verifying Your Insurance...
               </h2>
               <div className="w-48 h-2 bg-gray-200 rounded-full mx-auto overflow-hidden">
@@ -378,7 +378,7 @@ export default function InsuranceVerificationModal({
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-700 delay-300">
                 <Check className="w-8 h-8 text-green-600" />
               </div>
-              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '30px', lineHeight: '1.1' }}>
+              <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ lineHeight: '1.1' }}>
                 You're Covered!<br />
                 Here's How It Works.
               </h1>
@@ -458,7 +458,7 @@ export default function InsuranceVerificationModal({
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-700 delay-300">
                 <X className="w-8 h-8 text-red-600" />
               </div>
-              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '26px', lineHeight: '1.1' }}>
+              <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ lineHeight: '1.1' }}>
                 Sorry, we couldn't verify your eligibility.
               </h1>
               <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
@@ -495,7 +495,7 @@ export default function InsuranceVerificationModal({
                   💰 $30 / Session Out-of-Pocket Selected
                 </div>
               </div>
-              <h1 className="very-vogue-title text-gray-800" style={{ fontSize: '30px', lineHeight: '1.1' }}>
+              <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ lineHeight: '1.1' }}>
                 Let's Get You Matched
               </h1>
               <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>

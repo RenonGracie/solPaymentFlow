@@ -1383,7 +1383,7 @@ export default function MatchedTherapist({
 
       {/* Heading below banner */}
       <div className="px-4 md:px-6 py-3">
-        <h2 className="very-vogue-title text-xl sm:text-2xl md:text-3xl text-gray-800 text-center">
+        <h2 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800 text-center">
           A Therapist We Think You'll <em>Click With</em>
         </h2>
       </div>
@@ -1395,51 +1395,58 @@ export default function MatchedTherapist({
             {/* Left Column - Therapist Details */}
             <div className="col-span-1 md:col-span-7 flex flex-col min-h-0">
               <Card className="md:flex-1 overflow-visible md:overflow-hidden bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106] relative">
-                {hasValidVideo && (
-                  <button
-                    onClick={() => setShowVideo(!showVideo)}
-                    className="absolute top-3 right-3 md:top-4 md:right-4 w-56 h-32 md:w-64 md:h-40 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106] z-10"
-                  >
-                    {therapist.image_link && !imageError[therapist.id] && getImageUrl(therapist.image_link) && (
-                      <img
-                        src={getImageUrl(therapist.image_link)}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover opacity-30"
-                        onError={() => console.log(`[Video Preview] Image failed for ${therapist.intern_name}`)}
-                        loading="lazy"
-                      />
-                    )}
-                    <div className="relative z-10 flex flex-col items-center gap-2">
-                      <Play className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                      <span className="text-white text-xs font-medium" style={{ fontFamily: 'var(--font-inter)' }}>Meet {therapist.intern_name?.split(' ')[0] || 'Therapist'}</span>
-                    </div>
-                  </button>
-                )}
                 <CardContent className="p-4 md:p-6 md:h-full md:overflow-y-auto">
                   {/* Therapist Header */}
                   <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
-                    <div className="flex-shrink-0">
-                      {therapist.image_link && !imageError[therapist.id] ? (
-                        <div className="relative w-24 h-24">
-                          <img
-                            src={getImageUrl(therapist.image_link)}
-                            alt={therapist.intern_name}
-                            className="w-full h-full rounded-full object-cover shadow-sm border border-gray-200"
-                            onError={() => handleImageError(therapist.id)}
-                            onLoad={() => console.log(`[Image] Successfully loaded: ${therapist.intern_name}`)}
-                            loading="lazy"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-sm border border-gray-200">
-                          <span className="text-xl font-medium text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
-                            {therapist.intern_name?.charAt(0)?.toUpperCase() || '?'}
-                          </span>
+                    <div className="flex w-full gap-4">
+                      {/* Profile Image */}
+                      <div className="flex-shrink-0">
+                        {therapist.image_link && !imageError[therapist.id] ? (
+                          <div className="relative w-24 h-24">
+                            <img
+                              src={getImageUrl(therapist.image_link)}
+                              alt={therapist.intern_name}
+                              className="w-full h-full rounded-full object-cover shadow-sm border border-gray-200"
+                              onError={() => handleImageError(therapist.id)}
+                              onLoad={() => console.log(`[Image] Successfully loaded: ${therapist.intern_name}`)}
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-sm border border-gray-200">
+                            <span className="text-xl font-medium text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                              {therapist.intern_name?.charAt(0)?.toUpperCase() || '?'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Video Button - matches profile image height */}
+                      {hasValidVideo && (
+                        <div className="flex-1">
+                          <button
+                            onClick={() => setShowVideo(!showVideo)}
+                            className="w-full h-24 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106]"
+                          >
+                            {therapist.image_link && !imageError[therapist.id] && getImageUrl(therapist.image_link) && (
+                              <img
+                                src={getImageUrl(therapist.image_link)}
+                                alt=""
+                                className="absolute inset-0 w-full h-full object-cover opacity-30"
+                                onError={() => console.log(`[Video Preview] Image failed for ${therapist.intern_name}`)}
+                                loading="lazy"
+                              />
+                            )}
+                            <div className="relative z-10 flex items-center gap-3">
+                              <Play className="w-6 h-6 text-white" />
+                              <span className="text-white text-sm font-medium" style={{ fontFamily: 'var(--font-inter)' }}>Meet {therapist.intern_name?.split(' ')[0] || 'Therapist'}</span>
+                            </div>
+                          </button>
                         </div>
                       )}
                     </div>
                     
-                    <div className="flex-1 w-full">
+                    <div className="w-full mt-4">
                       <h2 className="very-vogue-title text-xl sm:text-2xl text-gray-800">{therapist.intern_name}</h2>
                       <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>{getTherapistCategory(therapist)}</p>
                       {/* Matched specialties */}

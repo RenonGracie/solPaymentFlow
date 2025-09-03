@@ -30,7 +30,7 @@ export const TherapistSearchModal = ({ isVisible, onComplete }: TherapistSearchM
       {/* Yellow modal */}
       <div className="relative bg-yellow-100 rounded-3xl p-8 shadow-2xl border border-[#5C3106] max-w-sm mx-4 animate-modal-appear">
         <div className="text-center">
-          <h2 className="very-vogue-title text-2xl text-[#5C3106] mb-8 leading-tight">
+          <h2 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-[#5C3106] mb-8 leading-tight text-center">
             Finding your next<br />
             therapist match...
           </h2>

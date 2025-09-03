@@ -1262,7 +1262,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12 pb-2 sm:pb-4">
                 <div className="max-w-md w-full">
                   {/* Title duplicated in video artwork; removing per design */}
-                  <div className={`relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden transition-all duration-600 ${phq9VideoLoaded ? 'bg-transparent animate-in fade-in' : 'bg-white'}`}>
+                  <div className="relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden bg-transparent aspect-video">
                     <video
                       className={`w-full h-full object-cover transition-opacity duration-600 ${phq9VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
                       src={VIDEOS.emotionalWellBeing}
@@ -1484,7 +1484,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12 pb-2 sm:pb-4">
                <div className="max-w-md w-full">
                  {/* Title duplicated in video artwork; removing per design */}
-                 <div className={`relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden transition-all duration-600 ${gad7VideoLoaded ? 'bg-transparent animate-in fade-in' : 'bg-white'}`}>
+                 <div className="relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden bg-transparent aspect-video">
                    <video
                      className={`w-full h-full object-cover transition-opacity duration-600 ${gad7VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
                      src={VIDEOS.measuringAnxiety}
