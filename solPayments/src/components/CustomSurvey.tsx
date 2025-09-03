@@ -1260,9 +1260,12 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               </div>
 
               <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12 pb-2 sm:pb-4">
-                <div className="max-w-md w-full">
-                  {/* Title duplicated in video artwork; removing per design */}
-                  <div className="relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden bg-transparent aspect-video">
+                <div className="max-w-sm w-full">
+                  {/* PHQ-9 Square Video Container */}
+                  <div className="relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden bg-white aspect-square">
+                    {/* White background that shows while video loads */}
+                    <div className={`absolute inset-0 bg-white transition-opacity duration-600 ${phq9VideoLoaded ? 'opacity-0' : 'opacity-100'}`} />
+                    
                     <video
                       className={`w-full h-full object-cover transition-opacity duration-600 ${phq9VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
                       src={VIDEOS.emotionalWellBeing}
@@ -1271,8 +1274,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                       playsInline
                       loop={false}
                       controls={false}
-                      preload="auto"
+                      preload="metadata"
                       onLoadedData={() => setPhq9VideoLoaded(true)}
+                      onCanPlayThrough={() => setPhq9VideoLoaded(true)}
                       onPlay={() => {
                         setPhq9IntroTimerReady(false);
                         setTimeout(() => setPhq9IntroTimerReady(true), 2500);
@@ -1282,6 +1286,10 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                       onEnded={(e) => {
                         setPhq9IntroEnded(true);
                        }}
+                      onError={() => {
+                        console.warn('PHQ-9 video load error');
+                        setPhq9VideoLoaded(true); // Continue anyway
+                      }}
                     />
                     <div className="absolute inset-x-0 bottom-3 flex justify-center">
                       <Button
@@ -1482,9 +1490,12 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              </div>
 
              <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12 pb-2 sm:pb-4">
-               <div className="max-w-md w-full">
-                 {/* Title duplicated in video artwork; removing per design */}
-                 <div className="relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden bg-transparent aspect-video">
+               <div className="max-w-sm w-full">
+                 {/* GAD-7 Square Video Container */}
+                 <div className="relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden bg-white aspect-square">
+                   {/* White background that shows while video loads */}
+                   <div className={`absolute inset-0 bg-white transition-opacity duration-600 ${gad7VideoLoaded ? 'opacity-0' : 'opacity-100'}`} />
+                   
                    <video
                      className={`w-full h-full object-cover transition-opacity duration-600 ${gad7VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
                      src={VIDEOS.measuringAnxiety}
@@ -1493,8 +1504,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                      playsInline
                      loop={false}
                      controls={false}
-                     preload="auto"
+                     preload="metadata"
                      onLoadedData={() => setGad7VideoLoaded(true)}
+                     onCanPlayThrough={() => setGad7VideoLoaded(true)}
                      onPlay={() => {
                        setGad7IntroTimerReady(false);
                        setTimeout(() => setGad7IntroTimerReady(true), 2500);
@@ -1503,6 +1515,10 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                      onEnded={(e) => {
                        setGad7IntroEnded(true);
                        }}
+                     onError={() => {
+                       console.warn('GAD-7 video load error');
+                       setGad7VideoLoaded(true); // Continue anyway
+                     }}
                    />
                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
                      <Button

@@ -1937,6 +1937,7 @@ export default function MatchedTherapist({
         onCancel={() => setShowConfirmationModal(false)}
         clientTimezone={timezone}
         timezoneDisplay={timezoneDisplay}
+        sessionDuration={getSessionDuration()}
       />
     </div>
   );

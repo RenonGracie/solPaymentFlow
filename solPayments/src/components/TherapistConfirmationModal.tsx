@@ -13,6 +13,7 @@ interface TherapistConfirmationModalProps {
   onCancel: () => void;
   clientTimezone?: string;
   timezoneDisplay?: string;
+  sessionDuration?: number;
 }
 
 export const TherapistConfirmationModal = ({ 
@@ -23,7 +24,8 @@ export const TherapistConfirmationModal = ({
   onConfirm, 
   onCancel,
   clientTimezone = 'America/New_York',
-  timezoneDisplay = 'EST'
+  timezoneDisplay = 'EST',
+  sessionDuration = 55
 }: TherapistConfirmationModalProps) => {
   if (!therapist) return null;
 
@@ -137,7 +139,7 @@ export const TherapistConfirmationModal = ({
                         const time = formatTime(selectedTimeSlot);
                         const [timeStr] = time.split(/([ap]m)/);
                         const [hour, minute] = timeStr.split(':');
-                        const endMinute = parseInt(hour) * 60 + parseInt(minute || '0') + 55; // 55 minutes session
+                        const endMinute = parseInt(hour) * 60 + parseInt(minute || '0') + sessionDuration;
                         const endHour = Math.floor(endMinute / 60) % 24;
                         const endMin = endMinute % 60;
                         const endPeriod = endHour >= 12 ? 'pm' : 'am';
@@ -145,6 +147,9 @@ export const TherapistConfirmationModal = ({
                         return `${displayHour}:${endMin.toString().padStart(2, '0')}${endPeriod}`;
                       })() : ''
                     } {timezoneDisplay}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {sessionDuration} minute session
                   </p>
                 </div>
               </div>

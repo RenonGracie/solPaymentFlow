@@ -170,6 +170,9 @@ export default function OnboardingFlow({
   const [screenReady, setScreenReady] = useState(false);
   // Initial video loading state
   const [initialVideoReady, setInitialVideoReady] = useState(false);
+  // Asset preloading state
+  const [assetsPreloaded, setAssetsPreloaded] = useState(false);
+  const [showInitialLoader, setShowInitialLoader] = useState(true);
 
   // Scroll to top on step changes to prevent inheriting previous viewport offset
   useEffect(() => {
@@ -482,87 +485,203 @@ export default function OnboardingFlow({
     onSelectPaymentType("insurance");
   };
 
-  // Preload all videos at runtime to reduce startup delay
+  // Preload critical assets first, then videos
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const warmVideos: HTMLVideoElement[] = [];
+    const preloadedAssets: (HTMLImageElement | HTMLVideoElement | HTMLLinkElement)[] = [];
     let cancelled = false;
 
-    // 1) Ensure local onboarding videos are requested first from the app directory
-    const localOnboardingSources = ['/onboarding-video-9x16.mp4', '/onboarding-video-16x9.mp4'];
+    const preloadCriticalAssets = async () => {
+      try {
+        // 1) Preload fonts first (most critical for visual consistency)
+        const fontPreloads = [
+          'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+        ];
 
-    const waitForLocalOnboarding = new Promise<void>((resolve) => {
-      let readyCount = 0;
-      const markReady = () => {
-        readyCount += 1;
-        if (readyCount >= localOnboardingSources.length) resolve();
-      };
+        const fontPromises = fontPreloads.map((href) => {
+          return new Promise<void>((resolve) => {
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'style';
+            link.href = href;
+            link.onload = () => resolve();
+            link.onerror = () => resolve(); // Continue even if font fails
+            document.head.appendChild(link);
+            preloadedAssets.push(link);
+            
+            // Also add the actual stylesheet
+            const styleLink = document.createElement('link');
+            styleLink.rel = 'stylesheet';
+            styleLink.href = href;
+            document.head.appendChild(styleLink);
+            preloadedAssets.push(styleLink);
+          });
+        });
 
-      localOnboardingSources.forEach((href) => {
-        const v = document.createElement('video');
-        v.src = href;
-        v.preload = 'auto';
-        v.muted = true;
-        v.setAttribute('playsinline', '');
-        v.oncanplaythrough = markReady;
-        v.onloadeddata = markReady;
-        try {
-          v.load();
-        } catch {}
-        warmVideos.push(v);
-      });
+        // 2) Preload critical images
+        const imageAssets = [
+          '/onboarding-banner.jpg',
+          '/beige texture 2048.svg',
+          '/sol-health-logo.svg'
+        ];
 
-      // Fallback in case events don't fire quickly
-      setTimeout(() => resolve(), 1500);
-    });
+        const imagePromises = imageAssets.map((src) => {
+          return new Promise<void>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Continue even if image fails
+            img.src = src;
+            preloadedAssets.push(img);
+          });
+        });
 
-    // 2) After local onboarding is warmed, warm remote videos sequentially to avoid contention
-    waitForLocalOnboarding.then(() => {
-      if (cancelled) return;
+        // 3) Wait for critical assets to load
+        await Promise.all([...fontPromises, ...imagePromises]);
 
-      const urls = Object.entries(VIDEOS)
-        .map(([, href]) => href)
-        .filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u))
-        // do not warm onboarding remotes to avoid duplicate downloads; local versions are preferred
-        .filter((u) => !/onboarding-video-(?:9x16|16x9)\.mp4$/i.test(u));
+        if (!cancelled) {
+          setAssetsPreloaded(true);
+          // Hide initial loader after a brief moment to show the preloaded background
+          setTimeout(() => {
+            if (!cancelled) {
+              setShowInitialLoader(false);
+            }
+          }, 800);
+        }
 
-      const loadSequential = (index: number) => {
-        if (cancelled || index >= urls.length) return;
-        const href = urls[index];
-        const v = document.createElement('video');
-        v.src = href;
-        v.preload = 'auto';
-        v.muted = true;
-        v.setAttribute('playsinline', '');
-        const next = () => loadSequential(index + 1);
-        v.oncanplaythrough = next;
-        v.onloadeddata = next;
-        try {
-          v.load();
-        } catch {}
-        warmVideos.push(v);
-      };
+        // 4) Now preload videos (less critical, can happen in background)
+        const warmVideos: HTMLVideoElement[] = [];
+        
+        const localOnboardingSources = ['/onboarding-video-9x16.mp4', '/onboarding-video-16x9.mp4'];
 
-      // start sequential warm
-      loadSequential(0);
-    });
+        const waitForLocalOnboarding = new Promise<void>((resolve) => {
+          let readyCount = 0;
+          const markReady = () => {
+            readyCount += 1;
+            if (readyCount >= localOnboardingSources.length) resolve();
+          };
+
+          localOnboardingSources.forEach((href) => {
+            const v = document.createElement('video');
+            v.src = href;
+            v.preload = 'metadata'; // Changed from 'auto' to reduce initial load
+            v.muted = true;
+            v.setAttribute('playsinline', '');
+            v.oncanplaythrough = markReady;
+            v.onloadeddata = markReady;
+            try {
+              v.load();
+            } catch {}
+            warmVideos.push(v);
+          });
+
+          // Shorter fallback for video loading
+          setTimeout(() => resolve(), 800);
+        });
+
+        waitForLocalOnboarding.then(() => {
+          if (cancelled) return;
+
+          const urls = Object.entries(VIDEOS)
+            .map(([, href]) => href)
+            .filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u))
+            .filter((u) => !/onboarding-video-(?:9x16|16x9)\.mp4$/i.test(u));
+
+          const loadSequential = (index: number) => {
+            if (cancelled || index >= urls.length) return;
+            const href = urls[index];
+            const v = document.createElement('video');
+            v.src = href;
+            v.preload = 'metadata';
+            v.muted = true;
+            v.setAttribute('playsinline', '');
+            const next = () => loadSequential(index + 1);
+            v.oncanplaythrough = next;
+            v.onloadeddata = next;
+            try {
+              v.load();
+            } catch {}
+            warmVideos.push(v);
+          };
+
+          loadSequential(0);
+        });
+
+      } catch (error) {
+        console.warn('Asset preloading failed:', error);
+        if (!cancelled) {
+          setAssetsPreloaded(true);
+          setShowInitialLoader(false);
+        }
+      }
+    };
+
+    preloadCriticalAssets();
 
     return () => {
       cancelled = true;
-      warmVideos.forEach((v) => {
+      preloadedAssets.forEach((asset) => {
         try {
-          v.src = '';
+          if ('src' in asset) {
+            asset.src = '';
+          }
+          if (asset.parentNode) {
+            asset.parentNode.removeChild(asset);
+          }
         } catch {}
       });
     };
   }, []);
 
+  // Initial Loading Screen with Asset Preloading
+  if (showInitialLoader) {
+    return (
+      <div className="relative min-h-screen w-full overflow-hidden transition-opacity duration-1000" 
+           style={{ 
+             backgroundImage: assetsPreloaded ? "url('/beige texture 2048.svg')" : 'none',
+             backgroundColor: assetsPreloaded ? '#FFFBF3' : '#000000',
+             backgroundSize: 'cover',
+             backgroundPosition: 'center',
+             opacity: assetsPreloaded ? 1 : 1
+           }}>
+        {/* Content that fades in once assets are loaded */}
+        <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
+          assetsPreloaded ? 'opacity-100' : 'opacity-0'
+        }`}>
+          <div className="text-center">
+            <img
+              src="/sol-health-logo.svg"
+              alt="Sol Health"
+              className="h-8 w-auto mx-auto mb-4 opacity-80"
+            />
+            <div className="flex items-center space-x-2">
+              <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
+              <span className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                Preparing your experience...
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Black overlay that fades out as assets load */}
+        <div className={`absolute inset-0 bg-black transition-opacity duration-1000 ${
+          assetsPreloaded ? 'opacity-0' : 'opacity-100'
+        }`} />
+      </div>
+    );
+  }
+
   // Splash Screen with Video
   if (currentStep === 0) {
     if (!screenReady) {
       return (
-        <div className="relative bg-black min-h-screen w-full overflow-hidden" />
+        <div className="relative min-h-screen w-full overflow-hidden" 
+             style={{ 
+               backgroundImage: "url('/beige texture 2048.svg')",
+               backgroundColor: '#FFFBF3',
+               backgroundSize: 'cover',
+               backgroundPosition: 'center'
+             }} />
       );
     }
     // Mobile portrait layout - 9:16 video full screen
@@ -576,19 +695,26 @@ export default function OnboardingFlow({
             playsInline
             loop={false}
             controls={false}
-            preload="auto"
+            preload="metadata"
             onCanPlayThrough={() => setInitialVideoReady(true)}
+            onLoadedData={() => setInitialVideoReady(true)}
             onEnded={handleContinue}
+            onError={(e) => {
+              console.warn('Video load error:', e);
+              setInitialVideoReady(true); // Continue anyway
+            }}
           >
             <source src="/onboarding-video-9x16.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 
-          {/* Bottom Continue button (match CustomSurvey) */}
+          {/* Bottom Continue button (always visible for better UX) */}
           <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
             <Button
               onClick={handleContinue}
-              className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors min-w-[200px] max-w-[300px]"
+              className={`py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-lg font-medium hover:bg-white/10 transition-colors min-w-[200px] max-w-[300px] ${
+                !initialVideoReady ? 'opacity-50' : 'opacity-100'
+              }`}
               style={{ fontFamily: 'var(--font-inter)' }}
             >
               Continue
@@ -596,10 +722,10 @@ export default function OnboardingFlow({
           </div>
 
           {!initialVideoReady && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/30 pointer-events-none">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 pointer-events-none">
               <div className="flex items-center space-x-2 text-white">
                 <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-sm">Loading…</span>
+                <span className="text-sm">Loading video…</span>
               </div>
             </div>
           )}
@@ -618,23 +744,40 @@ export default function OnboardingFlow({
             playsInline
             loop={false}
             controls={false}
-            preload="auto"
+            preload="metadata"
+            onCanPlayThrough={() => setInitialVideoReady(true)}
+            onLoadedData={() => setInitialVideoReady(true)}
             onEnded={handleContinue}
+            onError={(e) => {
+              console.warn('Video load error:', e);
+              setInitialVideoReady(true);
+            }}
           >
             <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 
-          {/* Bottom Continue button (match CustomSurvey) */}
+          {/* Bottom Continue button */}
           <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
             <Button
               onClick={handleContinue}
-              className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors min-w-[200px] max-w-[300px]"
+              className={`py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-lg font-medium hover:bg-white/10 transition-colors min-w-[200px] max-w-[300px] ${
+                !initialVideoReady ? 'opacity-50' : 'opacity-100'
+              }`}
               style={{ fontFamily: 'var(--font-inter)' }}
             >
               Continue
             </Button>
           </div>
+
+          {!initialVideoReady && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 pointer-events-none">
+              <div className="flex items-center space-x-2 text-white">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span className="text-sm">Loading video…</span>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -650,23 +793,39 @@ export default function OnboardingFlow({
             playsInline
             loop={false}
             controls={false}
-            preload="auto"
+            preload="metadata"
+            onCanPlayThrough={() => setInitialVideoReady(true)}
+            onLoadedData={() => setInitialVideoReady(true)}
             onEnded={handleContinue}
+            onError={(e) => {
+              console.warn('Video load error:', e);
+              setInitialVideoReady(true);
+            }}
           >
             <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 
-          {/* Bottom Continue button (match CustomSurvey) */}
           <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
             <Button
               onClick={handleContinue}
-              className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors min-w-[200px] max-w-[300px]"
+              className={`py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-lg font-medium hover:bg-white/10 transition-colors min-w-[200px] max-w-[300px] ${
+                !initialVideoReady ? 'opacity-50' : 'opacity-100'
+              }`}
               style={{ fontFamily: 'var(--font-inter)' }}
             >
               Continue
             </Button>
           </div>
+
+          {!initialVideoReady && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 pointer-events-none">
+              <div className="flex items-center space-x-2 text-white">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span className="text-sm">Loading video…</span>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -681,23 +840,39 @@ export default function OnboardingFlow({
           playsInline
           loop={false}
           controls={false}
-          preload="auto"
+          preload="metadata"
+          onCanPlayThrough={() => setInitialVideoReady(true)}
+          onLoadedData={() => setInitialVideoReady(true)}
           onEnded={handleContinue}
+          onError={(e) => {
+            console.warn('Video load error:', e);
+            setInitialVideoReady(true);
+          }}
         >
           <source src="/onboarding-video-16x9.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 
-        {/* Bottom Continue button (match CustomSurvey) */}
         <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
           <Button
             onClick={handleContinue}
-            className="py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-gray-800 text-lg font-medium hover:bg-[#F5E8D1] transition-colors min-w-[200px] max-w-[300px]"
+            className={`py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-lg font-medium hover:bg-white/10 transition-colors min-w-[200px] max-w-[300px] ${
+              !initialVideoReady ? 'opacity-50' : 'opacity-100'
+            }`}
             style={{ fontFamily: 'var(--font-inter)' }}
           >
             Continue
           </Button>
-        </div>
+          </div>
+
+          {!initialVideoReady && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 pointer-events-none">
+              <div className="flex items-center space-x-2 text-white">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span className="text-sm">Loading video…</span>
+              </div>
+            </div>
+          )}
       </div>
     );
   }
