@@ -495,43 +495,91 @@ export default function MatchedTherapist({
     const dd = String(selectedDateObj.getDate()).padStart(2, '0');
     const normalizedTime = selectedTimeSlot.replace(/\s/g, '');
     
-    console.log('🕐 BOOKING TIME DEBUG:');
+    console.log('🕐 BOOKING TIME DEBUG - SIMPLIFIED APPROACH:');
+    console.log(`  Selected date object: ${selectedDateObj.toDateString()}`);
     console.log(`  Selected time slot: "${selectedTimeSlot}"`);
     console.log(`  Normalized time: "${normalizedTime}"`);
+    console.log(`  Client state timezone: ${timezone} (${timezoneDisplay})`);
     
-    // Create a proper Date object with timezone information
+    // Convert time to 24-hour format
     const timeIn24Hour = convertTo24Hour(normalizedTime);
     console.log(`  Converted to 24-hour: "${timeIn24Hour}"`);
     
     const [hour, minute] = timeIn24Hour.split(':').map(Number);
     console.log(`  Parsed hour: ${hour}, minute: ${minute}`);
     
-    // Create Date object in the therapist's timezone (not browser timezone)
-    // This ensures appointments are scheduled at the correct time regardless of where the client is located
-    const therapistTimezoneOffset = getTherapistTimezoneOffset(timezone);
-    const utcDateTime = new Date(yyyy, selectedDateObj.getMonth(), selectedDateObj.getDate(), hour, minute, 0);
+    // Create the appointment datetime string in the client's timezone
+    const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${timeIn24Hour}:00`;
+    console.log(`  Appointment datetime string: ${appointmentDateTimeString}`);
     
-    // Adjust for the difference between browser timezone and therapist timezone
-    const browserOffset = new Date().getTimezoneOffset(); // Browser's offset from UTC (in minutes)
-    const therapistOffsetMinutes = getTherapistOffsetMinutes(timezone); // Therapist's offset from UTC (in minutes)
-    const offsetDifference = browserOffset - therapistOffsetMinutes; // Difference in minutes
+    // Create a Date object representing the appointment time in the client's timezone
+    // We'll create it as if it's in the client's timezone, then convert to proper ISO format
+    let datetime: string;
     
-    // Adjust the UTC time by the offset difference
-    utcDateTime.setMinutes(utcDateTime.getMinutes() + offsetDifference);
-    
-    // Format as ISO string with therapist's timezone offset
-    const datetime = utcDateTime.toISOString().slice(0, -1) + therapistTimezoneOffset;
-    
-    console.log('🕐 TIMEZONE FIX DEBUG:');
-    console.log(`  Therapist timezone: ${timezone}`);
-    console.log(`  Selected time: ${selectedTimeSlot}`);
-    console.log(`  Original construction: ${yyyy}-${mm}-${dd}T${timeIn24Hour}:00`);
-    console.log(`  Browser offset: ${browserOffset} minutes`);
-    console.log(`  Therapist offset: ${therapistOffsetMinutes} minutes`);
-    console.log(`  Offset difference: ${offsetDifference} minutes`);
-    console.log(`  Therapist timezone offset: ${therapistTimezoneOffset}`);
-    console.log(`  UTC DateTime: ${utcDateTime}`);
-    console.log(`  Final datetime with timezone: ${datetime}`);
+    try {
+      // Use the client's timezone to create the correct datetime
+      const clientTimezone = timezone;
+      
+      // Simplified approach: Create date in client timezone and format properly
+      const appointmentDate = new Date();
+      appointmentDate.setFullYear(yyyy, selectedDateObj.getMonth(), selectedDateObj.getDate());
+      appointmentDate.setHours(hour, minute, 0, 0);
+      
+      // Get the proper timezone offset for this specific date/time in the client's timezone
+      const timezoneOffset = getTherapistTimezoneOffset(clientTimezone);
+      
+      // Create a new Date object that represents the appointment time
+      // We need to account for the difference between the browser's timezone and the client's timezone
+      const browserOffset = appointmentDate.getTimezoneOffset(); // Browser offset from UTC in minutes
+      const clientOffsetMinutes = getTherapistOffsetMinutes(clientTimezone); // Client timezone offset from UTC in minutes
+      
+      // Adjust for timezone differences
+      const adjustedTime = appointmentDate.getTime() - (browserOffset * 60000) - (clientOffsetMinutes * 60000);
+      const finalDateTime = new Date(adjustedTime);
+      
+      // Format as ISO string with timezone offset
+      datetime = finalDateTime.toISOString().slice(0, -1) + timezoneOffset;
+      
+      console.log('🕐 IMPROVED TIMEZONE CONVERSION:');
+      console.log(`  Client timezone: ${clientTimezone} (${timezoneDisplay})`);
+      console.log(`  Appointment date: ${appointmentDate.toLocaleString()}`);
+      console.log(`  Browser offset: ${browserOffset} minutes`);
+      console.log(`  Client offset: ${clientOffsetMinutes} minutes`);
+      console.log(`  Adjusted time: ${new Date(adjustedTime).toISOString()}`);
+      console.log(`  Timezone offset string: ${timezoneOffset}`);
+      console.log(`  Final datetime with timezone: ${datetime}`);
+      
+      // Verification: Convert back to client timezone to verify
+      const verificationDate = new Date(datetime);
+      const verificationInClientTz = verificationDate.toLocaleString("en-US", { 
+        timeZone: clientTimezone,
+        year: 'numeric',
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      
+      console.log('✅ VERIFICATION:');
+      console.log(`  Original selection: ${selectedDateObj.toDateString()} at ${selectedTimeSlot}`);
+      console.log(`  Parsed back in ${timezoneDisplay}: ${verificationInClientTz}`);
+      console.log(`  Should match selected time: ${selectedTimeSlot}`);
+      
+    } catch (error) {
+      console.error('❌ Error in improved timezone conversion:', error);
+      
+      // Fallback to original method if new one fails
+      const therapistTimezoneOffset = getTherapistTimezoneOffset(timezone);
+      const utcDateTime = new Date(yyyy, selectedDateObj.getMonth(), selectedDateObj.getDate(), hour, minute, 0);
+      const browserOffset = new Date().getTimezoneOffset();
+      const therapistOffsetMinutes = getTherapistOffsetMinutes(timezone);
+      const offsetDifference = browserOffset - therapistOffsetMinutes;
+      utcDateTime.setMinutes(utcDateTime.getMinutes() + offsetDifference);
+      datetime = utcDateTime.toISOString().slice(0, -1) + therapistTimezoneOffset;
+      
+      console.log('⚠️ Using fallback method - Final datetime:', datetime);
+    }
     
     // Close the confirmation modal
     setShowConfirmationModal(false);
@@ -544,32 +592,63 @@ export default function MatchedTherapist({
   };
   
   const getTherapistTimezoneOffset = (timezone: string) => {
-    // Get timezone offset for the therapist's timezone and format as +/-HH:MM
+    // Get timezone offset using proper Intl.DateTimeFormat method
     try {
       const now = new Date();
-      const therapistTime = new Date(now.toLocaleString("en-US", { timeZone: timezone }));
-      const utcTime = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
-      const offsetMinutes = Math.round((therapistTime.getTime() - utcTime.getTime()) / (1000 * 60));
+      console.log(`[Timezone Debug] Getting offset for timezone: ${timezone}`);
+      
+      // Use Intl.DateTimeFormat to get accurate timezone offset
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        timeZoneName: 'longOffset'
+      });
+      
+      const parts = formatter.formatToParts(now);
+      const offsetPart = parts.find(part => part.type === 'timeZoneName');
+      
+      if (offsetPart && offsetPart.value !== timezone) {
+        // Extract offset from format like "GMT-05:00"
+        const offsetMatch = offsetPart.value.match(/GMT([+-]\d{2}:\d{2})/);
+        if (offsetMatch) {
+          const offset = offsetMatch[1];
+          console.log(`[Timezone Debug] Extracted offset from Intl: ${offset}`);
+          return offset;
+        }
+      }
+      
+      // Fallback method using Date constructor
+      const utcDate = new Date(now.getTime() + (now.getTimezoneOffset() * 60000));
+      const targetDate = new Date(utcDate.toLocaleString("en-US", { timeZone: timezone }));
+      const offsetMinutes = Math.round((targetDate.getTime() - utcDate.getTime()) / (1000 * 60));
       
       const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
       const offsetMins = Math.abs(offsetMinutes) % 60;
       const sign = offsetMinutes >= 0 ? '+' : '-';
-      return `${sign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+      const offset = `${sign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+      
+      console.log(`[Timezone Debug] Calculated offset via fallback: ${offset}`);
+      return offset;
     } catch (error) {
-      console.error('Error calculating therapist timezone offset:', error);
+      console.error('[Timezone Debug] Error calculating therapist timezone offset:', error);
       return '-05:00'; // Default to EST
     }
   };
 
   const getTherapistOffsetMinutes = (timezone: string): number => {
-    // Get the therapist's timezone offset in minutes from UTC
+    // Get the therapist's timezone offset in minutes from UTC using proper method
     try {
       const now = new Date();
-      const therapistTime = new Date(now.toLocaleString("en-US", { timeZone: timezone }));
-      const utcTime = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
-      return Math.round((therapistTime.getTime() - utcTime.getTime()) / (1000 * 60));
+      console.log(`[Timezone Debug] Getting offset minutes for: ${timezone}`);
+      
+      // Create two dates: one in UTC and one in the target timezone
+      const utcDate = new Date(now.getTime() + (now.getTimezoneOffset() * 60000));
+      const targetDate = new Date(utcDate.toLocaleString("en-US", { timeZone: timezone }));
+      const offsetMinutes = Math.round((targetDate.getTime() - utcDate.getTime()) / (1000 * 60));
+      
+      console.log(`[Timezone Debug] Offset minutes calculated: ${offsetMinutes}`);
+      return offsetMinutes;
     } catch (error) {
-      console.error('Error calculating therapist offset minutes:', error);
+      console.error('[Timezone Debug] Error calculating therapist offset minutes:', error);
       return -300; // Default to EST (-5 hours = -300 minutes)
     }
   };
@@ -1848,6 +1927,8 @@ export default function MatchedTherapist({
         selectedTimeSlot={selectedTimeSlot}
         onConfirm={handleConfirmBooking}
         onCancel={() => setShowConfirmationModal(false)}
+        clientTimezone={timezone}
+        timezoneDisplay={timezoneDisplay}
       />
     </div>
   );

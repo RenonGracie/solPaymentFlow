@@ -11,6 +11,8 @@ interface TherapistConfirmationModalProps {
   selectedTimeSlot: string | null;
   onConfirm: () => void;
   onCancel: () => void;
+  clientTimezone?: string;
+  timezoneDisplay?: string;
 }
 
 export const TherapistConfirmationModal = ({ 
@@ -19,7 +21,9 @@ export const TherapistConfirmationModal = ({
   selectedDate, 
   selectedTimeSlot,
   onConfirm, 
-  onCancel 
+  onCancel,
+  clientTimezone = 'America/New_York',
+  timezoneDisplay = 'EST'
 }: TherapistConfirmationModalProps) => {
   if (!therapist) return null;
 
@@ -112,6 +116,23 @@ export const TherapistConfirmationModal = ({
               Session Details
             </h4>
             
+            {/* Timezone Warning */}
+            {(() => {
+              const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              const browserDisplay = browserTimezone.split('/')[1]?.replace('_', ' ') || browserTimezone;
+              
+              if (clientTimezone !== browserTimezone) {
+                return (
+                  <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-700" style={{ fontFamily: 'var(--font-inter)' }}>
+                      ⓘ This appointment is being scheduled in {timezoneDisplay} time. Your browser is in {browserDisplay}.
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+            
             <div className="space-y-2 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
               <div className="flex justify-between">
                 <span className="text-gray-600">Date:</span>
@@ -119,7 +140,10 @@ export const TherapistConfirmationModal = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Time:</span>
-                <span className="font-medium text-gray-800">{formatTime(selectedTimeSlot)}</span>
+                <span className="font-medium text-gray-800">
+                  {formatTime(selectedTimeSlot)}
+                  <span className="text-xs text-gray-500 ml-1">({timezoneDisplay})</span>
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Duration:</span>
@@ -128,6 +152,10 @@ export const TherapistConfirmationModal = ({
               <div className="flex justify-between">
                 <span className="text-gray-600">Type:</span>
                 <span className="font-medium text-gray-800">Video Session</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Timezone:</span>
+                <span className="font-medium text-gray-800">{timezoneDisplay}</span>
               </div>
             </div>
           </div>

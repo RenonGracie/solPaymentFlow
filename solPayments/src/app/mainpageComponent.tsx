@@ -1519,6 +1519,50 @@ export default function MainPageComponent() {
                       setIsBookingInProgress(true);
                       const therapist = therapistData.therapist;
                       
+                      // COMPREHENSIVE TIMEZONE LOGGING FOR BOOKING FLOW
+                      console.log('🚀 [MAIN COMPONENT] BOOKING INITIATED - TIMEZONE ANALYSIS');
+                      console.log('==========================================');
+                      console.log(`📅 Raw slot received from MatchedTherapist: ${slot}`);
+                      console.log(`🕐 Slot type: ${typeof slot}`);
+                      
+                      // Parse and analyze the incoming datetime
+                      const slotDate = new Date(slot);
+                      const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                      
+                      console.log(`🌍 Browser timezone: ${browserTimezone}`);
+                      console.log(`📅 Parsed slot date: ${slotDate.toISOString()}`);
+                      console.log(`🕐 Slot in browser timezone: ${slotDate.toLocaleString()}`);
+                      console.log(`⏰ Slot timestamp: ${slotDate.getTime()}`);
+                      
+                      // Test conversion in different timezones
+                      const clientState = currentUserData?.state || 'Unknown';
+                      console.log(`📍 Client state: ${clientState}`);
+                      
+                      if (clientState && clientState !== 'Unknown') {
+                        const stateTimezoneMap: Record<string, string> = {
+                          'CA': 'America/Los_Angeles',
+                          'NY': 'America/New_York', 
+                          'TX': 'America/Chicago',
+                          'FL': 'America/New_York',
+                          'IL': 'America/Chicago',
+                          'NJ': 'America/New_York'
+                        };
+                        
+                        const clientTimezone = stateTimezoneMap[clientState.toUpperCase()] || browserTimezone;
+                        const slotInClientTz = slotDate.toLocaleString("en-US", { 
+                          timeZone: clientTimezone,
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit', 
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true,
+                          timeZoneName: 'short'
+                        });
+                        
+                        console.log(`🏠 Client timezone (${clientTimezone}): ${slotInClientTz}`);
+                      }
+                      
                       // Enrich current user data with selected therapist info BEFORE booking
                       if (currentUserData) {
                         const therapistInfo = {
@@ -1533,11 +1577,15 @@ export default function MainPageComponent() {
                         };
                         
                         const appointmentInfo = {
-                          date: new Date(slot).toLocaleDateString(),
-                          time: new Date(slot).toLocaleTimeString(),
-                          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                          date: slotDate.toLocaleDateString(),
+                          time: slotDate.toLocaleTimeString(),
+                          timezone: browserTimezone,
                           duration: 45,
-                          session_type: 'initial'
+                          session_type: 'initial',
+                          // Add debugging info
+                          slot_raw: slot,
+                          slot_iso: slotDate.toISOString(),
+                          slot_timestamp: slotDate.getTime()
                         };
                         
                         const enrichedData = {
@@ -1547,27 +1595,44 @@ export default function MainPageComponent() {
                           last_updated: new Date().toISOString()
                         };
                         
-                        console.log('🎯 Enriching user data with therapist selection:', {
+                        console.log('🎯 [MAIN COMPONENT] Enriching user data with appointment details:');
+                        console.log({
                           therapist_name: therapistInfo.name,
-                          therapist_specialties: therapistInfo.specialties,
                           appointment_date: appointmentInfo.date,
-                          appointment_time: appointmentInfo.time
+                          appointment_time: appointmentInfo.time,
+                          appointment_timezone: appointmentInfo.timezone,
+                          raw_slot: slot,
+                          parsed_slot_iso: appointmentInfo.slot_iso
                         });
                         
                         setCurrentUserData(enrichedData);
                       }
                       
+                      // Log the final API request data
+                      const apiRequestData = {
+                        client_response_id: clientResponseId as string,
+                        therapist_email: therapist.email || '',
+                        therapist_name: therapist.name || '',
+                        datetime: slot,
+                        send_client_email_notification: true,
+                        reminder_type: 'email',
+                        status: 'scheduled',
+                      };
+                      
+                      console.log('📡 [MAIN COMPONENT] API REQUEST TO BACKEND:');
+                      console.log('==========================================');
+                      console.log('API Endpoint: /api/appointments/book');
+                      console.log('Request Data:', JSON.stringify(apiRequestData, null, 2));
+                      console.log(`🕐 Datetime being sent to backend: ${slot}`);
+                      console.log(`🕐 Datetime type: ${typeof slot}`);
+                      console.log('==========================================');
+
                       const bookedSession = await bookAppointment.makeRequest({
-                        data: {
-                          client_response_id: clientResponseId as string,
-                          therapist_email: therapist.email || '',
-                          therapist_name: therapist.name || '',
-                          datetime: slot,
-                          send_client_email_notification: true,
-                          reminder_type: 'email',
-                          status: 'scheduled',
-                        },
+                        data: apiRequestData,
                       });
+                      
+                      console.log('✅ [MAIN COMPONENT] API RESPONSE FROM BACKEND:');
+                      console.log('Response:', JSON.stringify(bookedSession, null, 2));
 
                       handleBookSession(bookedSession);
                     } catch (error) {
