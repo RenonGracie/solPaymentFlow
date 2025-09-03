@@ -71,7 +71,7 @@ export const TherapistConfirmationModal = ({
     return timeSlot;
   };
 
-  const getTherapistCategory = (therapist: any): string => {
+  const getTherapistCategory = (therapist: TMatchedTherapistData['therapist']): string => {
     const program = (therapist?.program ?? '').trim();
     if (program === 'Limited Permit') return 'Therapist-in-Training';
     return 'Therapist';

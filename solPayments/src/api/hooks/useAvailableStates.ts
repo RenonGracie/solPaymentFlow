@@ -46,7 +46,7 @@ export const useAvailableStates = (paymentType: 'cash_pay' | 'insurance' = 'cash
 
   useEffect(() => {
     fetchAvailableStates();
-  }, [paymentType]);
+  }, [paymentType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     availableStates: data?.available_states || [],
