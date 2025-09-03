@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const DOT_COUNT = 3;
-const ANIMATION_DURATION = 4000;
+const ANIMATION_DURATION = 3000; // 3 seconds per state to ensure all are visible
 
 const LoadingDots = () => {
   return (
@@ -56,8 +57,8 @@ const loadingStates = [
     lines: [
       [
         { text: "Finding", className: "" },
-        { text: "your", className: "" },
-        { text: "perfect", className: "" }
+        { text: "your", className: "italic", isItalic: true },
+        { text: "perfect", className: "", image: "/loading-images/Eye.webp" }
       ],
       [
         { text: "therapist", withDots: true, className: "" }
@@ -68,10 +69,10 @@ const loadingStates = [
     lines: [
       [
         { text: "Analyzing", className: "" },
-        { text: "your", className: "" }
+        { text: "your", className: "italic", isItalic: true }
       ],
       [
-        { text: "preferences", withDots: true, className: "" }
+        { text: "preferences", withDots: true, className: "", image: "/loading-images/Hands.webp" }
       ]
     ]
   },
@@ -79,8 +80,8 @@ const loadingStates = [
     lines: [
       [
         { text: "Matching", className: "" },
-        { text: "you", className: "" },
-        { text: "with", className: "" }
+        { text: "you", className: "italic", isItalic: true },
+        { text: "with", className: "", image: "/loading-images/Friends.webp" }
       ],
       [
         { text: "experts", withDots: true, className: "" }
@@ -91,51 +92,90 @@ const loadingStates = [
     lines: [
       [
         { text: "Almost", className: "" },
-        { text: "there", withDots: true, className: "" }
+        { text: "there", withDots: true, className: "italic", isItalic: true, image: "/loading-images/Person1.webp" }
       ]
     ]
   }
 ];
 
-export const LoadingScreen = () => {
+interface LoadingScreenProps {
+  onComplete?: () => void;
+  minDisplayTime?: number; // Minimum time to show the loading screen (milliseconds)
+}
+
+export const LoadingScreen = ({ onComplete, minDisplayTime = 12000 }: LoadingScreenProps = {}) => {
   const [currentStateIndex, setCurrentStateIndex] = useState(0);
+  const [hasCompletedCycle, setHasCompletedCycle] = useState(false);
 
   useEffect(() => {
-    if (currentStateIndex >= loadingStates.length - 1) return;
+    // Cycle through states
+    if (currentStateIndex >= loadingStates.length - 1) {
+      if (!hasCompletedCycle) {
+        setHasCompletedCycle(true);
+        // Ensure minimum display time
+        const minTimer = setTimeout(() => {
+          onComplete?.();
+        }, minDisplayTime);
+        return () => clearTimeout(minTimer);
+      }
+      return;
+    }
 
     const timer = setTimeout(() => {
       setCurrentStateIndex((prev) => prev + 1);
     }, ANIMATION_DURATION);
 
     return () => clearTimeout(timer);
-  }, [currentStateIndex]);
+  }, [currentStateIndex, hasCompletedCycle, onComplete, minDisplayTime]);
 
   const state = loadingStates[currentStateIndex];
 
   return (
     <div className="relative min-h-screen min-w-screen bg-[#F5F5DC]">
       <div className="absolute top-[40px] left-0 right-0 flex items-center justify-center gap-2 lg:top-[32px] lg:left-[32px] lg:justify-start">
-        <h3 className="text-[22px] lg:text-[28px] font-medium font-sans">
-          Sol Health
-        </h3>
+        <Image
+          src="/sol-health-logo.svg"
+          alt="Sol Health"
+          width={186}
+          height={32}
+          className="h-6 w-auto lg:h-8"
+          priority
+        />
       </div>
       
       <div className="absolute inset-0 flex items-center justify-center">
         <div
           key={currentStateIndex}
           className="flex flex-col items-center leading-[90%] text-[#8B4513] text-[40px] lg:text-[80px] animate-fade-slide"
+          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
         >
           {state.lines.map((line, lineIndex) => (
             <div
               key={lineIndex}
               className="flex items-center justify-center font-light leading-[90%] space-x-2 lg:space-x-4"
             >
-              {line.map(({ text, className, withDots }, itemIndex) => (
-                <span key={itemIndex} className={className}>
-                  {text}
-                  {withDots && <LoadingDots />}
-                </span>
-              ))}
+              {line.map((item, itemIndex) => {
+                const { text, className, withDots, isItalic, image } = item as any;
+                return (
+                  <div key={itemIndex} className="flex items-center space-x-2 lg:space-x-4">
+                  <span className={`${className} ${isItalic ? 'italic' : ''}`}>
+                    {text}
+                    {withDots && <LoadingDots />}
+                  </span>
+                  {image && (
+                    <div className="flex-shrink-0 animate-fade-slide">
+                      <Image
+                        src={image}
+                        alt=""
+                        width={60}
+                        height={60}
+                        className="w-8 h-8 lg:w-12 lg:h-12 object-cover rounded-full"
+                      />
+                    </div>
+                  )}
+                </div>
+                );
+              })}
             </div>
           ))}
         </div>
