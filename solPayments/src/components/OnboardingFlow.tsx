@@ -203,7 +203,7 @@ export default function OnboardingFlow({
   const featuredStates = availableStates.length > 0 ? availableStates : fallbackStates;
   
   // States that have explicit SVG icons (others will use default.svg)
-  const statesWithIcons = ['NY', 'NJ', 'FL', 'TX', 'CA'];
+  const statesWithIcons = ['AZ', 'CA', 'CO', 'CT', 'FL', 'GA', 'IL', 'MA', 'MI', 'NC', 'NH', 'NJ', 'NV', 'NY', 'OR', 'PA', 'RI', 'TX', 'VA', 'VT', 'WA', 'WI'];
 
   // Insurance providers
   const insuranceProviders = [
@@ -1144,12 +1144,14 @@ export default function OnboardingFlow({
                       setExpandedCard('cash_pay');
                     }
                   }}
-                  className={`w-full text-left bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-colors duration-700 ease-in-out ${
+                  className={`w-full text-left border transition-colors duration-700 ease-in-out hover:brightness-95 ${
                     expandedCard === 'cash_pay' 
                       ? 'rounded-t-2xl border-b-0' 
                       : 'rounded-2xl'
                   }`}
                   style={{
+                    backgroundColor: expandedCard === 'cash_pay' ? '#fffef7' : '#fefef7',
+                    borderColor: '#fef3cd',
                     padding: expandedCard === 'cash_pay' ? '16px 20px 12px 20px' : '16px 20px'
                   }}
                 >
@@ -1174,11 +1176,12 @@ export default function OnboardingFlow({
                 </button>
                 
                 {/* Expanded Cash Pay Content */}
-                <div className={`bg-white border-l border-r border-b border-yellow-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
+                <div className={`bg-white border-l border-r border-b rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
                   expandedCard === 'cash_pay' 
                     ? 'max-h-[1000px] opacity-100' 
                     : 'max-h-0 opacity-0'
-                }`}>
+                }`}
+                style={{ borderColor: '#fef3cd' }}>
                   <div className="p-5 space-y-4 pb-6">
                      
                      <div>
@@ -1190,10 +1193,7 @@ export default function OnboardingFlow({
                          </div>
                        ) : (
                          <p className="text-sm text-gray-600">
-                           {featuredStates.map(stateCode => {
-                             const state = allStates.find(s => s.code === stateCode);
-                             return state?.name;
-                           }).filter(Boolean).join(', ')}
+                           {featuredStates.join(', ')}
                            {availableStates.length > 0 && (
                              <span className="ml-2 inline-block rounded-full bg-green-100 text-green-800 px-2 py-0.5 text-xs font-medium">
                                {availableStates.length} states available
@@ -1358,7 +1358,13 @@ export default function OnboardingFlow({
             {/* Other State Option - Full Width Below Grid */}
             <div className="mb-6 px-4">
               <button
-                onClick={() => setShowOtherStateInput(!showOtherStateInput)}
+                onClick={() => {
+                  setShowOtherStateInput(!showOtherStateInput);
+                  // Clear selected state when opening Other State input
+                  if (!showOtherStateInput) {
+                    setSelectedState('');
+                  }
+                }}
                 className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
                   showOtherStateInput
                     ? 'border-[#5C3106] bg-[#5C3106] text-white shadow-lg' 
