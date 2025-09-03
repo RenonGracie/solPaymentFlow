@@ -7,7 +7,7 @@
 interface JourneyData {
     response_id: string;
     stage: string;
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
     reason?: string;
   }
   
@@ -21,7 +21,7 @@ interface JourneyData {
     utm_source?: string;
     utm_medium?: string;
     utm_campaign?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }
   
   interface TherapistData {
@@ -31,11 +31,11 @@ interface JourneyData {
       email?: string;
       program?: string;
       states_array?: string[];
-      [key: string]: any;
+      [key: string]: unknown;
     };
     score?: number;
     matched_diagnoses_specialities?: string[];
-    [key: string]: any;
+    [key: string]: unknown;
   }
   
   interface BookingContext {
@@ -47,7 +47,7 @@ interface JourneyData {
     timezoneDisplay?: string;
     sessionDuration?: number;
     therapistCategory?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }
   
   class JourneyTracker {
@@ -166,7 +166,7 @@ interface JourneyData {
     /**
      * Track user dropdown/exit with context
      */
-    async trackDropout(response_id: string, stage: string, reason: string = '', additionalData?: Record<string, any>) {
+    async trackDropout(response_id: string, stage: string, reason: string = '', additionalData?: Record<string, unknown>) {
       if (!this.enabled || !response_id) return;
   
       try {
@@ -188,7 +188,7 @@ interface JourneyData {
     /**
      * Track successful appointment booking
      */
-    async trackAppointmentBooked(clientData: ClientData, appointmentData: Record<string, any>) {
+    async trackAppointmentBooked(clientData: ClientData, appointmentData: Record<string, unknown>) {
       if (!this.enabled || !clientData.response_id) return;
   
       try {
@@ -204,7 +204,7 @@ interface JourneyData {
     /**
      * Track user interactions like calendar navigation, therapist video views, etc.
      */
-    async trackInteraction(response_id: string, interactionType: string, data: Record<string, any>) {
+    async trackInteraction(response_id: string, interactionType: string, data: Record<string, unknown>) {
       if (!this.enabled || !response_id) return;
   
       try {
@@ -259,7 +259,7 @@ interface JourneyData {
     /**
      * Send data to backend tracking endpoint
      */
-    private async sendToBackend(endpoint: string, data: any) {
+    private async sendToBackend(endpoint: string, data: unknown) {
       try {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
           method: 'POST',
@@ -297,7 +297,7 @@ interface JourneyData {
     let currentStage: string = 'unknown';
   
     // Method to set current tracking context
-    (window as any).setJourneyContext = (responseId: string, stage: string) => {
+    (window as unknown as Record<string, unknown>).setJourneyContext = (responseId: string, stage: string) => {
       currentResponseId = responseId;
       currentStage = stage;
     };
