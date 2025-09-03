@@ -47,10 +47,9 @@ export const TherapistConfirmationModal = ({
   const formatDate = (date: Date | null): string => {
     if (!date) return 'Date not selected';
     return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+      weekday: 'short', 
+      month: 'short', 
+      day: '2-digit' 
     });
   };
 
@@ -66,56 +65,91 @@ export const TherapistConfirmationModal = ({
       const hour = match[1];
       const minute = match[2] || '00';
       const period = match[3].toUpperCase();
-      return `${hour}:${minute} ${period}`;
+      return `${hour}:${minute}${period.toLowerCase()}`;
     }
     
     return timeSlot;
   };
 
+  const getTherapistCategory = (therapist: any): string => {
+    const program = (therapist?.program ?? '').trim();
+    if (program === 'Limited Permit') return 'Therapist-in-Training';
+    return 'Therapist';
+  };
+
   return (
     <Dialog open={isVisible} onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-md bg-white border border-[#5C3106] rounded-3xl shadow-[4px_4px_0_#5C3106] p-0 overflow-hidden">
-        <div className="p-6">
+      <DialogContent className="sm:max-w-md bg-white rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
+        <div className="p-8">
           {/* Header */}
-          <div className="text-center mb-6">
-            <h2 className="very-vogue-title text-2xl text-[#5C3106] mb-2">
-              Confirm Your Selection
+          <div className="text-center mb-8">
+            <h2 className="very-vogue-title text-3xl text-gray-800">
+              Confirm <em>your</em> Selection
             </h2>
           </div>
 
-          {/* Therapist Info */}
-          <div className="flex flex-col items-center mb-6">
-            <div className="mb-4">
-              {therapist.therapist.image_link && getImageUrl(therapist.therapist.image_link) ? (
-                <img
-                  src={getImageUrl(therapist.therapist.image_link)}
-                  alt={therapist.therapist.intern_name}
-                  className="w-20 h-20 rounded-full object-cover shadow-sm border border-gray-200"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-sm border border-gray-200">
-                  <span className="text-2xl font-medium text-gray-600">
-                    {therapist.therapist.intern_name?.charAt(0)?.toUpperCase() || '?'}
-                  </span>
-                </div>
-              )}
+          {/* Therapist Card */}
+          <div className="border border-[#5C3106] rounded-2xl p-6 mb-8 shadow-[2px_2px_0_#5C3106]">
+            <div className="flex items-center gap-4">
+              {/* Therapist Image */}
+              <div className="flex-shrink-0">
+                {therapist.therapist.image_link && getImageUrl(therapist.therapist.image_link) ? (
+                  <img
+                    src={getImageUrl(therapist.therapist.image_link)}
+                    alt={therapist.therapist.intern_name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-2 border-gray-200">
+                    <span className="text-xl font-medium text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                      {therapist.therapist.intern_name?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Therapist Info */}
+              <div className="flex-1">
+                <h3 className="very-vogue-title text-xl text-gray-800 mb-1">
+                  {therapist.therapist.intern_name}
+                </h3>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                  {getTherapistCategory(therapist.therapist)}
+                </p>
+              </div>
             </div>
-            
-            <h3 className="very-vogue-title text-xl text-gray-800 text-center">
-              {therapist.therapist.intern_name}
-            </h3>
-            <p className="text-sm text-gray-600 text-center" style={{ fontFamily: 'var(--font-inter)' }}>
-              Therapist
-            </p>
-          </div>
 
-          {/* Meeting Info */}
-          <div className="bg-yellow-50 border border-[#5C3106] rounded-2xl p-4 mb-6 shadow-[1px_1px_0_#5C3106]">
-            <h4 className="font-semibold text-gray-800 mb-3 text-center" style={{ fontFamily: 'var(--font-inter)' }}>
-              Session Details
-            </h4>
-            
+            {/* Session Time */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-[#5C3106] rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div style={{ fontFamily: 'var(--font-inter)' }}>
+                  <p className="text-sm font-semibold text-gray-800">{formatDate(selectedDate)}</p>
+                  <p className="text-sm text-gray-600">
+                    {formatTime(selectedTimeSlot)} - {
+                      selectedTimeSlot ? 
+                      (() => {
+                        const time = formatTime(selectedTimeSlot);
+                        const [timeStr] = time.split(/([ap]m)/);
+                        const [hour, minute] = timeStr.split(':');
+                        const endMinute = parseInt(hour) * 60 + parseInt(minute || '0') + 55; // 55 minutes session
+                        const endHour = Math.floor(endMinute / 60) % 24;
+                        const endMin = endMinute % 60;
+                        const endPeriod = endHour >= 12 ? 'pm' : 'am';
+                        const displayHour = endHour > 12 ? endHour - 12 : (endHour === 0 ? 12 : endHour);
+                        return `${displayHour}:${endMin.toString().padStart(2, '0')}${endPeriod}`;
+                      })() : ''
+                    } {timezoneDisplay}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Timezone Warning */}
             {(() => {
               const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -123,7 +157,7 @@ export const TherapistConfirmationModal = ({
               
               if (clientTimezone !== browserTimezone) {
                 return (
-                  <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-xs text-blue-700" style={{ fontFamily: 'var(--font-inter)' }}>
                       ⓘ This appointment is being scheduled in {timezoneDisplay} time. Your browser is in {browserDisplay}.
                     </p>
@@ -132,51 +166,25 @@ export const TherapistConfirmationModal = ({
               }
               return null;
             })()}
-            
-            <div className="space-y-2 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Date:</span>
-                <span className="font-medium text-gray-800">{formatDate(selectedDate)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Time:</span>
-                <span className="font-medium text-gray-800">
-                  {formatTime(selectedTimeSlot)}
-                  <span className="text-xs text-gray-500 ml-1">({timezoneDisplay})</span>
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Duration:</span>
-                <span className="font-medium text-gray-800">55 minutes</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Type:</span>
-                <span className="font-medium text-gray-800">Video Session</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Timezone:</span>
-                <span className="font-medium text-gray-800">{timezoneDisplay}</span>
-              </div>
-            </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <Button
-              className="w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106]"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-full text-base font-medium transition-all"
               onClick={onConfirm}
               style={{ fontFamily: 'var(--font-inter)' }}
             >
-              Confirm & Book Session →
+              Book Session →
             </Button>
             
             <Button
-              variant="outline"
-              className="w-full rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+              variant="ghost"
+              className="w-full py-4 rounded-full text-base font-medium text-gray-700 hover:bg-gray-100 transition-all"
               onClick={onCancel}
               style={{ fontFamily: 'var(--font-inter)' }}
             >
-              Go Back & Change
+              Cancel
             </Button>
           </div>
         </div>
