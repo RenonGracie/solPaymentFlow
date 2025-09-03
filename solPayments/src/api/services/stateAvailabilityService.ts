@@ -14,7 +14,7 @@ export class StateAvailabilityService {
    */
   static async getAvailableStates(paymentType: 'cash_pay' | 'insurance' = 'cash_pay'): Promise<StateAvailabilityResponse> {
     try {
-      const response = await axiosInstance.get('/api/therapists/available-states', {
+      const response = await axiosInstance.get('/therapists/available-states', {
         params: {
           payment_type: paymentType
         }

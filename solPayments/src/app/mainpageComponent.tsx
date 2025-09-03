@@ -83,6 +83,7 @@ interface ComprehensiveUserData {
     image_link?: string;
     states: string[];
     therapeutic_orientation?: string[];
+    program?: string;
   };
   
   // Appointment details
@@ -280,10 +281,17 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
     return { dateStr, timeStr, timezone: timezoneDisplay };
   };
 
-  // Get therapist category from booking data
+  // Get therapist category from selected therapist data
   const getTherapistCategory = () => {
-    if (!currentUserData?.payment_type) return 'Graduate Therapist';
-    return currentUserData.payment_type === 'cash_pay' ? 'Graduate Therapist' : 'Associate Therapist';
+    const program = currentUserData?.selected_therapist?.program?.trim();
+    if (program === 'Limited Permit') return 'Associate Therapist';
+    return 'Graduate Therapist'; // Default for MHC, MSW, MFT, or unknown
+  };
+
+  // Get session duration based on therapist category
+  const getSessionDuration = () => {
+    const category = getTherapistCategory();
+    return category === 'Associate Therapist' ? 55 : 45;
   };
 
   // Handle portal setup with correct link logic
@@ -366,7 +374,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
       <div className="flex-1 px-4 py-6 max-w-md mx-auto">
         {/* Welcome Header */}
         <div className="text-center mb-6">
-          <h1 className="very-vogue-title text-2xl text-gray-800 mb-4">
+          <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800 mb-4">
             A Warm Welcome to Sol, {currentUserData.preferred_name || currentUserData.first_name}! 🌞
           </h1>
         </div>
@@ -400,7 +408,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
               )}
               
               <div>
-                <h2 className="very-vogue-title text-lg text-gray-800">
+                <h2 className="very-vogue-title text-lg sm:text-xl text-gray-800">
                   {bookingData.PractitionerName || 'Your Therapist'}
                 </h2>
                 <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -465,7 +473,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
         {/* What to Expect Section */}
         <Card className="mb-6 bg-white border border-[#5C3106] rounded-2xl shadow-[1px_1px_0_#5C3106]">
           <CardContent className="p-4">
-            <h3 className="very-vogue-title text-lg text-gray-800 mb-4 text-center">
+            <h3 className="very-vogue-title text-lg sm:text-xl text-gray-800 mb-4 text-center">
               What To Expect
             </h3>
             
@@ -578,7 +586,11 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
               </button>
             </div>
             
-            <Button onClick={() => setShowVideo(false)} className="mt-4 w-full">
+            <Button 
+              onClick={() => setShowVideo(false)} 
+              className="mt-4 w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106]"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
               Close Video
             </Button>
           </div>
@@ -1573,14 +1585,19 @@ export default function MainPageComponent() {
                           specialties: therapist.specialities || [],
                           image_link: therapist.image_link || undefined,
                           states: therapist.states || [],
-                          therapeutic_orientation: therapist.therapeutic_orientation || []
+                          therapeutic_orientation: therapist.therapeutic_orientation || [],
+                          program: therapist.program || undefined
                         };
+                        
+                        // Calculate correct duration based on therapist program
+                        const therapistCategory = therapist.program?.trim() === 'Limited Permit' ? 'Associate Therapist' : 'Graduate Therapist';
+                        const sessionDuration = therapistCategory === 'Associate Therapist' ? 55 : 45;
                         
                         const appointmentInfo = {
                           date: slotDate.toLocaleDateString(),
                           time: slotDate.toLocaleTimeString(),
                           timezone: browserTimezone,
-                          duration: 45,
+                          duration: sessionDuration,
                           session_type: 'initial',
                           // Add debugging info
                           slot_raw: slot,
@@ -1661,10 +1678,18 @@ export default function MainPageComponent() {
               <div className="text-center py-20">
                 <h2 className="text-2xl font-bold mb-4">No matches found</h2>
                 <p className="text-gray-600 mb-4">We couldn't find any therapists matching your preferences for {selectedPaymentType} clients.</p>
-                <Button onClick={handleChangePreferences} className="mb-2">
+                <Button 
+                  onClick={handleChangePreferences} 
+                  className="mb-2 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106]"
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
                   Change Preferences
                 </Button>
-                <Button onClick={handleBackFromSurvey} variant="outline">
+                <Button 
+                  onClick={handleBackFromSurvey} 
+                  className="bg-white hover:bg-gray-50 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106]"
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
                   Start Over
                 </Button>
               </div>

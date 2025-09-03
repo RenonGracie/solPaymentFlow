@@ -75,9 +75,18 @@ export const TherapistConfirmationModal = ({
 
   const getTherapistCategory = (therapist: TMatchedTherapistData['therapist']): string => {
     const program = (therapist?.program ?? '').trim();
-    if (program === 'Limited Permit') return 'Therapist-in-Training';
-    return 'Therapist';
+    if (program === 'Limited Permit') return 'Associate Therapist';
+    return 'Graduate Therapist';
   };
+
+  const getSessionDuration = (therapist: TMatchedTherapistData['therapist']): number => {
+    const category = getTherapistCategory(therapist);
+    if (category === 'Graduate Therapist') return 45;
+    if (category === 'Associate Therapist') return 55;
+    return sessionDuration; // fallback to prop value
+  };
+
+  const actualSessionDuration = therapist ? getSessionDuration(therapist.therapist) : sessionDuration;
 
   return (
     <Dialog open={isVisible} onOpenChange={onCancel}>
@@ -86,7 +95,7 @@ export const TherapistConfirmationModal = ({
           {/* Header */}
           <div className="text-center mb-8">
             <h2 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800">
-              Confirm <em>your</em> Selection
+              Confirm <em>your</em>  Selection
             </h2>
           </div>
 
@@ -137,19 +146,36 @@ export const TherapistConfirmationModal = ({
                       selectedTimeSlot ? 
                       (() => {
                         const time = formatTime(selectedTimeSlot);
-                        const [timeStr] = time.split(/([ap]m)/);
-                        const [hour, minute] = timeStr.split(':');
-                        const endMinute = parseInt(hour) * 60 + parseInt(minute || '0') + sessionDuration;
-                        const endHour = Math.floor(endMinute / 60) % 24;
-                        const endMin = endMinute % 60;
-                        const endPeriod = endHour >= 12 ? 'pm' : 'am';
-                        const displayHour = endHour > 12 ? endHour - 12 : (endHour === 0 ? 12 : endHour);
-                        return `${displayHour}:${endMin.toString().padStart(2, '0')}${endPeriod}`;
+                        // Parse the time string (e.g., "1:00pm")
+                        const match = time.match(/^(\d{1,2}):(\d{2})(am|pm)$/i);
+                        if (!match) return '';
+                        
+                        let hour = parseInt(match[1]);
+                        const minute = parseInt(match[2]);
+                        const period = match[3].toLowerCase();
+                        
+                        // Convert to 24-hour format
+                        if (period === 'pm' && hour !== 12) {
+                          hour += 12;
+                        } else if (period === 'am' && hour === 12) {
+                          hour = 0;
+                        }
+                        
+                        // Add session duration
+                        const totalMinutes = hour * 60 + minute + actualSessionDuration;
+                        const endHour24 = Math.floor(totalMinutes / 60) % 24;
+                        const endMinute = totalMinutes % 60;
+                        
+                        // Convert back to 12-hour format
+                        const endPeriod = endHour24 >= 12 ? 'pm' : 'am';
+                        const endHour12 = endHour24 === 0 ? 12 : (endHour24 > 12 ? endHour24 - 12 : endHour24);
+                        
+                        return `${endHour12}:${endMinute.toString().padStart(2, '0')}${endPeriod}`;
                       })() : ''
                     } {timezoneDisplay}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {sessionDuration} minute session
+                    {actualSessionDuration} minute session
                   </p>
                 </div>
               </div>
@@ -176,7 +202,7 @@ export const TherapistConfirmationModal = ({
           {/* Action Buttons */}
           <div className="flex flex-col gap-4">
             <Button
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-full text-base font-medium transition-all"
+              className="w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 py-4 rounded-full text-base font-medium border border-[#5C3106] shadow-[1px_1px_0_#5C3106] transition-all"
               onClick={onConfirm}
               style={{ fontFamily: 'var(--font-inter)' }}
             >
@@ -184,8 +210,8 @@ export const TherapistConfirmationModal = ({
             </Button>
             
             <Button
-              variant="ghost"
-              className="w-full py-4 rounded-full text-base font-medium text-gray-700 hover:bg-gray-100 transition-all"
+              variant="outline"
+              className="w-full py-4 rounded-full text-base font-medium border-2 border-[#5C3106] text-gray-800 hover:bg-gray-50 transition-all"
               onClick={onCancel}
               style={{ fontFamily: 'var(--font-inter)' }}
             >
