@@ -1,0 +1,278 @@
+// Therapist Data Preloader Utility
+import { TMatchedTherapistData } from "@/api/types/therapist.types";
+
+interface PreloadProgress {
+  total: number;
+  completed: number;
+  currentTask: string;
+}
+
+interface PreloadOptions {
+  onProgress?: (progress: PreloadProgress) => void;
+  timeout?: number; // Timeout for each individual preload task
+}
+
+/**
+ * Preload therapist image with timeout and error handling
+ */
+const preloadImage = (src: string, timeout: number = 10000): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (!src || typeof src !== 'string') {
+      resolve(); // Skip invalid URLs
+      return;
+    }
+
+    const cleanSrc = src.trim();
+    if (!cleanSrc.startsWith('http://') && !cleanSrc.startsWith('https://')) {
+      resolve(); // Skip non-HTTP URLs
+      return;
+    }
+
+    const img = new Image();
+    const timer = setTimeout(() => {
+      console.warn(`[Preloader] Image timeout: ${cleanSrc}`);
+      resolve(); // Don't fail the entire process for one image
+    }, timeout);
+
+    img.onload = () => {
+      clearTimeout(timer);
+      console.log(`[Preloader] ✅ Image loaded: ${cleanSrc}`);
+      resolve();
+    };
+
+    img.onerror = () => {
+      clearTimeout(timer);
+      console.warn(`[Preloader] ❌ Image failed: ${cleanSrc}`);
+      resolve(); // Don't fail the entire process for one image
+    };
+
+    img.src = cleanSrc;
+  });
+};
+
+/**
+ * Preload video metadata (check if video exists and is accessible)
+ */
+const preloadVideo = (videoUrl: string, timeout: number = 5000): Promise<void> => {
+  return new Promise((resolve) => {
+    if (!videoUrl || typeof videoUrl !== 'string') {
+      resolve();
+      return;
+    }
+
+    const cleanUrl = videoUrl.trim();
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      resolve();
+      return;
+    }
+
+    // For YouTube videos, we can check if the video exists
+    if (cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be')) {
+      // Extract video ID
+      const videoIdMatch = cleanUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu.be\/)([^&\n?#]+)/);
+      if (videoIdMatch) {
+        const videoId = videoIdMatch[1];
+        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        
+        // Preload the thumbnail as a proxy for video availability
+        preloadImage(thumbnailUrl, timeout)
+          .then(() => {
+            console.log(`[Preloader] ✅ Video verified: ${cleanUrl}`);
+            resolve();
+          })
+          .catch(() => {
+            console.warn(`[Preloader] ❌ Video verification failed: ${cleanUrl}`);
+            resolve();
+          });
+        return;
+      }
+    }
+
+    // For other video types, just resolve (we can't easily preload them)
+    console.log(`[Preloader] ℹ️ Video noted: ${cleanUrl}`);
+    resolve();
+  });
+};
+
+/**
+ * Preload calendar availability for a therapist
+ */
+const preloadCalendarAvailability = async (
+  therapist: TMatchedTherapistData['therapist'], 
+  clientState?: string,
+  paymentType?: string,
+  timeout: number = 15000
+): Promise<void> => {
+  return new Promise((resolve) => {
+    const email = therapist.calendar_email || therapist.email;
+    if (!email) {
+      resolve();
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      controller.abort();
+      console.warn(`[Preloader] Calendar timeout: ${email}`);
+      resolve();
+    }, timeout);
+
+    const fetchAvailability = async () => {
+      try {
+        // Get current date info for availability fetch
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // 1-based month
+        
+        // Determine timezone from client state
+        const STATE_TIMEZONE_MAP: Record<string, string> = {
+          'CT': 'America/New_York', 'DE': 'America/New_York', 'DC': 'America/New_York', 'FL': 'America/New_York',
+          'GA': 'America/New_York', 'ME': 'America/New_York', 'MD': 'America/New_York', 'MA': 'America/New_York',
+          'NH': 'America/New_York', 'NJ': 'America/New_York', 'NY': 'America/New_York', 'NC': 'America/New_York',
+          'OH': 'America/New_York', 'PA': 'America/New_York', 'RI': 'America/New_York', 'SC': 'America/New_York',
+          'VT': 'America/New_York', 'VA': 'America/New_York', 'WV': 'America/New_York', 'MI': 'America/New_York',
+          'IN': 'America/New_York', 'KY': 'America/New_York',
+          'AL': 'America/Chicago', 'AR': 'America/Chicago', 'IL': 'America/Chicago', 'IA': 'America/Chicago',
+          'LA': 'America/Chicago', 'MN': 'America/Chicago', 'MS': 'America/Chicago', 'MO': 'America/Chicago',
+          'OK': 'America/Chicago', 'WI': 'America/Chicago', 'TX': 'America/Chicago', 'TN': 'America/Chicago',
+          'KS': 'America/Chicago', 'NE': 'America/Chicago', 'SD': 'America/Chicago', 'ND': 'America/Chicago',
+          'AZ': 'America/Phoenix', 'CO': 'America/Denver', 'ID': 'America/Denver', 'MT': 'America/Denver',
+          'NM': 'America/Denver', 'UT': 'America/Denver', 'WY': 'America/Denver',
+          'CA': 'America/Los_Angeles', 'NV': 'America/Los_Angeles', 'OR': 'America/Los_Angeles', 'WA': 'America/Los_Angeles',
+          'AK': 'America/Anchorage', 'HI': 'Pacific/Honolulu',
+        };
+        
+        const timezone = clientState ? STATE_TIMEZONE_MAP[clientState.toUpperCase()] || 'America/New_York' : 'America/New_York';
+        
+        // Build availability API URL
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
+        const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, API_BASE);
+        url.searchParams.set("year", String(currentYear));
+        url.searchParams.set("month", String(currentMonth));
+        url.searchParams.set("timezone", timezone);
+        url.searchParams.set("payment_type", paymentType || 'insurance');
+        url.searchParams.set("work_start", "07:00");
+        url.searchParams.set("work_end", "21:00");
+
+        const response = await fetch(url.toString(), { 
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(`[Preloader] ✅ Calendar loaded: ${email} (${Object.keys(data.days || {}).length} days)`);
+        clearTimeout(timer);
+        resolve();
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn(`[Preloader] Calendar aborted: ${email}`);
+        } else {
+          console.warn(`[Preloader] Calendar failed: ${email}`, error);
+        }
+        clearTimeout(timer);
+        resolve();
+      }
+    };
+
+    fetchAvailability();
+  });
+};
+
+/**
+ * Preload all data for a single therapist
+ */
+export const preloadTherapistData = async (
+  therapistData: TMatchedTherapistData,
+  clientState?: string,
+  paymentType?: string,
+  options: PreloadOptions = {}
+): Promise<void> => {
+  const { onProgress, timeout = 10000 } = options;
+  const therapist = therapistData.therapist;
+  
+  console.log(`[Preloader] 🔄 Starting preload for: ${therapist.intern_name}`);
+  
+  const tasks = [
+    {
+      name: 'Profile Image',
+      task: () => preloadImage(therapist.image_link || '', timeout)
+    },
+    {
+      name: 'Welcome Video',
+      task: () => preloadVideo(therapist.welcome_video || therapist.welcome_video_link || therapist.greetings_video_link || '', timeout)
+    },
+    {
+      name: 'Calendar Availability',
+      task: () => preloadCalendarAvailability(therapist, clientState, paymentType, timeout * 1.5)
+    }
+  ];
+
+  let completed = 0;
+  const total = tasks.length;
+
+  for (const { name, task } of tasks) {
+    onProgress?.({ total, completed, currentTask: name });
+    
+    try {
+      await task();
+      completed++;
+      console.log(`[Preloader] ✅ ${name} completed for ${therapist.intern_name}`);
+    } catch (error) {
+      completed++;
+      console.warn(`[Preloader] ❌ ${name} failed for ${therapist.intern_name}:`, error);
+    }
+  }
+
+  onProgress?.({ total, completed, currentTask: 'Complete' });
+  console.log(`[Preloader] 🎯 Preload complete for: ${therapist.intern_name}`);
+};
+
+/**
+ * Preload data for multiple therapists
+ */
+export const preloadMultipleTherapists = async (
+  therapistsList: TMatchedTherapistData[],
+  clientState?: string,
+  paymentType?: string,
+  options: PreloadOptions = {}
+): Promise<void> => {
+  console.log(`[Preloader] 🚀 Starting batch preload for ${therapistsList.length} therapists`);
+  
+  // Preload the first therapist completely, then preload others in parallel
+  if (therapistsList.length > 0) {
+    await preloadTherapistData(therapistsList[0], clientState, paymentType, options);
+  }
+
+  // Preload remaining therapists in parallel (but with lower priority)
+  if (therapistsList.length > 1) {
+    const remainingTherapists = therapistsList.slice(1);
+    const parallelPreloads = remainingTherapists.map(therapist => 
+      preloadTherapistData(therapist, clientState, paymentType, { 
+        ...options, 
+        timeout: (options.timeout || 10000) * 0.5 // Shorter timeout for background preloading
+      })
+    );
+
+    // Don't await these - let them complete in the background
+    Promise.allSettled(parallelPreloads).then(() => {
+      console.log(`[Preloader] 🎯 Background preload complete for ${remainingTherapists.length} additional therapists`);
+    });
+  }
+};
+
+/**
+ * Create a preload function for use with LoadingScreen
+ */
+export const createTherapistPreloader = (
+  therapistsList: TMatchedTherapistData[],
+  clientState?: string,
+  paymentType?: string
+) => {
+  return () => preloadMultipleTherapists(therapistsList, clientState, paymentType);
+};

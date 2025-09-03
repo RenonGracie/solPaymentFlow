@@ -11,6 +11,8 @@ import axios from "@/api/axios"; // Import axios for API calls
 import { TherapistSearchModal } from "@/components/TherapistSearchModal";
 import { TherapistConfirmationModal } from "@/components/TherapistConfirmationModal";
 import { journeyTracker } from "@/services/journeyTracker";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { createTherapistPreloader } from "@/utils/therapistPreloader";
 
 /** ---- Availability types (from new backend endpoint) ---- */
 type AvSlot = { start: string; end: string; free_ratio: number; is_free: boolean };
@@ -148,6 +150,8 @@ export default function MatchedTherapist({
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
   const [isFindingAnother, setIsFindingAnother] = useState(false);
   const [hasAttemptedFallback, setHasAttemptedFallback] = useState(false);
+  const [showTherapistSearchLoading, setShowTherapistSearchLoading] = useState(false);
+  const [therapistSearchPreloader, setTherapistSearchPreloader] = useState<(() => Promise<void>) | null>(null);
   
   const currentTherapistData = therapistsList[currentIndex];
   const therapist = currentTherapistData?.therapist;
@@ -354,32 +358,53 @@ export default function MatchedTherapist({
     console.log(`[Find Another] Current therapist: ${therapist?.intern_name} (index ${currentIndex})`);
     console.log(`[Find Another] Total therapists available: ${therapistsList.length}`);
     
-    // Show the search modal first
+    // If we have multiple therapists already loaded, cycle through them with preloading
+    if (therapistsList.length > 1) {
+      const nextIndex = (currentIndex + 1) % therapistsList.length;
+      const nextTherapist = therapistsList[nextIndex];
+      
+      console.log(`[Find Another] Moving to: ${nextTherapist?.therapist?.intern_name} (index ${nextIndex})`);
+      
+      // Create preloader for the next therapist
+      const preloader = createTherapistPreloader(
+        [nextTherapist], // Preload just the next therapist
+        clientData?.state,
+        getSelectedPaymentType()
+      );
+      setTherapistSearchPreloader(() => preloader);
+      
+      // Show loading screen with preloading
+      setShowTherapistSearchLoading(true);
+      
+      // The loading screen will call onComplete when preloading is done
+      return;
+    }
+    
+    // Show the search modal first for new therapist search
     setShowSearchModal(true);
     
     // Wait for 2 seconds (modal duration) before proceeding
     setTimeout(() => {
       setShowSearchModal(false);
-      
-      // If we have multiple therapists already loaded, cycle through them first
-      if (therapistsList.length > 1) {
-        const nextIndex = (currentIndex + 1) % therapistsList.length;
-        const nextTherapist = therapistsList[nextIndex]?.therapist;
-        
-        console.log(`[Find Another] Moving to: ${nextTherapist?.intern_name} (index ${nextIndex})`);
-        
-        setCurrentIndex(nextIndex);
-        setSelectedTimeSlot(null);
-        setSelectedDateObj(null);
-        setImageError({});
-        setHasRecordedSelection(false);
-        setHasAttemptedFallback(false); // Reset fallback flag when switching therapists
-        return;
-      }
-      
-      // Continue with existing fallback logic if needed
       handleFindAnotherFallback();
     }, 2000);
+  };
+  
+  const handleTherapistSearchComplete = () => {
+    console.log(`[Find Another] Preloading complete, switching to next therapist`);
+    
+    // Switch to the next therapist
+    const nextIndex = (currentIndex + 1) % therapistsList.length;
+    setCurrentIndex(nextIndex);
+    setSelectedTimeSlot(null);
+    setSelectedDateObj(null);
+    setImageError({});
+    setHasRecordedSelection(false);
+    setHasAttemptedFallback(false);
+    
+    // Hide loading screen
+    setShowTherapistSearchLoading(false);
+    setTherapistSearchPreloader(null);
   };
   
   const handleFindAnotherFallback = async () => {
@@ -1407,6 +1432,18 @@ export default function MatchedTherapist({
   };
 
   if (!therapist) return null;
+
+  // Show therapist search loading screen if searching for next therapist
+  if (showTherapistSearchLoading) {
+    return (
+      <LoadingScreen
+        variant="therapist-search"
+        preloadData={therapistSearchPreloader || undefined}
+        onComplete={handleTherapistSearchComplete}
+        minDisplayTime={3000}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>

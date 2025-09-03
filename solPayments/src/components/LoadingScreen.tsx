@@ -141,28 +141,106 @@ const bookingConfirmationStates = [
   }
 ];
 
+const therapistSearchStates = [
+  {
+    lines: [
+      [
+        { text: "Searching", className: "" },
+        { text: "for", className: "italic", isItalic: true },
+        { text: "your", className: "", image: "/loading-images/Eye.webp" }
+      ],
+      [
+        { text: "next", className: "" },
+        { text: "match", withDots: true, className: "italic", isItalic: true }
+      ]
+    ]
+  },
+  {
+    lines: [
+      [
+        { text: "Loading", className: "" },
+        { text: "therapist", className: "italic", isItalic: true, image: "/loading-images/Person2.webp" }
+      ],
+      [
+        { text: "profile", withDots: true, className: "" }
+      ]
+    ]
+  },
+  {
+    lines: [
+      [
+        { text: "Almost", className: "" },
+        { text: "ready", withDots: true, className: "italic", isItalic: true, image: "/loading-images/Person3.webp" }
+      ]
+    ]
+  }
+];
+
 interface LoadingScreenProps {
   onComplete?: () => void;
   minDisplayTime?: number; // Minimum time to show the loading screen (milliseconds)
-  variant?: 'therapist-matching' | 'booking-confirmation'; // Different loading screen variants
+  variant?: 'therapist-matching' | 'booking-confirmation' | 'therapist-search'; // Different loading screen variants
+  preloadData?: () => Promise<void>; // Optional data preloading function
+  preloadProgress?: number; // Progress of data preloading (0-100)
 }
 
-export const LoadingScreen = ({ onComplete, minDisplayTime = 12000, variant = 'therapist-matching' }: LoadingScreenProps = {}) => {
+export const LoadingScreen = ({ 
+  onComplete, 
+  minDisplayTime = 12000, 
+  variant = 'therapist-matching', 
+  preloadData,
+  preloadProgress = 0 
+}: LoadingScreenProps = {}) => {
   const [currentStateIndex, setCurrentStateIndex] = useState(0);
   const [hasCompletedCycle, setHasCompletedCycle] = useState(false);
+  const [isPreloading, setIsPreloading] = useState(false);
+  const [preloadComplete, setPreloadComplete] = useState(false);
   
   // Select the appropriate loading states based on variant
-  const loadingStates = variant === 'booking-confirmation' ? bookingConfirmationStates : therapistMatchingStates;
+  const loadingStates = variant === 'booking-confirmation' 
+    ? bookingConfirmationStates 
+    : variant === 'therapist-search' 
+    ? therapistSearchStates 
+    : therapistMatchingStates;
+
+  // Handle data preloading
+  useEffect(() => {
+    if (preloadData && !isPreloading && !preloadComplete) {
+      setIsPreloading(true);
+      preloadData()
+        .then(() => {
+          console.log('✅ LoadingScreen: Data preloading completed');
+          setPreloadComplete(true);
+        })
+        .catch((error) => {
+          console.error('❌ LoadingScreen: Data preloading failed:', error);
+          setPreloadComplete(true); // Continue anyway
+        })
+        .finally(() => {
+          setIsPreloading(false);
+        });
+    }
+  }, [preloadData, isPreloading, preloadComplete]);
 
   useEffect(() => {
     // Cycle through states
     if (currentStateIndex >= loadingStates.length - 1) {
       if (!hasCompletedCycle) {
         setHasCompletedCycle(true);
+        
+        // Wait for both minimum display time AND preloading to complete
+        const checkCompletion = () => {
+          if (!preloadData || preloadComplete) {
+            console.log('🎯 LoadingScreen: Completing - preload status:', preloadComplete);
+            onComplete?.();
+          } else {
+            // Check again in a short interval
+            setTimeout(checkCompletion, 100);
+          }
+        };
+        
         // Ensure minimum display time
-        const minTimer = setTimeout(() => {
-          onComplete?.();
-        }, minDisplayTime);
+        const minTimer = setTimeout(checkCompletion, minDisplayTime);
         return () => clearTimeout(minTimer);
       }
       return;
@@ -173,7 +251,7 @@ export const LoadingScreen = ({ onComplete, minDisplayTime = 12000, variant = 't
     }, ANIMATION_DURATION);
 
     return () => clearTimeout(timer);
-  }, [currentStateIndex, hasCompletedCycle, onComplete, minDisplayTime, loadingStates.length]);
+  }, [currentStateIndex, hasCompletedCycle, onComplete, minDisplayTime, loadingStates.length, preloadData, preloadComplete]);
 
   const state = loadingStates[currentStateIndex];
 

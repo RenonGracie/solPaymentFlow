@@ -19,6 +19,7 @@ import axiosInstance from "@/api/axios";
 import IntakeQService from "@/api/services/intakeqService";
 import { sendMandatoryForm } from "@/app/api/intakeq";
 import { STEPS } from "@/constants";
+import { createTherapistPreloader } from "@/utils/therapistPreloader";
 
 type PaymentType = "insurance" | "cash_pay";
 
@@ -716,6 +717,9 @@ export default function MainPageComponent() {
   
   // Track whether user is changing preferences vs starting fresh
   const [isChangingPreferences, setIsChangingPreferences] = useState(false);
+  
+  // Therapist preloading state
+  const [therapistPreloader, setTherapistPreloader] = useState<(() => Promise<void>) | null>(null);
 
   // Appointments service
   const { bookAppointment } = useAppointmentsService();
@@ -1012,6 +1016,8 @@ export default function MainPageComponent() {
       // Both insurance and cash_pay flows use the SAME therapist-matching API call
       await pollFormAndRequestMatch(responseId);
       
+      // Note: therapist preloader will be created in the useEffect that handles match results
+      
     } catch (error) {
       console.error('❌ Error processing survey:', error);
       alert('Error processing your survey. Please try again.');
@@ -1027,6 +1033,7 @@ export default function MainPageComponent() {
     setFormData(null);
     setCurrentUserData(null);
     setIsChangingPreferences(false);
+    setTherapistPreloader(null); // Clear preloader when going back
     setShowOnboarding(true);
   };
 
@@ -1034,6 +1041,7 @@ export default function MainPageComponent() {
     setIsChangingPreferences(true);
     setCurrentStep(STEPS.TYPEFORM);
     setClientResponseId(null);
+    setTherapistPreloader(null); // Clear preloader when changing preferences
   };
 
   const handleBookSession = (bookedSession: BookAppointmentResponse) => {
@@ -1417,6 +1425,14 @@ export default function MainPageComponent() {
   useEffect(() => {
     if (matchData?.therapists) {
       if (matchData.therapists.length > 0) {
+        // Create preloader for therapist data
+        const preloader = createTherapistPreloader(
+          matchData.therapists,
+          currentUserData?.state,
+          selectedPaymentType || undefined
+        );
+        setTherapistPreloader(() => preloader);
+        
         setCurrentStep(STEPS.MATCHED_THERAPIST);
       } else {
         setCurrentStep(STEPS.NO_MATCH);
@@ -1426,9 +1442,10 @@ export default function MainPageComponent() {
         paymentType: selectedPaymentType,
         therapistsReturned: matchData.therapists.length,
         therapists: matchData.therapists,
+        preloaderCreated: matchData.therapists.length > 0
       });
     }
-  }, [matchData?.therapists, selectedPaymentType]);
+  }, [matchData?.therapists, selectedPaymentType, currentUserData?.state]);
 
   // If showing onboarding flow
   if (showOnboarding) {
@@ -1443,7 +1460,13 @@ export default function MainPageComponent() {
 
   // If we're in loading state, show loading
   if (loading || isProcessingResponse || isBookingInProgress) {
-    return <LoadingScreen />;
+    return (
+      <LoadingScreen 
+        variant={isBookingInProgress ? 'booking-confirmation' : 'therapist-matching'}
+        preloadData={therapistPreloader || undefined}
+        minDisplayTime={isBookingInProgress ? 8000 : 12000}
+      />
+    );
   }
 
   // If we have an error, show error

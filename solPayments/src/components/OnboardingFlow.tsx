@@ -1702,7 +1702,14 @@ export default function OnboardingFlow({
 
         {/* Navigation */}
         <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-          <button onClick={() => setCurrentStep(5)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={() => {
+            // Go back to payment selection and clear any payment-related state
+            setCurrentStep(4);
+            setNjInsurancePlan(null);
+            setSelectedProvider('');
+            setVerificationResponse(null);
+            setVerificationStep('form');
+          }} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
@@ -1865,7 +1872,13 @@ export default function OnboardingFlow({
 
         {/* Navigation */}
         <div className="flex items-center justify-between px-4 py-4 flex-shrink-0">
-          <button onClick={() => setCurrentStep(6)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={() => {
+            // Go back to NJ verification and clear form state
+            setCurrentStep(6);
+            setSelectedProvider('');
+            setVerificationResponse(null);
+            setVerificationStep('form');
+          }} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="w-10"></div>
