@@ -1383,7 +1383,7 @@ export default function MatchedTherapist({
 
       {/* Heading below banner */}
       <div className="px-4 md:px-6 py-3">
-        <h2 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800">
+        <h2 className="very-vogue-title text-xl sm:text-2xl md:text-3xl text-gray-800 text-center">
           A Therapist We Think You'll <em>Click With</em>
         </h2>
       </div>
@@ -1411,7 +1411,7 @@ export default function MatchedTherapist({
                     )}
                     <div className="relative z-10 flex flex-col items-center gap-2">
                       <Play className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                      <span className="text-white text-xs font-medium">Watch Video</span>
+                      <span className="text-white text-xs font-medium" style={{ fontFamily: 'var(--font-inter)' }}>Meet {therapist.intern_name?.split(' ')[0] || 'Therapist'}</span>
                     </div>
                   </button>
                 )}
@@ -1432,7 +1432,7 @@ export default function MatchedTherapist({
                         </div>
                       ) : (
                         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-sm border border-gray-200">
-                          <span className="text-2xl font-medium text-gray-600">
+                          <span className="text-xl font-medium text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
                             {therapist.intern_name?.charAt(0)?.toUpperCase() || '?'}
                           </span>
                         </div>
@@ -1440,7 +1440,7 @@ export default function MatchedTherapist({
                     </div>
                     
                     <div className="flex-1 w-full">
-                      <h2 className="very-vogue-title text-2xl sm:text-3xl text-gray-800">{therapist.intern_name}</h2>
+                      <h2 className="very-vogue-title text-xl sm:text-2xl text-gray-800">{therapist.intern_name}</h2>
                       <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>{getTherapistCategory(therapist)}</p>
                       {/* Matched specialties */}
                       <div className="flex flex-wrap gap-2 mt-3">
@@ -1459,7 +1459,7 @@ export default function MatchedTherapist({
                   </div>
 
                   {/* Demographics */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 text-xs" style={{ fontFamily: 'var(--font-inter)' }}>
                     <div>
                       <p className="text-gray-500">Identifies as</p>
                       <p className="font-medium">{therapist.identities_as || therapist.gender || 'Not specified'}</p>
@@ -1485,11 +1485,11 @@ export default function MatchedTherapist({
 
                   {/* Skills and Experience sections remain the same... */}
                   <div className="space-y-4">
-                    <h3 className="very-vogue-title text-xl sm:text-2xl text-gray-800">Skills and Experience</h3>
+                    <h3 className="very-vogue-title text-lg sm:text-xl text-gray-800">Skills and Experience</h3>
                     
                     {/* Specialties */}
                     <div>
-                      <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Specializes in</p>
+                      <p className="text-xs text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Specializes in</p>
                       <div className="flex flex-wrap gap-2">
                         {matchedSpecialties.map((specialty, i) => (
                           <span 
@@ -1543,7 +1543,7 @@ export default function MatchedTherapist({
                     {/* Therapeutic orientation */}
                     {therapeuticOrientation && therapeuticOrientation.length > 0 && (
                       <div>
-                        <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Therapeutic orientation</p>
+                        <p className="text-xs text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Therapeutic orientation</p>
                         <div className="flex flex-wrap gap-2">
                           {therapeuticOrientation.map((orientation, i) => (
                             <span key={`orientation-${i}`} className="px-3 py-1 bg-white border border-gray-300 rounded-full text-xs shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -1557,7 +1557,7 @@ export default function MatchedTherapist({
                     {/* Religion experience */}
                     {religions && religions.length > 0 && (
                       <div>
-                        <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Has experience working with religions</p>
+                        <p className="text-xs text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>Has experience working with religions</p>
                         <div className="flex flex-wrap gap-2">
                           {religions.map((r, i) => (
                             <span key={`religion-${i}`} className="px-3 py-1 bg-white border border-gray-300 rounded-full text-xs shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -1576,8 +1576,8 @@ export default function MatchedTherapist({
             <div className="col-span-1 md:col-span-5 flex flex-col min-h-0">
               <Card className="md:flex-1 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106] md:sticky md:top-4">
                 <CardContent className="p-4 md:p-6 flex flex-col">
-                  <h3 className="very-vogue-title text-xl sm:text-2xl text-gray-800 mb-1">Book Your First Session</h3>
-                  <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <h3 className="very-vogue-title text-lg sm:text-xl text-gray-800 mb-1">Book Your First Session</h3>
+                  <p className="text-xs text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
                     {clientData?.state ? 
                       `${String(clientData.state).toUpperCase()} Time (${timezoneDisplay})` : 
                       `Local Time (${timezoneDisplay})`
@@ -1608,12 +1608,12 @@ export default function MatchedTherapist({
                       </div>
                     </div>
                     <div className="border border-[#5C3106] rounded-2xl p-2 shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
-                      <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-1">
+                      <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-1" style={{ fontFamily: 'var(--font-inter)' }}>
                         {['m','t','w','t','f','s','s'].map((d, i) => (
                           <div key={`dh-${i}`} className="py-1 uppercase tracking-wide">{d}</div>
                         ))}
                       </div>
-                      <div className="grid grid-cols-7 gap-1 text-center text-sm">
+                      <div className="grid grid-cols-7 gap-1 text-center text-xs" style={{ fontFamily: 'var(--font-inter)' }}>
                         {calendarCells.map((cell) => {
                           const selected = selectedDateObj ? isSameDay(cell.date, selectedDateObj) : false;
                           const now = new Date();
@@ -1751,7 +1751,7 @@ export default function MatchedTherapist({
 
                   {/* Find Another Therapist */}
                   <div className="text-center mt-auto">
-                    <p className="very-vogue-title text-lg sm:text-xl text-gray-800 mb-2">It's Okay to Keep Looking…</p>
+                    <p className="very-vogue-title text-base sm:text-lg text-gray-800 mb-2">It's Okay to Keep Looking…</p>
                     <Button
                       variant="outline"
                       className="w-full rounded-full border-2 border-[#5C3106]"
@@ -1769,7 +1769,7 @@ export default function MatchedTherapist({
           {/* Previously Viewed Therapists section remains the same... */}
           {previouslyViewed.length > 0 && (
             <div className="mt-6">
-              <h3 className="very-vogue-title text-xl sm:text-2xl text-gray-800 mb-4">Previously Viewed Therapists</h3>
+              <h3 className="very-vogue-title text-lg sm:text-xl text-gray-800 mb-4">Previously Viewed Therapists</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {previouslyViewed.slice(0, 4).map((therapistData) => (
                   <button
@@ -1787,13 +1787,13 @@ export default function MatchedTherapist({
                       />
                     ) : (
                       <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-2 shadow-sm border border-gray-200">
-                        <span className="text-xl font-medium text-gray-600">
+                        <span className="text-lg font-medium text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
                           {therapistData.therapist.intern_name?.charAt(0)?.toUpperCase() || '?'}
                         </span>
                       </div>
                     )}
-                    <p className="font-medium text-sm">{therapistData.therapist.intern_name}</p>
-                    <p className="text-xs text-gray-500">{therapistData.therapist.program}</p>
+                    <p className="font-medium text-xs" style={{ fontFamily: 'var(--font-inter)' }}>{therapistData.therapist.intern_name}</p>
+                    <p className="text-xs text-gray-500" style={{ fontFamily: 'var(--font-inter)' }}>{therapistData.therapist.program}</p>
                   </button>
                 ))}
               </div>
@@ -1808,7 +1808,7 @@ export default function MatchedTherapist({
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-auto overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                <h3 className="text-lg font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                   Welcome from {therapist?.intern_name}
                 </h3>
                 <button 
@@ -1886,7 +1886,7 @@ export default function MatchedTherapist({
                           allowFullScreen
                           title={`Welcome video from ${therapist?.intern_name}`}
                         />
-                        <p className="mt-3 text-sm text-gray-600 text-center">
+                        <p className="mt-3 text-xs text-gray-600 text-center" style={{ fontFamily: 'var(--font-inter)' }}>
                           If the video doesn't load, <a href={videoAnalysis.embedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">click here to view it directly</a>.
                         </p>
                       </div>
@@ -1895,12 +1895,13 @@ export default function MatchedTherapist({
                   default:
                     return (
                       <div className="text-center py-12">
-                        <p className="text-gray-600 mb-4">Unable to display this video format.</p>
+                        <p className="text-gray-600 mb-4 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>Unable to display this video format.</p>
                         <a 
                           href={welcomeVideoLink} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                          style={{ fontFamily: 'var(--font-inter)' }}
                         >
                           View video in new tab
                         </a>

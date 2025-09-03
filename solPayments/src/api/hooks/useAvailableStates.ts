@@ -23,7 +23,22 @@ export const useAvailableStates = (paymentType: 'cash_pay' | 'insurance' = 'cash
       setData(response);
     } catch (err) {
       console.error('Error fetching available states:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch available states');
+      
+      // Check if this is a 404 error (endpoint not deployed yet)
+      if (err instanceof Error && err.message.includes('404')) {
+        console.warn('Available states endpoint not found (likely not deployed yet). Using fallback states.');
+        // Set fallback data that mimics the API response
+        setData({
+          payment_type: paymentType,
+          available_states: ['NY', 'NJ', 'FL', 'TX', 'CA', 'CT', 'GA', 'NV', 'VT', 'MA', 'IL', 'PA', 'RI', 'VA', 'WI', 'NC', 'CO', 'OR', 'WA', 'ME', 'NH'],
+          state_counts: {},
+          total_states: 21,
+          total_therapists: 0
+        });
+        setError(null); // Clear error since we have fallback data
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to fetch available states');
+      }
     } finally {
       setIsLoading(false);
     }
