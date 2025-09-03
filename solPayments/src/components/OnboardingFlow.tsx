@@ -1056,7 +1056,7 @@ export default function OnboardingFlow({
                     boxShadow: `2px 2px 0 ${opt.shadowColor}`
                   }}
                 >
-                  <p className="very-vogue-title text-lg md:text-xl mb-0.5" style={{ color: opt.textColor }}>{opt.title}</p>
+                  <p className="very-vogue-title text-lg sm:text-xl mb-0.5" style={{ color: opt.textColor }}>{opt.title}</p>
                   <p className="text-[12px] md:text-[13px] leading-snug" style={{ color: opt.textColor }}>{opt.desc}</p>
                   <ArrowRight className="absolute bottom-2.5 right-2.5 w-4 h-4 md:w-5 md:h-5" style={{ color: opt.textColor }} />
                 </button>

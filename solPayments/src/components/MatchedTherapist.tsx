@@ -10,6 +10,7 @@ import { useTherapistsService } from "@/api/services";
 import axios from "@/api/axios"; // Import axios for API calls
 import { TherapistSearchModal } from "@/components/TherapistSearchModal";
 import { TherapistConfirmationModal } from "@/components/TherapistConfirmationModal";
+import { journeyTracker } from "@/services/journeyTracker";
 
 /** ---- Availability types (from new backend endpoint) ---- */
 type AvSlot = { start: string; end: string; free_ratio: number; is_free: boolean };
@@ -419,10 +420,22 @@ export default function MatchedTherapist({
   const handleSelectPreviousTherapist = (therapistId: string) => {
     const therapistIndex = therapistsList.findIndex(t => t.therapist.id === therapistId);
     if (therapistIndex !== -1) {
+      const selectedTherapist = therapistsList[therapistIndex];
       setCurrentIndex(therapistIndex);
       setSelectedTimeSlot(null);
       setImageError({});
       setHasRecordedSelection(false); // Reset for new therapist
+      
+      // Track previous therapist selection
+      if (clientData?.response_id) {
+        journeyTracker.trackInteraction(clientData.response_id, 'previous_therapist_selection', {
+          selected_therapist_id: therapistId,
+          selected_therapist_name: selectedTherapist.therapist.intern_name,
+          previous_therapist_index: currentIndex,
+          new_therapist_index: therapistIndex,
+          total_therapists_viewed: previouslyViewed.length + 1
+        }).catch(console.error);
+      }
     }
   };
   
@@ -487,6 +500,23 @@ export default function MatchedTherapist({
       therapistCategory: getTherapistCategory(therapist)
     };
     console.log(JSON.stringify(bookingContext, null, 2));
+    
+    // ========================================
+    // JOURNEY TRACKING - SEND TO GOOGLE SHEETS
+    // ========================================
+    
+    try {
+      // Track comprehensive booking context
+      await journeyTracker.trackBookingStarted(
+        clientData,
+        currentTherapistData,
+        bookingContext
+      );
+      console.log('✅ Journey tracking: Booking context sent to Google Sheets');
+    } catch (error) {
+      console.error('❌ Journey tracking failed:', error);
+      // Don't block the booking flow if tracking fails
+    }
     
     console.log('==========================================');
     
@@ -966,6 +996,17 @@ export default function MatchedTherapist({
     const next = new Date(currentYear, currentMonth - 1, 1);
     setCalendarDate(next);
     
+    // Track calendar navigation
+    if (clientData?.response_id) {
+      journeyTracker.trackInteraction(clientData.response_id, 'calendar_navigation', {
+        direction: 'previous',
+        from_month: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`,
+        to_month: `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`,
+        therapist_id: therapist?.id,
+        has_availability: !!availability?.days && Object.keys(availability.days).length > 0
+      }).catch(console.error);
+    }
+    
     // Find earliest available date in the new month
     const earliestAvailable = findEarliestAvailableDateInMonth(next.getFullYear(), next.getMonth());
     if (earliestAvailable) {
@@ -990,6 +1031,17 @@ export default function MatchedTherapist({
     }
     
     setCalendarDate(next);
+    
+    // Track calendar navigation
+    if (clientData?.response_id) {
+      journeyTracker.trackInteraction(clientData.response_id, 'calendar_navigation', {
+        direction: 'next',
+        from_month: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`,
+        to_month: `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`,
+        therapist_id: therapist?.id,
+        has_availability: !!availability?.days && Object.keys(availability.days).length > 0
+      }).catch(console.error);
+    }
     
     // Find earliest available date in the new month
     const earliestAvailable = findEarliestAvailableDateInMonth(next.getFullYear(), next.getMonth());
@@ -1425,18 +1477,20 @@ export default function MatchedTherapist({
                       {hasValidVideo && (
                         <div className="flex-1">
                           <button
-                            onClick={() => setShowVideo(!showVideo)}
+                            onClick={() => {
+                              setShowVideo(!showVideo);
+                              // Track video interaction
+                              if (clientData?.response_id) {
+                                journeyTracker.trackInteraction(clientData.response_id, 'video_toggle', {
+                                  action: showVideo ? 'close' : 'open',
+                                  therapist_id: therapist?.id,
+                                  therapist_name: therapist?.intern_name,
+                                  has_video: hasValidVideo
+                                }).catch(console.error);
+                              }
+                            }}
                             className="w-full h-24 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106]"
                           >
-                            {therapist.image_link && !imageError[therapist.id] && getImageUrl(therapist.image_link) && (
-                              <img
-                                src={getImageUrl(therapist.image_link)}
-                                alt=""
-                                className="absolute inset-0 w-full h-full object-cover opacity-30"
-                                onError={() => console.log(`[Video Preview] Image failed for ${therapist.intern_name}`)}
-                                loading="lazy"
-                              />
-                            )}
                             <div className="relative z-10 flex items-center gap-3">
                               <Play className="w-6 h-6 text-white" />
                               <span className="text-white text-sm font-medium" style={{ fontFamily: 'var(--font-inter)' }}>Meet {therapist.intern_name?.split(' ')[0] || 'Therapist'}</span>
@@ -1525,7 +1579,19 @@ export default function MatchedTherapist({
                               ))}
                               {!showAllSpecialties && remaining > 0 && (
                                 <button
-                                  onClick={() => setShowAllSpecialties(true)}
+                                  onClick={() => {
+                                    setShowAllSpecialties(true);
+                                    // Track specialty expansion
+                                    if (clientData?.response_id) {
+                                      journeyTracker.trackInteraction(clientData.response_id, 'specialty_expansion', {
+                                        action: 'expand',
+                                        therapist_id: therapist?.id,
+                                        therapist_name: therapist?.intern_name,
+                                        total_specialties: nonMatched.length,
+                                        matched_specialties: matchedSpecialties.length
+                                      }).catch(console.error);
+                                    }
+                                  }}
                                   className="px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] bg-white border-gray-300 text-blue-700"
                                   style={{ fontFamily: 'var(--font-inter)' }}
                                 >
@@ -1534,7 +1600,19 @@ export default function MatchedTherapist({
                               )}
                               {showAllSpecialties && nonMatched.length > 3 && (
                                 <button
-                                  onClick={() => setShowAllSpecialties(false)}
+                                  onClick={() => {
+                                    setShowAllSpecialties(false);
+                                    // Track specialty collapse
+                                    if (clientData?.response_id) {
+                                      journeyTracker.trackInteraction(clientData.response_id, 'specialty_expansion', {
+                                        action: 'collapse',
+                                        therapist_id: therapist?.id,
+                                        therapist_name: therapist?.intern_name,
+                                        total_specialties: nonMatched.length,
+                                        matched_specialties: matchedSpecialties.length
+                                      }).catch(console.error);
+                                    }
+                                  }}
                                   className="px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] bg-white border-gray-300 text-blue-700"
                                   style={{ fontFamily: 'var(--font-inter)' }}
                                 >
@@ -1672,7 +1750,21 @@ export default function MatchedTherapist({
                           return (
                             <button
                               key={cell.key}
-                              onClick={() => cell.inMonth && !isUnavailable && setSelectedDateObj(cell.date)}
+                              onClick={() => {
+                                if (cell.inMonth && !isUnavailable) {
+                                  setSelectedDateObj(cell.date);
+                                  // Track date selection
+                                  if (clientData?.response_id) {
+                                    journeyTracker.trackInteraction(clientData.response_id, 'date_selection', {
+                                      selected_date: cell.date.toISOString().split('T')[0],
+                                      day_of_week: cell.date.toLocaleDateString('en-US', { weekday: 'long' }),
+                                      available_slots: getDayAvailableCount(cell.date),
+                                      therapist_id: therapist?.id,
+                                      therapist_name: therapist?.intern_name
+                                    }).catch(console.error);
+                                  }
+                                }
+                              }}
                               disabled={!cell.inMonth || isUnavailable}
                               title={getTitle()}
                               className={`py-2 rounded-lg transition-colors border relative ${
@@ -1715,7 +1807,20 @@ export default function MatchedTherapist({
                         return (
                           <button
                             key={dt.toISOString()}
-                            onClick={() => setSelectedTimeSlot(normalized)}
+                            onClick={() => {
+                              setSelectedTimeSlot(normalized);
+                              // Track time slot selection
+                              if (clientData?.response_id) {
+                                journeyTracker.trackInteraction(clientData.response_id, 'time_slot_selection', {
+                                  selected_time: label,
+                                  selected_date: selectedDateObj?.toISOString().split('T')[0],
+                                  therapist_id: therapist?.id,
+                                  therapist_name: therapist?.intern_name,
+                                  source: 'dynamic_availability',
+                                  timezone: timezoneDisplay
+                                }).catch(console.error);
+                              }
+                            }}
                             className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
                               selectedTimeSlot === normalized
                                 ? 'border-yellow-400 bg-yellow-50'
@@ -1733,7 +1838,20 @@ export default function MatchedTherapist({
                         return (
                           <button
                             key={`time-${time}`}
-                            onClick={() => setSelectedTimeSlot(normalized)}
+                            onClick={() => {
+                              setSelectedTimeSlot(normalized);
+                              // Track time slot selection
+                              if (clientData?.response_id) {
+                                journeyTracker.trackInteraction(clientData.response_id, 'time_slot_selection', {
+                                  selected_time: time,
+                                  selected_date: selectedDateObj?.toISOString().split('T')[0],
+                                  therapist_id: therapist?.id,
+                                  therapist_name: therapist?.intern_name,
+                                  source: 'fallback_static',
+                                  timezone: timezoneDisplay
+                                }).catch(console.error);
+                              }
+                            }}
                             className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
                               selectedTimeSlot === normalized
                                 ? 'border-yellow-400 bg-yellow-50'
@@ -1749,9 +1867,10 @@ export default function MatchedTherapist({
                   </div>
 
                   <Button
-                    className="w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full mb-6"
+                    className="w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106] mb-6"
                     onClick={handleBookSession}
                     disabled={!selectedTimeSlot || !selectedDateObj}
+                    style={{ fontFamily: 'var(--font-inter)' }}
                   >
                     Book {getSessionDuration()}-Min Session →
                   </Button>
@@ -1811,7 +1930,17 @@ export default function MatchedTherapist({
 
       {/* Simple Video Modal */}
       {showVideo && hasValidVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowVideo(false)}>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => {
+          setShowVideo(false);
+          // Track video modal close via backdrop
+          if (clientData?.response_id) {
+            journeyTracker.trackInteraction(clientData.response_id, 'video_close', {
+              method: 'backdrop_click',
+              therapist_id: therapist?.id,
+              therapist_name: therapist?.intern_name
+            }).catch(console.error);
+          }
+        }}>
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-auto overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
@@ -1819,7 +1948,17 @@ export default function MatchedTherapist({
                   Welcome from {therapist?.intern_name}
                 </h3>
                 <button 
-                  onClick={() => setShowVideo(false)}
+                  onClick={() => {
+                    setShowVideo(false);
+                    // Track video modal close via X button
+                    if (clientData?.response_id) {
+                      journeyTracker.trackInteraction(clientData.response_id, 'video_close', {
+                        method: 'close_button',
+                        therapist_id: therapist?.id,
+                        therapist_name: therapist?.intern_name
+                      }).catch(console.error);
+                    }
+                  }}
                   className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -113,7 +113,7 @@ export const TherapistConfirmationModal = ({
               
               {/* Therapist Info */}
               <div className="flex-1">
-                <h3 className="very-vogue-title text-xl text-gray-800 mb-1">
+                <h3 className="very-vogue-title text-xl sm:text-2xl text-gray-800 mb-1">
                   {therapist.therapist.intern_name}
                 </h3>
                 <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>

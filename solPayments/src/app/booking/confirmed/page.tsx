@@ -302,7 +302,7 @@ function BookingConfirmedContent() {
             <div className="flex items-center justify-center mb-4">
               <CheckCircle className="w-16 h-16 text-green-500" />
             </div>
-            <h1 className="very-vogue-title text-3xl sm:text-4xl md:text-5xl text-gray-800 mb-2">
+            <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800 mb-2">
               Booking Confirmed!
             </h1>
             <p className="text-lg sm:text-xl text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -439,8 +439,9 @@ function BookingConfirmedContent() {
 
       {/* Video Modal */}
       {showVideo && hasValidVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowVideo(false)}>
-          <div className="bg-white rounded-lg p-4 w-full max-w-4xl mx-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowVideo(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-auto overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-6">
             <div className="mb-4">
               <h3 className="text-lg font-medium text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                 A Warm Welcome to Sol! 🌞
@@ -550,9 +551,14 @@ function BookingConfirmedContent() {
               }
             })()}
             
-            <Button onClick={() => setShowVideo(false)} className="mt-4 w-full">
+            <Button 
+              onClick={() => setShowVideo(false)} 
+              className="mt-4 w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106]"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
               Close Video
             </Button>
+            </div>
           </div>
         </div>
       )}
