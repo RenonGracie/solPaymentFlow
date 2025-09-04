@@ -50,7 +50,7 @@ interface OnboardingFlowProps {
   initialStep?: number;
 }
 
-// Benefits display logic function (session rate can vary by payer)
+// Benefits display logic function based on benefit structure
 function getBenefitsDisplay(benefits: EligibilityBenefits, payerIdOverride?: string) {
   // Parse numeric values from string amounts
   const parseAmount = (amount: string): number => {
@@ -67,78 +67,105 @@ function getBenefitsDisplay(benefits: EligibilityBenefits, payerIdOverride?: str
   // Session rate (allowed amount) varies by payer; default fallback=200
   const sessionRate90791 = getSessionCostForPayer(payerIdOverride, 200);
 
-  // Determine if this is a range display (has coinsurance component)
-  const hasCoinsurance = benefitStructure.toLowerCase().includes('coinsurance') || 
-                         benefitStructure.toLowerCase().includes('co-insurance') ||
-                         coinsurance > 0;
+  // Main yellow box text (ALL benefit structures show this)
+  const largeText = `Based on your benefits, you can expect to pay ~$${memberObligation.toFixed(0)} for your sessions.`;
+  const smallText = "This is just an estimation based on the insurance information we received.";
 
-  // Calculate display amount
-  let displayAmount: string;
-  if (memberObligation > 100) {
-    // For high member obligations, show fixed range of $90-110
-    displayAmount = `$90-$110`;
-  } else if (hasCoinsurance && memberObligation > 0) {
-    const lower = memberObligation;
-    const higher = Math.min(memberObligation + (sessionRate90791 - memberObligation), sessionRate90791);
-    displayAmount = `$${lower.toFixed(0)}-$${higher.toFixed(0)}`;
-  } else {
-    displayAmount = `$${memberObligation.toFixed(0)}`;
-  }
-
-  // Main display text
-  const largeText = hasCoinsurance && memberObligation > 0
-    ? `Based on your benefits, you can expect to pay ${displayAmount} for your sessions.`
-    : `Based on your benefits, you can expect to pay ${displayAmount} for your sessions.`;
-
-  const smallText = hasCoinsurance
-    ? "This is just an estimation based on the insurance information we received, including any remaining deductible or out-of-pocket maximum."
-    : "This is just an estimation based on the insurance information we received.";
-
-  // Additional details logic
+  // Additional details logic based on benefit_structure
   let additionalDetails: string | null = null;
+  let showAdditionalPanel = false;
 
-  // Check for specific benefit structures requiring additional details
-  const isFullyCovered = benefitStructure.toLowerCase().includes('fully covered') || memberObligation === 0;
-  const hasAfterDeductible = benefitStructure.toLowerCase().includes('after deductible') || 
-                             benefitStructure.toLowerCase().includes('deductible');
-
-  if (isFullyCovered && !hasAfterDeductible) {
-    // Path 6: Fully covered
-    additionalDetails = "Great news—your sessions are fully covered by insurance. You won't owe anything.";
-  } else if (isFullyCovered && hasAfterDeductible) {
-    // Path 7: Fully covered after deductible
-    if (remainingDeductible > 0) {
-      additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your sessions will be $0.`;
-    } else {
-      additionalDetails = "Great news—you've already hit your deductible, so your sessions are fully covered by insurance. You won't owe anything.";
+  // Check if benefit structure contains "after deductible"
+  const hasAfterDeductible = benefitStructure.toLowerCase().includes('after deductible');
+  
+  if (hasAfterDeductible) {
+    showAdditionalPanel = true;
+    
+    // Determine situation: has hit deductible (situation 1) or hasn't (situation 2)
+    const hasHitDeductible = remainingDeductible <= 0;
+    
+    switch (benefitStructure) {
+      case 'Coinsurance after deductible, with OOP Max':
+        if (hasHitDeductible) {
+          // Situation 1 (hit deductible)
+          additionalDetails = "You've already hit your deductible, so you'll just pay your estimated coinsurance (your share of the session cost).";
+        } else {
+          // Situation 2 (haven't hit deductible)
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll only pay ${coinsurance}% of each session cost.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+        }
+        break;
+        
+      case 'Fully covered after deductible':
+        if (hasHitDeductible) {
+          // Situation 1 (hit deductible)
+          additionalDetails = "Great news—you've already hit your deductible, so your sessions are **fully covered** by insurance. You won't owe anything.";
+        } else {
+          // Situation 2 (haven't hit deductible)
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have **$${remainingDeductible.toFixed(0)}** to go. After that, your sessions will be **$0**.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+        }
+        break;
+        
+      case 'Copay after deductible, with OOP Max':
+      case 'Copay after deductible, no OOP Max':
+        if (hasHitDeductible) {
+          // Situation 1 (hit deductible)
+          additionalDetails = `You've already hit your deductible, so you'll pay your copay of $${copay.toFixed(0)} per session.`;
+        } else {
+          // Situation 2 (haven't hit deductible)
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your cost drops to just your copay ($${copay.toFixed(0)}) per session.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+        }
+        break;
+        
+      case 'Coinsurance after deductible, no OOP Max':
+        if (hasHitDeductible) {
+          // Situation 1 (hit deductible)
+          additionalDetails = "You've already hit your deductible, so you'll just pay your estimated coinsurance (your share of the session cost).";
+        } else {
+          // Situation 2 (haven't hit deductible)
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll only pay ${coinsurance}% of each session cost.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+        }
+        break;
+        
+      case 'Copay and coinsurance after deductible, with OOP Max':
+        if (hasHitDeductible) {
+          // Situation 1 (hit deductible)
+          additionalDetails = "You've already hit your deductible, so you'll pay your estimated copay and coinsurance (your share of the session cost).";
+        } else {
+          // Situation 2 (haven't hit deductible)
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll pay your estimated copay and coinsurance.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+        }
+        break;
+        
+      default:
+        // Generic "after deductible" case
+        if (hasHitDeductible) {
+          additionalDetails = "You've already hit your deductible, so you'll pay your estimated member obligation.";
+        } else {
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll pay your estimated member obligation.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+        }
+        break;
     }
-  } else if (hasAfterDeductible && copay > 0 && !hasCoinsurance) {
-    // Path 8 & 9: Copay after deductible
-    if (remainingDeductible > 0) {
-      additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your cost drops to just your copay ($${copay.toFixed(0)}) per session.`;
-    } else {
-      additionalDetails = `You've already hit your deductible, so you'll pay your copay of $${copay.toFixed(0)} per session.`;
-    }
-  } else if (hasAfterDeductible && hasCoinsurance && copay === 0) {
-    // Path 10 & 11: Coinsurance after deductible
-    if (remainingDeductible > 0) {
-      additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll only pay ${coinsurance}% of each session cost.`;
-    } else {
-      additionalDetails = "You've already hit your deductible, so you'll just pay your estimated coinsurance (your share of the session cost).";
-    }
-  } else if (hasAfterDeductible && hasCoinsurance && copay > 0) {
-    // Path 12: Copay and coinsurance after deductible
-    if (remainingDeductible > 0) {
-      additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll pay your estimated copay and coinsurance.`;
-    } else {
-      additionalDetails = "You've already hit your deductible, so you'll pay your estimated copay and coinsurance (your share of the session cost).";
+  } else {
+    // No "after deductible" - check for special cases that still show additional details
+    switch (benefitStructure) {
+      case 'Fully covered':
+        showAdditionalPanel = true;
+        additionalDetails = "Great news—your sessions are **fully covered** by insurance. You won't owe anything.";
+        break;
+        
+      default:
+        // All other structures without "after deductible" don't show additional coverage details
+        showAdditionalPanel = false;
+        additionalDetails = null;
+        break;
     }
   }
 
   return {
     largeText,
     smallText,
-    additionalDetails
+    additionalDetails,
+    showAdditionalPanel
   };
 }
 
