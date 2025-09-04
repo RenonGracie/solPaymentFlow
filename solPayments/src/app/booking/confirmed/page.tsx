@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Play, CheckCircle, Calendar, Clock } from "lucide-react";
 import Image from "next/image";
 import axios from "@/api/axios";
+import { getMediaUrlWithFallback, S3MediaType } from "@/utils/s3";
 
 // Video analysis types (reused from MatchedTherapist)
 interface VideoAnalysis {
@@ -230,14 +231,11 @@ function BookingConfirmedContent() {
     return { dateStr, timeStr };
   };
 
-  // Handle image URL
-  const getImageUrl = (imageLink: string | null | undefined): string => {
-    if (!imageLink) return '';
-    if (imageLink.startsWith('http://') || imageLink.startsWith('https://')) {
-      return imageLink;
-    }
-    console.warn('Image link is not a full URL:', imageLink);
-    return '';
+  // Handle image URL with S3 fallback
+  const getImageUrl = (imageLink: string | null | undefined, therapistEmail?: string): string => {
+    // Use the S3 utility to handle both presigned URLs and email-based URL construction
+    const url = getMediaUrlWithFallback(imageLink, therapistEmail, S3MediaType.IMAGE);
+    return url || '';
   };
 
   // Handle navigation to client portal
@@ -331,9 +329,9 @@ function BookingConfirmedContent() {
                   </h3>
                   
                   <div className="flex items-center gap-4">
-                    {bookingData.therapist.image_link && getImageUrl(bookingData.therapist.image_link) && !imageError ? (
+                    {getImageUrl(bookingData.therapist.image_link, bookingData.therapist.email) && !imageError ? (
                       <img
-                        src={getImageUrl(bookingData.therapist.image_link)}
+                        src={getImageUrl(bookingData.therapist.image_link, bookingData.therapist.email)}
                         alt={bookingData.therapist.intern_name}
                         className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
                         onError={() => setImageError(true)}

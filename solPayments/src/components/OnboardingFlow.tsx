@@ -534,12 +534,23 @@ export default function OnboardingFlow({
         // Helper function to capitalize first letter only
         const capitalizeFirst = (name: string) => name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
         
+        // Helper function to convert YYYYMMDD back to YYYY-MM-DD format
+        const formatDOBForInput = (dobStr: string): string => {
+          if (dobStr && dobStr.length === 8) {
+            const year = dobStr.substring(0, 4);
+            const month = dobStr.substring(4, 6);
+            const day = dobStr.substring(6, 8);
+            return `${year}-${month}-${day}`;
+          }
+          return dobStr;
+        };
+        
         setFormData(prev => ({
           ...prev,
           // Use user input if available, otherwise format API data with first letter capitalization only
           firstName: prev.firstName || capitalizeFirst(responseData.subscriber?.firstName || ''),
           lastName: prev.lastName || capitalizeFirst(responseData.subscriber?.lastName || ''),
-          dateOfBirth: responseData.subscriber?.dateOfBirth || prev.dateOfBirth,
+          dateOfBirth: formatDOBForInput(responseData.subscriber?.dateOfBirth || prev.dateOfBirth),
           memberId: responseData.subscriber?.memberId || prev.memberId
         }));
       }
@@ -1011,8 +1022,8 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content - truly centered with only preferred name */}
-        <div className="flex-1 flex items-center justify-center px-6 pb-16">
-          <div className="flow-narrow w-full -mt-16 mx-auto">
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="flow-narrow w-full mx-auto">
             <div className="text-center mb-12">
               <span className="text-5xl mb-6 block">👋</span>
               <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" 
@@ -1804,8 +1815,8 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
-          <div className="flow-narrow w-full -mt-12 mx-auto">
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6">
+          <div className="flow-narrow w-full mx-auto">
             <div className="text-center mb-6">
               <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
