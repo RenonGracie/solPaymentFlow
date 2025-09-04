@@ -1604,17 +1604,30 @@ export default function MainPageComponent() {
                       
                       // Enrich current user data with selected therapist info BEFORE booking
                       if (currentUserData) {
+                        // Debug therapist data structure
+                        console.log('🖼️ [MAIN COMPONENT] Therapist data structure debug:', {
+                          therapist_keys: Object.keys(therapist),
+                          therapist_data_keys: Object.keys(therapistData),
+                          image_link_in_therapist: therapist.image_link,
+                          image_link_in_therapistData: therapistData.therapist?.image_link,
+                          full_therapist_object: therapist,
+                          full_therapistData_object: therapistData
+                        });
+                        
                         const therapistInfo = {
                           id: therapist.id || therapist.email || 'unknown',
-                          name: therapist.name || 'Unknown',
+                          name: therapist.name || therapist.intern_name || 'Unknown',
                           email: therapist.email || '',
                           bio: therapist.biography || '',
                           specialties: therapist.specialities || [],
-                          image_link: therapist.image_link || undefined,
+                          // Try multiple possible image link fields to ensure we get the image
+                          image_link: therapist.image_link || therapistData.therapist?.image_link || undefined,
                           states: therapist.states || [],
                           therapeutic_orientation: therapist.therapeutic_orientation || [],
                           program: therapist.program || undefined
                         };
+                        
+                        console.log('🖼️ [MAIN COMPONENT] Created therapistInfo with image_link:', therapistInfo.image_link);
                         
                         // Calculate correct duration based on therapist program
                         const therapistCategory = therapist.program?.trim() === 'Limited Permit' ? 'Associate Therapist' : 'Graduate Therapist';

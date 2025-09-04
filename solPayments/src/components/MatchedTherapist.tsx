@@ -1792,10 +1792,17 @@ export default function MatchedTherapist({
                               const count = getDayAvailableCount(cell.date);
                               const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
                               isUnavailable = count === 0; // Only unavailable when no slots exist
-                              bgClass =
-                                color === 'red' ? 'bg-red-100' :
-                                color === 'yellow' ? 'bg-yellow-100' :
-                                'bg-green-100';
+                              
+                              // Make unavailable red slots grey to be more visually distinct
+                              if (isUnavailable && color === 'red') {
+                                bgClass = 'bg-gray-200';
+                                textClass = 'text-gray-500';
+                              } else {
+                                bgClass =
+                                  color === 'red' ? 'bg-red-100' :
+                                  color === 'yellow' ? 'bg-yellow-100' :
+                                  'bg-green-100';
+                              }
                             }
                           }
 
