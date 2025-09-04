@@ -100,7 +100,7 @@ export const TherapistConfirmationModal = ({
           </div>
 
           {/* Therapist Card */}
-          <div className="border border-[#5C3106] rounded-2xl p-6 mb-8 shadow-[2px_2px_0_#5C3106]">
+          <div className="bg-white border border-[#5C3106] rounded-2xl p-6 mb-8 shadow-[2px_2px_0_#5C3106]">
             <div className="flex items-center gap-4">
               {/* Therapist Image */}
               <div className="flex-shrink-0">

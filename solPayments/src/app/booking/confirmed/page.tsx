@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Play, CheckCircle, Calendar, Clock, User } from "lucide-react";
+import { ArrowLeft, Play, CheckCircle, Calendar, Clock } from "lucide-react";
 import Image from "next/image";
 import axios from "@/api/axios";
 
@@ -176,7 +176,7 @@ function BookingConfirmedContent() {
           appointment: {
             datetime: data.appointment_datetime || new Date().toISOString(),
             status: data.appointment_status || 'scheduled',
-            duration_minutes: data.duration_minutes || (data.payment_type === 'insurance' ? 55 : 45),
+            duration_minutes: data.duration_minutes || (data.therapist?.program === 'Limited Permit' ? 55 : 45),
             payment_type: data.payment_type || 'insurance'
           }
         };
@@ -204,7 +204,7 @@ function BookingConfirmedContent() {
   const hasValidVideo = videoAnalysis.hasVideo;
 
   // Format appointment date and time
-  const formatAppointmentDateTime = (isoString: string) => {
+  const formatAppointmentDateTime = (isoString: string, durationMinutes: number) => {
     const date = new Date(isoString);
     const dateStr = date.toLocaleDateString('en-US', { 
       weekday: 'long', 
@@ -212,11 +212,21 @@ function BookingConfirmedContent() {
       month: 'long', 
       day: 'numeric' 
     });
-    const timeStr = date.toLocaleTimeString('en-US', { 
+    const startTime = date.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       hour12: true 
     });
+    
+    // Calculate end time
+    const endDate = new Date(date.getTime() + durationMinutes * 60000);
+    const endTime = endDate.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    
+    const timeStr = `${startTime} - ${endTime} EST`;
     return { dateStr, timeStr };
   };
 
@@ -269,7 +279,7 @@ function BookingConfirmedContent() {
     );
   }
 
-  const { dateStr, timeStr } = formatAppointmentDateTime(bookingData.appointment.datetime);
+  const { dateStr, timeStr } = formatAppointmentDateTime(bookingData.appointment.datetime, bookingData.appointment.duration_minutes);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
@@ -321,16 +331,19 @@ function BookingConfirmedContent() {
                   </h3>
                   
                   <div className="flex items-center gap-4">
-                    {bookingData.therapist.image_link && !imageError ? (
+                    {bookingData.therapist.image_link && getImageUrl(bookingData.therapist.image_link) && !imageError ? (
                       <img
                         src={getImageUrl(bookingData.therapist.image_link)}
                         alt={bookingData.therapist.intern_name}
-                        className="w-16 h-16 rounded-full object-cover"
+                        className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
                         onError={() => setImageError(true)}
+                        loading="lazy"
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                        <User className="w-8 h-8 text-gray-500" />
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-2 border-gray-200">
+                        <span className="text-xl font-medium text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
+                          {bookingData.therapist.intern_name?.charAt(0)?.toUpperCase() || '?'}
+                        </span>
                       </div>
                     )}
                     
