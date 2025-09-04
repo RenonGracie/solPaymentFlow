@@ -28,7 +28,64 @@ interface VerificationResponse {
     lastName?: string;
     dateOfBirth?: string;
     memberId?: string;
+    gender?: string;
+    relationshipToSubscriber?: string;
+    address?: {
+      streetLine1?: string;
+      streetLine2?: string;
+      city?: string;
+      state?: string;
+      zip?: string;
+      fullAddress?: string;
+    };
   };
+  coverage?: {
+    payerId?: string;
+    planName?: string;
+    planType?: string;
+    planStatus?: string;
+    coverageStatus?: string;
+    insuranceType?: string;
+    mentalHealthCoverage?: string;
+    groupName?: string;
+    groupId?: string;
+    planDates?: {
+      begin?: string;
+      end?: string;
+      eligibilityEnd?: string;
+    };
+    additionalPolicy?: string;
+    feeSchedule?: string;
+    qmbStatus?: string;
+    thirdPartyPayer?: string;
+  };
+  telehealth?: {
+    coinsurance?: string;
+    copayment?: string;
+    benefitStructure?: string;
+  };
+  planBenefits?: {
+    resetBenefitsStatus?: string;
+    resetBenefits?: string;
+    planResetSoon?: boolean;
+  };
+  rawFinancials?: {
+    copayment?: number;
+    coinsurance?: number;
+    deductible?: number;
+    remainingDeductible?: number;
+    oopMax?: number;
+    remainingOopMax?: number;
+    memberObligation?: number;
+    payerObligation?: number;
+    preDeductibleMemberObligation?: number;
+    preDeductiblePayerObligation?: number;
+    postDeductibleMemberObligation?: number;
+    postDeductiblePayerObligation?: number;
+    postOopMaxMemberObligation?: number;
+    postOopMaxPayerObligation?: number;
+  };
+  rawNirvanaResponse?: any;
   [key: string]: unknown;
 }
 

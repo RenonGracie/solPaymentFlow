@@ -60,6 +60,11 @@ interface ComprehensiveUserData {
   lived_experiences?: string[];
   university?: string;
   
+  // Address information
+  street_address?: string;
+  city?: string;
+  postal_code?: string;
+  
   // Therapy context
   what_brings_you?: string;
   therapist_gender_preference?: string;
@@ -1164,7 +1169,14 @@ export default function MainPageComponent() {
         has_insurance_data: !!(clientData.insurance_data?.provider),
         provider: clientData.insurance_data?.provider,
         member_id: clientData.insurance_data?.member_id,
-        has_benefits: !!(clientData.insurance_data?.benefits)
+        has_benefits: !!(clientData.insurance_data?.benefits),
+        has_verification_response: !!(clientData.insurance_data?.verification_response),
+        has_subscriber_info: !!(clientData.insurance_data?.verification_response?.subscriber),
+        has_coverage_info: !!(clientData.insurance_data?.verification_response?.coverage),
+        subscriber_address: (clientData.insurance_data?.verification_response?.subscriber as any)?.address,
+        group_id: (clientData.insurance_data?.verification_response as any)?.coverage?.groupId,
+        payer_id: (clientData.insurance_data?.verification_response as any)?.coverage?.payerId,
+        plan_name: (clientData.insurance_data?.verification_response as any)?.coverage?.planName
       });
 
       console.log('👩‍⚕️ Selected Therapist:', {
@@ -1197,13 +1209,62 @@ export default function MainPageComponent() {
       // Convert comprehensive data to IntakeQ format
       const intakeQData = {
         ...clientData,
-        // Flatten insurance data for backward compatibility
-        ...(clientData.insurance_data && {
+        // Set billing type based on payment type
+        BillingType: clientData.payment_type === 'insurance' ? 2 : 1, // 1 = cash pay, 2 = insurance
+        
+        // Basic client address information (for all clients)
+        Address: [clientData.street_address, clientData.city, clientData.state, clientData.postal_code].filter(Boolean).join(", "),
+        StreetAddress: clientData.street_address,
+        City: clientData.city,
+        State: clientData.state,
+        StateShort: clientData.state,
+        PostalCode: clientData.postal_code,
+        Country: "US",
+        
+        // Map insurance data to IntakeQ standard fields (only for insurance clients)
+        ...(clientData.payment_type === 'insurance' && clientData.insurance_data && {
+          // Override Basic Information with Nirvana subscriber data (if available)
+          ...((clientData.insurance_data.verification_response?.subscriber as any)?.address && 
+              typeof (clientData.insurance_data.verification_response?.subscriber as any).address === 'object' && {
+            Address: (clientData.insurance_data.verification_response as any).subscriber.address.fullAddress || 
+                     [(clientData.insurance_data.verification_response as any).subscriber.address.streetLine1,
+                      (clientData.insurance_data.verification_response as any).subscriber.address.city,
+                      (clientData.insurance_data.verification_response as any).subscriber.address.state,
+                      (clientData.insurance_data.verification_response as any).subscriber.address.zip].filter(Boolean).join(", "),
+            StreetAddress: (clientData.insurance_data.verification_response as any).subscriber.address.streetLine1,
+            UnitNumber: (clientData.insurance_data.verification_response as any).subscriber.address.streetLine2,
+            City: (clientData.insurance_data.verification_response as any).subscriber.address.city,
+            State: (clientData.insurance_data.verification_response as any).subscriber.address.state,
+            StateShort: (clientData.insurance_data.verification_response as any).subscriber.address.state,
+            PostalCode: (clientData.insurance_data.verification_response as any).subscriber.address.zip,
+          }),
+          
+          // Primary Insurance Information
+          PrimaryInsuranceCompany: clientData.insurance_data.provider,
+          PrimaryInsurancePayerId: (clientData.insurance_data.verification_response as any)?.coverage?.payerId,
+          PrimaryInsurancePolicyNumber: clientData.insurance_data.member_id,
+          PrimaryInsuranceGroupNumber: (clientData.insurance_data.verification_response as any)?.coverage?.groupId,
+          PrimaryInsurancePlan: (clientData.insurance_data.verification_response as any)?.coverage?.planName,
+          
+          // Policyholder Information (Primary Insurance Holder)
+          PrimaryInsuranceHolderName: `${(clientData.insurance_data.verification_response as any)?.subscriber?.firstName || clientData.first_name} ${(clientData.insurance_data.verification_response as any)?.subscriber?.lastName || clientData.last_name}`,
+          PrimaryInsuranceHolderDateOfBirth: clientData.date_of_birth ? new Date(clientData.date_of_birth).getTime() : undefined,
+          PrimaryRelationshipToInsured: (clientData.insurance_data.verification_response as any)?.subscriber?.relationshipToSubscriber || "Self",
+          PrimaryInsuredGender: (clientData.insurance_data.verification_response as any)?.subscriber?.gender || clientData.gender,
+          
+          // Policyholder Address Information
+          PrimaryInsuredStreetAddress: (clientData.insurance_data.verification_response as any)?.subscriber?.address?.streetLine1 || clientData.street_address,
+          PrimaryInsuredCity: (clientData.insurance_data.verification_response as any)?.subscriber?.address?.city || clientData.city,
+          PrimaryInsuredState: (clientData.insurance_data.verification_response as any)?.subscriber?.address?.state || clientData.state,
+          PrimaryInsuredZipCode: (clientData.insurance_data.verification_response as any)?.subscriber?.address?.zip || clientData.postal_code,
+          
+          // Legacy fields for backward compatibility
           insurance_provider: clientData.insurance_data.provider,
           insurance_member_id: clientData.insurance_data.member_id,
           insurance_date_of_birth: clientData.insurance_data.date_of_birth,
           insurance_verification_data: clientData.insurance_data.verification_response ? JSON.stringify(clientData.insurance_data.verification_response) : undefined,
-          // Extract benefits if available
+          
+          // Extract benefits if available (custom fields)
           ...(clientData.insurance_data.benefits && {
             copay: clientData.insurance_data.benefits.copay,
             deductible: clientData.insurance_data.benefits.deductible,
@@ -1213,7 +1274,65 @@ export default function MainPageComponent() {
             remaining_oop_max: clientData.insurance_data.benefits.remainingOopMax,
             member_obligation: clientData.insurance_data.benefits.memberObligation,
             benefit_structure: clientData.insurance_data.benefits.benefitStructure
-          })
+          }),
+          
+          // Extract extended Nirvana data from verification response (custom fields)
+          ...((() => {
+            const coverage = clientData.insurance_data.verification_response?.coverage;
+            return coverage && typeof coverage === 'object' && coverage !== null ? {
+              insurance_type: (coverage as any).insuranceType,
+              plan_status: (coverage as any).planStatus,
+              coverage_status: (coverage as any).coverageStatus,
+              mental_health_coverage_status: (coverage as any).mentalHealthCoverage,
+            } : {};
+          })()),
+          
+          // Extract additional financial data (custom fields matching IntakeQ example)  
+          ...((() => {
+            const rawFinancials = clientData.insurance_data.verification_response?.rawFinancials;
+            return rawFinancials && typeof rawFinancials === 'object' && rawFinancials !== null ? {
+              pre_deductible_member_obligation: (rawFinancials as any).preDeductibleMemberObligation ? 
+                `$${((rawFinancials as any).preDeductibleMemberObligation / 100).toFixed(2)}` : undefined,
+              post_deductible_member_obligation: (rawFinancials as any).postDeductibleMemberObligation ? 
+                `$${((rawFinancials as any).postDeductibleMemberObligation / 100).toFixed(2)}` : undefined,
+            } : {};
+          })()),
+          
+          // Extract session tracking from raw Nirvana response (custom fields)
+          ...((() => {
+            const rawNirvanaResponse = clientData.insurance_data.verification_response?.rawNirvanaResponse;
+            return rawNirvanaResponse && typeof rawNirvanaResponse === 'object' && rawNirvanaResponse !== null ? {
+              sessions_before_deductible_met: (rawNirvanaResponse as any).remaining_sessions_before_deductible,
+              sessions_before_oop_max_met: (rawNirvanaResponse as any).remaining_sessions_before_oop_max
+            } : {};
+          })()),
+          
+          // Extract telehealth information (custom fields)
+          ...((() => {
+            const telehealth = clientData.insurance_data.verification_response?.telehealth;
+            return telehealth && typeof telehealth === 'object' && telehealth !== null ? {
+              telehealth_coinsurance: (telehealth as any).coinsurance,
+              telehealth_benefit_structure: (telehealth as any).benefitStructure
+            } : {};
+          })()),
+          
+          // Keep raw data for backend processing
+          ...((() => {
+            const rawFinancials = clientData.insurance_data.verification_response?.rawFinancials;
+            const rawNirvanaResponse = clientData.insurance_data.verification_response?.rawNirvanaResponse;
+            return rawFinancials && typeof rawFinancials === 'object' && rawFinancials !== null ? {
+              insurance_copayment_cents: (rawFinancials as any).copayment,
+              insurance_coinsurance_percent: (rawFinancials as any).coinsurance,
+              insurance_deductible_cents: (rawFinancials as any).deductible,
+              insurance_remaining_deductible_cents: (rawFinancials as any).remainingDeductible,
+              insurance_oop_max_cents: (rawFinancials as any).oopMax,
+              insurance_remaining_oop_max_cents: (rawFinancials as any).remainingOopMax,
+              insurance_member_obligation_cents: (rawFinancials as any).memberObligation,
+              insurance_payer_obligation_cents: (rawFinancials as any).payerObligation,
+              insurance_remaining_sessions_before_deductible: (rawNirvanaResponse as any)?.remaining_sessions_before_deductible,
+              insurance_remaining_sessions_before_oop_max: (rawNirvanaResponse as any)?.remaining_sessions_before_oop_max
+            } : {};
+          })())
         }),
         // Flatten UTM data
         ...(clientData.utm && {
@@ -1227,7 +1346,31 @@ export default function MainPageComponent() {
         payload_keys: Object.keys(intakeQData),
         payload_size: JSON.stringify(intakeQData).length,
         has_assessment_totals: !!(intakeQData.phq9_total !== undefined && intakeQData.gad7_total !== undefined),
-        payment_type: intakeQData.payment_type
+        payment_type: intakeQData.payment_type,
+        billing_type: intakeQData.BillingType,
+        
+        // Address Information
+        address: intakeQData.Address,
+        street_address: intakeQData.StreetAddress,
+        city: intakeQData.City,
+        state: intakeQData.State,
+        postal_code: intakeQData.PostalCode,
+        
+        // Primary Insurance Information  
+        primary_insurance_company: intakeQData.PrimaryInsuranceCompany,
+        primary_insurance_payer_id: intakeQData.PrimaryInsurancePayerId,
+        primary_insurance_policy_number: intakeQData.PrimaryInsurancePolicyNumber,
+        primary_insurance_group_number: intakeQData.PrimaryInsuranceGroupNumber,
+        primary_insurance_plan: intakeQData.PrimaryInsurancePlan,
+        
+        // Policyholder Information
+        primary_insurance_holder_name: intakeQData.PrimaryInsuranceHolderName,
+        primary_relationship_to_insured: intakeQData.PrimaryRelationshipToInsured,
+        primary_insured_gender: intakeQData.PrimaryInsuredGender,
+        primary_insured_address: intakeQData.PrimaryInsuredStreetAddress,
+        primary_insured_city: intakeQData.PrimaryInsuredCity,
+        primary_insured_state: intakeQData.PrimaryInsuredState,
+        primary_insured_zip: intakeQData.PrimaryInsuredZipCode
       });
 
       const intakeQResult = await IntakeQService.createClientProfile(intakeQData);

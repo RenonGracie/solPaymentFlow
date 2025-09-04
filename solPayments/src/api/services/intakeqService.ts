@@ -18,7 +18,17 @@ export interface IntakeQClientData {
   date_of_birth?: string;
   gender?: string;
   
-  // Address Information
+  // Address Information (IntakeQ Standard Fields)
+  Address?: string; // Full formatted address
+  StreetAddress?: string;
+  UnitNumber?: string;
+  City?: string;
+  State?: string;
+  StateShort?: string;
+  PostalCode?: string;
+  Country?: string;
+  
+  // Legacy address fields
   street_address?: string;
   city?: string;
   state?: string;
@@ -66,13 +76,40 @@ export interface IntakeQClientData {
   therapist_specialization?: string[];
   therapist_lived_experiences?: string[];
   
-  // Insurance Information (for insurance clients)
+  // Insurance Information (for insurance clients) - IntakeQ Standard Fields
+  PrimaryInsuranceCompany?: string;
+  PrimaryInsurancePayerId?: string;
+  PrimaryInsurancePolicyNumber?: string;
+  PrimaryInsuranceGroupNumber?: string;
+  PrimaryInsuranceHolderName?: string;
+  PrimaryInsuranceRelationship?: string;
+  PrimaryInsuranceHolderDateOfBirth?: number; // timestamp
+  PrimaryRelationshipToInsured?: string;
+  PrimaryInsurancePlan?: string;
+  PrimaryInsuredGender?: string;
+  PrimaryInsuredCity?: string;
+  PrimaryInsuredZipCode?: string;
+  PrimaryInsuredState?: string;
+  PrimaryInsuredStreetAddress?: string;
+  BillingType?: number; // 2 = insurance
+  
+  // Secondary Insurance (if available)
+  SecondaryInsuranceCompany?: string;
+  SecondaryInsurancePayerId?: string;
+  SecondaryInsurancePolicyNumber?: string;
+  SecondaryInsuranceGroupNumber?: string;
+  SecondaryInsuranceHolderName?: string;
+  SecondaryInsuranceRelationship?: string;
+  SecondaryInsuranceHolderDateOfBirth?: number;
+  SecondaryRelationshipToInsured?: string;
+  
+  // Legacy fields for backward compatibility
   insurance_provider?: string;
   insurance_member_id?: string;
   insurance_date_of_birth?: string;
   insurance_verification_data?: string; // JSON string of verification response
   
-  // Insurance Benefits (if available)
+  // Insurance Benefits (custom fields in IntakeQ)
   copay?: string;
   deductible?: string;
   coinsurance?: string;
@@ -81,6 +118,47 @@ export interface IntakeQClientData {
   remaining_oop_max?: string;
   member_obligation?: string;
   benefit_structure?: string;
+  
+  // Extended Insurance Information from Nirvana (custom fields)
+  insurance_type?: string;
+  plan_status?: string;
+  coverage_status?: string;
+  mental_health_coverage_status?: string;
+  sessions_before_deductible_met?: number;
+  sessions_before_oop_max_met?: number;
+  telehealth_coinsurance?: string;
+  telehealth_benefit_structure?: string;
+  pre_deductible_member_obligation?: string;
+  post_deductible_member_obligation?: string;
+  
+  // Extended Financial Information (raw cents values for backend processing)
+  insurance_copayment_cents?: number;
+  insurance_coinsurance_percent?: number;
+  insurance_deductible_cents?: number;
+  insurance_remaining_deductible_cents?: number;
+  insurance_oop_max_cents?: number;
+  insurance_remaining_oop_max_cents?: number;
+  insurance_member_obligation_cents?: number;
+  insurance_payer_obligation_cents?: number;
+  insurance_pre_deductible_member_obligation_cents?: number;
+  insurance_pre_deductible_payer_obligation_cents?: number;
+  insurance_post_deductible_member_obligation_cents?: number;
+  insurance_post_deductible_payer_obligation_cents?: number;
+  insurance_post_oop_max_member_obligation_cents?: number;
+  insurance_post_oop_max_payer_obligation_cents?: number;
+  
+  // Session Tracking
+  insurance_remaining_sessions_before_deductible?: number;
+  insurance_remaining_sessions_before_oop_max?: number;
+  
+  // Plan Benefits
+  insurance_additional_policy?: string;
+  insurance_fee_schedule?: string;
+  insurance_qmb_status?: string;
+  insurance_third_party_payer?: string;
+  insurance_plan_reset_soon?: boolean;
+  insurance_reset_benefits_status?: string;
+  insurance_reset_benefits?: string;
   
   // Additional Context
   safety_screening?: string;
