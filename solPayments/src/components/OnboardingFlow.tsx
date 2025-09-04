@@ -1325,7 +1325,7 @@ export default function OnboardingFlow({
                       : 'rounded-2xl'
                   }`}
                   style={{
-                    backgroundColor: expandedCard === 'cash_pay' ? '#fffef7' : '#fefef7',
+                    backgroundColor: expandedCard === 'cash_pay' ? '#f5f0d8' : '#f8f3db',
                     borderColor: '#fef3cd',
                     padding: expandedCard === 'cash_pay' ? '16px 20px 12px 20px' : '16px 20px'
                   }}
