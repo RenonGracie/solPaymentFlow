@@ -149,9 +149,9 @@ export default function MatchedTherapist({
   /** New: cache monthly availability by therapist + month + tz */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
   const [isFindingAnother, setIsFindingAnother] = useState(false);
-  const [hasAttemptedFallback, setHasAttemptedFallback] = useState(false);
   const [showTherapistSearchLoading, setShowTherapistSearchLoading] = useState(false);
   const [therapistSearchPreloader, setTherapistSearchPreloader] = useState<(() => Promise<void>) | null>(null);
+  const [isSwitchingTherapists, setIsSwitchingTherapists] = useState(false);
   
   const currentTherapistData = therapistsList[currentIndex];
   const therapist = currentTherapistData?.therapist;
@@ -393,6 +393,13 @@ export default function MatchedTherapist({
   const handleTherapistSearchComplete = useCallback(() => {
     console.log(`[Find Another] ⭐ COMPLETION CALLBACK TRIGGERED - switching to next therapist`);
     
+    // Preserve current calendar month when switching therapists
+    const currentCalendarMonth = calendarDate;
+    console.log(`[Find Another] Preserving calendar month: ${currentCalendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
+    
+    // Prevent calendar auto-navigation during therapist switch
+    setIsSwitchingTherapists(true);
+    
     // Switch to the next therapist
     const nextIndex = (currentIndex + 1) % therapistsList.length;
     console.log(`[Find Another] ⭐ Switching from index ${currentIndex} to ${nextIndex}`);
@@ -401,13 +408,20 @@ export default function MatchedTherapist({
     setSelectedDateObj(null);
     setImageError({});
     setHasRecordedSelection(false);
-    setHasAttemptedFallback(false);
     
     // Hide loading screen
     setShowTherapistSearchLoading(false);
     setTherapistSearchPreloader(null);
     console.log(`[Find Another] ⭐ Loading screen hidden, therapist switch complete`);
-  }, [currentIndex, therapistsList.length]);
+    
+    // Re-enable auto-selection after a brief delay and ensure calendar month is preserved
+    setTimeout(() => {
+      console.log(`[Find Another] Re-enabling auto-selection and ensuring calendar month is preserved`);
+      // Explicitly preserve the calendar month in case it got changed
+      setCalendarDate(currentCalendarMonth);
+      setIsSwitchingTherapists(false);
+    }, 100);
+  }, [currentIndex, therapistsList.length, calendarDate]);
   
   const handleFindAnotherFallback = async () => {
     
@@ -423,7 +437,6 @@ export default function MatchedTherapist({
         setSelectedDateObj(null);
         setImageError({});
         setHasRecordedSelection(false);
-        setHasAttemptedFallback(false); // Reset fallback flag when fetching new therapists
       } catch (error) {
         console.error('[Find Another] Failed to fetch new therapists:', error);
       } finally {
@@ -431,6 +444,13 @@ export default function MatchedTherapist({
       }
     } else {
       // Fallback: cycle through existing list (original behavior)
+      // Preserve current calendar month when switching therapists
+      const currentCalendarMonth = calendarDate;
+      console.log(`[Find Another] Fallback - Preserving calendar month: ${currentCalendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
+      
+      // Prevent calendar auto-navigation during therapist switch
+      setIsSwitchingTherapists(true);
+      
       const nextIndex = (currentIndex + 1) % therapistsList.length;
       const nextTherapist = therapistsList[nextIndex]?.therapist;
       
@@ -441,6 +461,14 @@ export default function MatchedTherapist({
       setSelectedDateObj(null);
       setImageError({});
       setHasRecordedSelection(false);
+      
+      // Re-enable auto-selection after a brief delay and preserve calendar month
+      setTimeout(() => {
+        console.log(`[Find Another] Fallback - Re-enabling auto-selection and ensuring calendar month is preserved`);
+        // Explicitly preserve the calendar month in case it got changed
+        setCalendarDate(currentCalendarMonth);
+        setIsSwitchingTherapists(false);
+      }, 100);
     }
   };
   
@@ -448,8 +476,17 @@ export default function MatchedTherapist({
     const therapistIndex = therapistsList.findIndex(t => t.therapist.id === therapistId);
     if (therapistIndex !== -1) {
       const selectedTherapist = therapistsList[therapistIndex];
+      
+      // Preserve current calendar month when switching therapists
+      const currentCalendarMonth = calendarDate;
+      console.log(`[Previous Therapist] Preserving calendar month: ${currentCalendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
+      
+      // Prevent calendar auto-navigation during therapist switch
+      setIsSwitchingTherapists(true);
+      
       setCurrentIndex(therapistIndex);
       setSelectedTimeSlot(null);
+      setSelectedDateObj(null);
       setImageError({});
       setHasRecordedSelection(false); // Reset for new therapist
       
@@ -463,6 +500,14 @@ export default function MatchedTherapist({
           total_therapists_viewed: previouslyViewed.length + 1
         }).catch(console.error);
       }
+      
+      // Re-enable auto-selection after a brief delay and preserve calendar month
+      setTimeout(() => {
+        console.log(`[Previous Therapist] Re-enabling auto-selection and ensuring calendar month is preserved`);
+        // Explicitly preserve the calendar month in case it got changed
+        setCalendarDate(currentCalendarMonth);
+        setIsSwitchingTherapists(false);
+      }, 100);
     }
   };
   
@@ -997,27 +1042,6 @@ export default function MatchedTherapist({
 
   const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
   
-  // Helper function to find earliest available date in a given month
-  const findEarliestAvailableDateInMonth = (year: number, month: number): Date | null => {
-    const today = new Date();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-      const checkDate = new Date(year, month, day);
-      
-      // Skip if it's today or earlier
-      if (checkDate <= today) continue;
-      
-      const availableCount = getDayAvailableCount(checkDate);
-      if (availableCount > 0) {
-        console.log(`[Calendar Navigation] Found earliest available date in ${year}-${month + 1}: ${checkDate.toDateString()} (${availableCount} slots)`);
-        return checkDate;
-      }
-    }
-    
-    console.log(`[Calendar Navigation] No availability found in ${year}-${month + 1}`);
-    return null;
-  };
   
   const goPrevMonth = () => {
     const next = new Date(currentYear, currentMonth - 1, 1);
@@ -1034,16 +1058,9 @@ export default function MatchedTherapist({
       }).catch(console.error);
     }
     
-    // Find earliest available date in the new month
-    const earliestAvailable = findEarliestAvailableDateInMonth(next.getFullYear(), next.getMonth());
-    if (earliestAvailable) {
-      setSelectedDateObj(earliestAvailable);
-      console.log(`[Calendar Navigation] Auto-selected earliest date in previous month: ${earliestAvailable.toDateString()}`);
-    } else {
-      // Clear selection if no availability in this month
-      setSelectedDateObj(null);
-      console.log(`[Calendar Navigation] No availability in previous month, clearing date selection`);
-    }
+    // Clear date selection when navigating to previous month - let auto-selection handle it
+    setSelectedDateObj(null);
+    console.log(`[Calendar Navigation] Navigated to previous month, cleared date selection for auto-selection`);
   };
   
   const goNextMonth = () => {
@@ -1070,16 +1087,9 @@ export default function MatchedTherapist({
       }).catch(console.error);
     }
     
-    // Find earliest available date in the new month
-    const earliestAvailable = findEarliestAvailableDateInMonth(next.getFullYear(), next.getMonth());
-    if (earliestAvailable) {
-      setSelectedDateObj(earliestAvailable);
-      console.log(`[Calendar Navigation] Auto-selected earliest date in next month: ${earliestAvailable.toDateString()}`);
-    } else {
-      // Clear selection if no availability in this month
-      setSelectedDateObj(null);
-      console.log(`[Calendar Navigation] No availability in next month, clearing date selection`);
-    }
+    // Clear date selection when navigating to next month - let auto-selection handle it
+    setSelectedDateObj(null);
+    console.log(`[Calendar Navigation] Navigated to next month, cleared date selection for auto-selection`);
   };
 
   // Pull availability for this therapist + month (if fetched)
@@ -1213,134 +1223,41 @@ export default function MatchedTherapist({
     return 0;
   }, [availability?.days, currentYear, currentMonth, legacyDayCount, therapist, fetchedSlots, emailForSlots, getTherapistCategory]);
 
-  // Auto-select first available future date and navigate to correct month
+  // Auto-select first available date in current month only (never navigate calendar)
   useEffect(() => {
-    if (!selectedDateObj && (availability?.days || Object.keys(fetchedSlots).length > 0)) {
+    if (!selectedDateObj && (availability?.days || Object.keys(fetchedSlots).length > 0) && !isSwitchingTherapists) {
       const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0); // Start of tomorrow
-      
       const minimumBookingDate = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
-      
-      console.log(`[Calendar] Auto-selection starting from minimum booking time (24hr lead): ${minimumBookingDate.toLocaleString()}`);
-      console.log(`[Calendar] Tomorrow is: ${tomorrow.toDateString()}`);
-      
-      // Search across multiple months for the first available date
-      let foundAvailableDate: Date | null = null;
-      
-      // Only search within the 14-day booking window
       const maximumBookingDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
       
-      console.log(`[Calendar] Searching within 14-day booking window: ${minimumBookingDate.toLocaleDateString()} to ${maximumBookingDate.toLocaleDateString()}`);
+      console.log(`[Calendar] Simple auto-selection: Looking for available dates in current month only`);
       
-      // Helper function to check if a date is actually selectable (not greyed out or red)
-      const isDateSelectable = (date: Date): boolean => {
-        const availableCount = getDayAvailableCount(date);
-        const isWithinLeadTime = date.getTime() < minimumBookingDate.getTime();
-        const isBeyond14Days = date.getTime() > maximumBookingDate.getTime();
-        const isOutsideBookingWindow = isWithinLeadTime || isBeyond14Days;
-        
-        // Date must have availability AND be within booking window (not greyed out)
-        return availableCount > 0 && !isOutsideBookingWindow;
-      };
-      
-      // First priority: Search within the current calendar month
+      // Only search within the current calendar month - NEVER navigate calendar
       const currentMonthStart = new Date(currentYear, currentMonth, 1);
-      const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0); // Last day of current month
+      const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
       
-      console.log(`[Calendar] Priority search: Looking for selectable dates in current month (${currentMonthStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })})`);
+      let searchDate = new Date(Math.max(minimumBookingDate.getTime(), currentMonthStart.getTime()));
+      let foundDate: Date | null = null;
       
-      let currentSearchDate = new Date(Math.max(tomorrow.getTime(), minimumBookingDate.getTime()));
-      
-      // First pass: Search only within current calendar month
-      while (currentSearchDate.getTime() <= Math.min(maximumBookingDate.getTime(), currentMonthEnd.getTime()) && !foundAvailableDate) {
-        if (isDateSelectable(currentSearchDate)) {
-          foundAvailableDate = new Date(currentSearchDate);
-          console.log(`[Calendar] Found selectable date in current month: ${foundAvailableDate.toDateString()} (${getDayAvailableCount(foundAvailableDate)} slots)`);
+      // Simple day-by-day search within current month only
+      while (searchDate.getTime() <= Math.min(maximumBookingDate.getTime(), currentMonthEnd.getTime()) && !foundDate) {
+        const availableCount = getDayAvailableCount(searchDate);
+        if (availableCount > 0) {
+          foundDate = new Date(searchDate);
+          console.log(`[Calendar] Found available date in current month: ${foundDate.toDateString()} (${availableCount} slots)`);
           break;
         }
-        currentSearchDate = new Date(currentSearchDate.getTime() + (24 * 60 * 60 * 1000));
+        searchDate = new Date(searchDate.getTime() + (24 * 60 * 60 * 1000));
       }
       
-      // Second pass: Only search next month if the 14-day window extends beyond current month
-      if (!foundAvailableDate) {
-        const doesBookingWindowExtendBeyondCurrentMonth = maximumBookingDate.getTime() > currentMonthEnd.getTime();
-        
-        if (doesBookingWindowExtendBeyondCurrentMonth) {
-          console.log(`[Calendar] 14-day window extends beyond current month (${maximumBookingDate.toDateString()}), searching next month`);
-          currentSearchDate = new Date(Math.max(tomorrow.getTime(), minimumBookingDate.getTime()));
-          
-          while (currentSearchDate.getTime() <= maximumBookingDate.getTime() && !foundAvailableDate) {
-            // Only check dates outside current month
-            if (currentSearchDate.getMonth() !== currentMonth || currentSearchDate.getFullYear() !== currentYear) {
-              if (isDateSelectable(currentSearchDate)) {
-                foundAvailableDate = new Date(currentSearchDate);
-                console.log(`[Calendar] Found selectable date in next month: ${foundAvailableDate.toDateString()} (${getDayAvailableCount(foundAvailableDate)} slots)`);
-                break;
-              }
-            }
-            currentSearchDate = new Date(currentSearchDate.getTime() + (24 * 60 * 60 * 1000));
-          }
-        } else {
-          console.log(`[Calendar] 14-day window ends within current month (${maximumBookingDate.toDateString()}), no need to check other months`);
-        }
-      }
-      
-      if (!foundAvailableDate) {
-        console.log(`[Calendar] No availability found within 14-day booking window`);
-      }
-      
-      if (foundAvailableDate) {
-        // Check if the found date is in the current calendar month
-        const targetYear = foundAvailableDate.getFullYear();
-        const targetMonth = foundAvailableDate.getMonth();
-        const isInCurrentMonth = targetYear === currentYear && targetMonth === currentMonth;
-        
-        if (isInCurrentMonth) {
-          console.log(`[Calendar] Found selectable date in current month (${foundAvailableDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}), staying on current month`);
-          // Select the available date without changing calendar month
-          setSelectedDateObj(foundAvailableDate);
-          console.log(`[Calendar] Auto-selected date in current month: ${foundAvailableDate.toDateString()}`);
-        } else {
-          // Only navigate to different month if it's actually needed for the 14-day window
-          const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
-          const maximumBookingDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
-          const is14DayWindowExtendingBeyond = maximumBookingDate.getTime() > currentMonthEnd.getTime();
-          
-          if (is14DayWindowExtendingBeyond) {
-            console.log(`[Calendar] Auto-navigating to next month for 14-day window: ${foundAvailableDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
-            console.log(`[Calendar] Updating calendar view from ${currentYear}-${currentMonth + 1} to ${targetYear}-${targetMonth + 1}`);
-            setCalendarDate(new Date(targetYear, targetMonth, 1));
-            
-            // Select the available date
-            setSelectedDateObj(foundAvailableDate);
-            console.log(`[Calendar] Auto-selected date in new month: ${foundAvailableDate.toDateString()}`);
-          } else {
-            console.log(`[Calendar] Found date outside current month but 14-day window doesn't extend beyond current month, staying put`);
-            // This shouldn't happen with our new logic, but just in case
-            setSelectedDateObj(null);
-          }
-        }
-      } else if (!hasAttemptedFallback) {
-        console.warn(`[Calendar] No availability found in next 3 months for ${therapist?.intern_name}`);
-        
-        // Only attempt fallback once to prevent infinite loop
-        setHasAttemptedFallback(true);
-        
-        // Navigate to next month as fallback (away from current month with no availability)
-        const nextMonth = new Date(currentYear, currentMonth + 1, 1);
-        console.log(`[Calendar] Fallback: navigating to next month ${nextMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
-        setCalendarDate(nextMonth);
-        
-        // Clear any invalid date selection when falling back
-        setSelectedDateObj(null);
-        console.log(`[Calendar] Cleared date selection during fallback navigation`);
+      if (foundDate) {
+        setSelectedDateObj(foundDate);
+        console.log(`[Calendar] Auto-selected: ${foundDate.toDateString()}`);
       } else {
-        console.warn(`[Calendar] Already attempted fallback. No further calendar navigation to prevent infinite loop.`);
+        console.log(`[Calendar] No availability found in current month - user must manually navigate`);
       }
     }
-  }, [availability?.days, fetchedSlots, selectedDateObj, currentYear, currentMonth, getDayAvailableCount, therapist?.intern_name, hasAttemptedFallback]);
+  }, [availability?.days, fetchedSlots, selectedDateObj, currentYear, currentMonth, getDayAvailableCount, isSwitchingTherapists]);
 
   // Validate selected date when month changes or availability updates
   useEffect(() => {
@@ -1842,7 +1759,7 @@ export default function MatchedTherapist({
                               // Future dates within booking window use availability color-coding
                               const count = getDayAvailableCount(cell.date);
                               const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
-                              isUnavailable = color === 'red';
+                              isUnavailable = count === 0; // Only unavailable when no slots exist
                               bgClass =
                                 color === 'red' ? 'bg-red-100' :
                                 color === 'yellow' ? 'bg-yellow-100' :
