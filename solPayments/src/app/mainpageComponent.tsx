@@ -321,7 +321,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
 
   if (!bookingData || !currentUserData) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="flex items-center justify-center" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
         <div className="text-center">
           <p className="text-red-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
             Booking information not available
@@ -349,7 +349,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
   });
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+    <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
       {/* Header with Sol Health Logo */}
       <div className="relative h-16 overflow-hidden flex-shrink-0 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between p-4 max-w-md mx-auto">
@@ -1610,7 +1610,7 @@ export default function MainPageComponent() {
   // If we have an error, show error
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="flex items-center justify-center" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
         <div className="text-center max-w-md">
           <h2 className="text-xl font-bold mb-4">Something went wrong</h2>
           <p className="text-gray-600 mb-4">{error}</p>
@@ -1662,7 +1662,7 @@ export default function MainPageComponent() {
         {isSearchingAnotherTherapist ? (
           <LoadingScreen />
         ) : (
-          <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3' }}>
+          <div style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
             {currentStep === STEPS.MATCHED_THERAPIST && matchData?.therapists && matchData.therapists.length > 0 && (() => {
               const clientData = {
                 ...matchData.client,
@@ -1880,7 +1880,7 @@ export default function MainPageComponent() {
 
   // Default fallback - should not normally reach here
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3' }}>
+    <div className="flex items-center justify-center" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
       <div className="text-center">
         <h2 className="text-xl font-bold mb-4">Loading...</h2>
         <p className="text-gray-600">Preparing your experience...</p>

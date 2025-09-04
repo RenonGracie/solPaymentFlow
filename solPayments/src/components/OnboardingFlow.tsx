@@ -727,8 +727,9 @@ export default function OnboardingFlow({
   // Initial Loading Screen with Asset Preloading
   if (showInitialLoader) {
     return (
-      <div className="relative min-h-screen w-full overflow-hidden transition-opacity duration-1000" 
+      <div className="relative w-full overflow-hidden transition-opacity duration-1000" 
            style={{ 
+             minHeight: '100%',
              backgroundImage: assetsPreloaded ? "url('/beige texture 2048.svg')" : 'none',
              backgroundColor: assetsPreloaded ? '#FFFBF3' : '#000000',
              backgroundSize: 'cover',
@@ -766,8 +767,9 @@ export default function OnboardingFlow({
   if (currentStep === 0) {
     if (!screenReady) {
       return (
-        <div className="relative min-h-screen w-full overflow-hidden" 
+        <div className="relative w-full overflow-hidden" 
              style={{ 
+               minHeight: '100%',
                backgroundImage: "url('/beige texture 2048.svg')",
                backgroundColor: '#FFFBF3',
                backgroundSize: 'cover',
@@ -827,7 +829,7 @@ export default function OnboardingFlow({
     // iPad/Tablet portrait - show only 16x9 video, auto-advance
     if (screenType === 'tablet') {
       return (
-        <div className="relative bg-black min-h-screen w-full overflow-hidden">
+        <div className="relative bg-black w-full overflow-hidden" style={{ minHeight: '100%' }}>
           <video
             className="absolute inset-0 w-full h-full object-contain bg-black"
             autoPlay
@@ -876,7 +878,7 @@ export default function OnboardingFlow({
     // Desktop landscape (narrow) - full-screen 16x9 video, auto-advance
     if (isWideScreen === false && screenType === 'desktop') {
       return (
-        <div className="relative bg-black min-h-screen w-full overflow-hidden">
+        <div className="relative bg-black w-full overflow-hidden" style={{ minHeight: '100%' }}>
           <video 
             className="absolute inset-0 w-full h-full object-contain bg-black"
             autoPlay 
@@ -923,7 +925,7 @@ export default function OnboardingFlow({
 
     // Desktop landscape - wide screens: full-screen 16x9 video, auto-advance
     return (
-      <div className="relative bg-black min-h-screen w-full overflow-hidden">
+      <div className="relative bg-black w-full overflow-hidden" style={{ minHeight: '100%' }}>
         <video 
           className="absolute inset-0 w-full h-full object-contain bg-black"
           autoPlay 
@@ -971,7 +973,7 @@ export default function OnboardingFlow({
   // Name Input Screen - Only Preferred Name
   if (currentStep === 1) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
         {/* Header with sunset image - fixed height */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1097,7 +1099,7 @@ export default function OnboardingFlow({
     ];
 
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
@@ -1176,7 +1178,7 @@ export default function OnboardingFlow({
   // Email Input Screen (Step 3)
   if (currentStep === 3) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
         {/* Header with sunset image */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1272,7 +1274,7 @@ export default function OnboardingFlow({
         : 'there';
 
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
         {/* Header - fixed height */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1497,7 +1499,7 @@ export default function OnboardingFlow({
   // State Selection Screen (Step 4)
   if (currentStep === 5) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
         {/* Header with image */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1686,7 +1688,7 @@ export default function OnboardingFlow({
                 />
                 
                 {otherStateSearch && filteredStates.length > 0 && (
-                  <div className="max-h-32 overflow-y-auto space-y-1">
+                  <div className="max-h-32 overflow-y-scroll space-y-1 touch-pan-y">
                     {filteredStates.slice(0, 5).map((state) => (
                       <button
                         key={state.code}
@@ -1757,7 +1759,7 @@ export default function OnboardingFlow({
   // NJ Insurance Plan Verification Screen (Step 6)
   if (currentStep === 6) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
         {/* Header with image */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1927,7 +1929,7 @@ export default function OnboardingFlow({
   // Insurance Form Screen (Step 6)
   if (currentStep === 7) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
         {/* Header with image */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 

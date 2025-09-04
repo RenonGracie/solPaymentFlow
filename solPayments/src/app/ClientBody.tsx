@@ -130,7 +130,7 @@ export default function ClientBody({
     <div
       id="app-scroll-root"
       ref={containerRef}
-      className="antialiased overflow-y-auto overflow-x-hidden overscroll-contain"
+      className="antialiased overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y"
       style={{
         height: isKeyboardVisible ? `${window.visualViewport?.height || window.innerHeight}px` : "100dvh",
         maxHeight: isKeyboardVisible ? `${window.visualViewport?.height || window.innerHeight}px` : "100dvh",

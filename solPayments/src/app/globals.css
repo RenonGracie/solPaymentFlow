@@ -6,6 +6,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent iOS bounce scrolling and improve mobile scroll behavior */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure single scroll context */
+body {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Main app container should handle all scrolling */
+#app-scroll-root {
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
 @layer base {
   @font-face {
     font-family: 'Very Vogue Text';

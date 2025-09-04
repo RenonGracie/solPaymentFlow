@@ -320,9 +320,9 @@ export const LoadingScreen = ({
                         <Image
                           src={image}
                           alt=""
-                          width={60}
-                          height={60}
-                          className="w-8 h-8 lg:w-12 lg:h-12 object-cover rounded-full"
+                          width={80}
+                          height={80}
+                          className="w-12 h-12 lg:w-16 lg:h-16 object-cover rounded-full"
                           priority
                         />
                       </div>
