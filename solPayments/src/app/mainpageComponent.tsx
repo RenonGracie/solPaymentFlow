@@ -575,21 +575,6 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                 title="Welcome to Sol Video"
               />
               
-              {/* Prominent Mute/Unmute Button */}
-              <button
-                onClick={toggleMute}
-                className={`absolute top-4 right-4 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full p-3 transition-all duration-200 hover:scale-110 shadow-lg z-10 ${isMuted ? 'animate-pulse' : ''}`}
-                title={isMuted ? 'Click to unmute video' : 'Click to mute video'}
-              >
-                {isMuted ? (
-                  <div className="flex items-center space-x-2">
-                    <VolumeX className="w-5 h-5" />
-                    <span className="text-sm font-medium">Tap for Sound</span>
-                  </div>
-                ) : (
-                  <Volume2 className="w-5 h-5" />
-                )}
-              </button>
             </div>
             
             <Button 

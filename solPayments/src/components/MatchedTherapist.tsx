@@ -868,6 +868,27 @@ export default function MatchedTherapist({
     return match ? match[1] : '';
   };
 
+  // Function to generate video thumbnail URL
+  const getVideoThumbnail = (videoAnalysis: any): string | null => {
+    switch (videoAnalysis.videoType) {
+      case 'youtube-regular':
+      case 'youtube-short':
+        if (videoAnalysis.videoId) {
+          return `https://img.youtube.com/vi/${videoAnalysis.videoId}/maxresdefault.jpg`;
+        }
+        break;
+      case 'vimeo':
+        // For Vimeo, we'd need to make an API call to get thumbnail, so return null for now
+        return null;
+      case 'direct':
+        // For direct video files, no thumbnail available
+        return null;
+      default:
+        return null;
+    }
+    return null;
+  };
+
   // Handle image loading error
   const handleImageError = (therapistId: string) => {
     const therapistData = therapistsList.find(t => t.therapist.id === therapistId);
@@ -1557,12 +1578,44 @@ export default function MatchedTherapist({
                                 }).catch(console.error);
                               }
                             }}
-                            className="w-full h-24 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106]"
+                            className="w-full h-24 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106] relative"
                           >
-                            <div className="relative z-10 flex items-center gap-3">
-                              <Play className="w-6 h-6 text-white" />
-                              <span className="text-white text-sm font-medium" style={{ fontFamily: 'var(--font-inter)' }}>Meet {therapist.intern_name?.split(' ')[0] || 'Therapist'}</span>
-                            </div>
+                            {(() => {
+                              const thumbnailUrl = getVideoThumbnail(videoAnalysis);
+                              if (thumbnailUrl) {
+                                return (
+                                  <>
+                                    <Image
+                                      src={thumbnailUrl}
+                                      alt={`Video thumbnail for ${therapist.intern_name}`}
+                                      fill
+                                      className="object-cover rounded-xl"
+                                      onError={(event) => {
+                                        // Fallback to dark background if thumbnail fails to load
+                                        const target = event.target as HTMLImageElement;
+                                        if (target) {
+                                          target.style.display = 'none';
+                                        }
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-30 rounded-xl" />
+                                    <div className="relative z-10 flex items-center gap-3">
+                                      <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                                        <Play className="w-6 h-6 text-white ml-1" />
+                                      </div>
+                                      <span className="text-white text-sm font-medium drop-shadow-lg" style={{ fontFamily: 'var(--font-inter)' }}>Meet {therapist.intern_name?.split(' ')[0] || 'Therapist'}</span>
+                                    </div>
+                                  </>
+                                );
+                              } else {
+                                return (
+                                  <div className="relative z-10 flex items-center gap-3">
+                                    <Play className="w-6 h-6 text-white" />
+                                    <span className="text-white text-sm font-medium" style={{ fontFamily: 'var(--font-inter)' }}>Meet {therapist.intern_name?.split(' ')[0] || 'Therapist'}</span>
+                                  </div>
+                                );
+                              }
+                            })()}
                           </button>
                         </div>
                       )}

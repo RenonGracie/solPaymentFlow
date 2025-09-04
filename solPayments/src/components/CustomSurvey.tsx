@@ -1744,13 +1744,14 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                        type="text"
                        value={surveyData.first_name}
                        onChange={(e) => {
-                         updateSurveyData('first_name', e.target.value);
+                         const formattedName = e.target.value ? e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1).toLowerCase() : '';
+                         updateSurveyData('first_name', formattedName);
                          // If preferred_name is empty or same as old first_name, update it too
                          if (!surveyData.preferred_name || surveyData.preferred_name === surveyData.first_name) {
-                           updateSurveyData('preferred_name', e.target.value);
+                           updateSurveyData('preferred_name', formattedName);
                          }
                        }}
-                       className={`w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg shadow-[1px_1px_0_#5C3106] ${invalidFirst ? 'ring-1 ring-red-300 border-red-300' : ''}`}
+                       className={`w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg text-center shadow-[1px_1px_0_#5C3106] ${invalidFirst ? 'ring-1 ring-red-300 border-red-300' : ''}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                      {surveyData.preferred_name && surveyData.preferred_name !== surveyData.first_name && (
@@ -1768,9 +1769,12 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                      <input
                        type="text"
                        value={surveyData.preferred_name || ''}
-                       onChange={(e) => updateSurveyData('preferred_name', e.target.value || surveyData.first_name)}
+                       onChange={(e) => {
+                         const formattedName = e.target.value ? e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1).toLowerCase() : '';
+                         updateSurveyData('preferred_name', formattedName || surveyData.first_name);
+                       }}
                        placeholder={`Leave empty to use "${surveyData.first_name}"`}
-                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg"
+                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg text-center"
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                      <p className="text-xs text-gray-500 mt-1">
@@ -1786,8 +1790,11 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                      <input
                        type="text"
                        value={surveyData.last_name}
-                       onChange={(e) => updateSurveyData('last_name', e.target.value)}
-                       className={`w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg ${invalidLast ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
+                       onChange={(e) => {
+                         const formattedName = e.target.value ? e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1).toLowerCase() : '';
+                         updateSurveyData('last_name', formattedName);
+                       }}
+                       className={`w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg text-center ${invalidLast ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                    </div>
@@ -1802,7 +1809,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                        value={surveyData.phone || ''}
                        onChange={(e) => updateSurveyData('phone', e.target.value)}
                        placeholder="+11234567890"
-                       className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg ${invalidPhone ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
+                       className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg text-center ${invalidPhone ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                    </div>
@@ -1816,7 +1823,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                        <select
                          value={surveyData.gender}
                          onChange={(e) => updateSurveyData('gender', e.target.value)}
-                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg ${invalidGender ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
+                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg text-center ${invalidGender ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                          style={{ fontFamily: 'var(--font-inter)' }}
                        >
                          <option value="">Select Gender</option>
@@ -1836,7 +1843,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                          type="date"
                          value={surveyData.date_of_birth || ''}
                          onChange={(e) => updateSurveyData('date_of_birth', e.target.value)}
-                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg ${invalidDob ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
+                         placeholder={new Date().toISOString().split('T')[0]}
+                         className={`w-full p-2.5 sm:p-3 border-2 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg text-center ${invalidDob ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}
                          style={{ fontFamily: 'var(--font-inter)' }}
                        />
                      </div>
@@ -1896,7 +1904,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                        value={surveyData.university || ''}
                        onChange={(e) => updateSurveyData('university', e.target.value)}
                        placeholder="Optional"
-                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg"
+                       className="w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg text-center"
                        style={{ fontFamily: 'var(--font-inter)' }}
                      />
                    </div>

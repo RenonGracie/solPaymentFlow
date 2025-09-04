@@ -1982,10 +1982,10 @@ export default function OnboardingFlow({
                     value={selectedProvider}
                     onChange={(e) => setSelectedProvider(e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-base sm:text-lg"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >
-                    <option value="">Select provider</option>
+                    <option value="" className="text-gray-400 text-center">Select provider</option>
                     {insuranceProviders.map((provider) => (
                       <option key={provider.id} value={provider.name}>
                         {provider.name}
@@ -2039,8 +2039,9 @@ export default function OnboardingFlow({
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106]"
+                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-base sm:text-lg"
                     style={{ fontFamily: 'var(--font-inter)' }}
+                    placeholder={new Date().toISOString().split('T')[0]}
                   />
                 </div>
 
