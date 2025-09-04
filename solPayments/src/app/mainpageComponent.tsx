@@ -1536,6 +1536,10 @@ export default function MainPageComponent() {
               console.log('selectedPaymentType:', selectedPaymentType);
               console.log('matchData.client:', matchData.client);
               console.log('final clientData:', clientData);
+              console.log('🔍 THERAPIST DATA DEBUG:');
+              console.log('matchData.therapists:', matchData.therapists);
+              console.log('therapists length:', matchData.therapists?.length);
+              console.log('first therapist:', matchData.therapists?.[0]);
               
               return (
                 <MatchedTherapist

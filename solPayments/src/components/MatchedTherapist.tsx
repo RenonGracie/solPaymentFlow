@@ -1431,7 +1431,39 @@ export default function MatchedTherapist({
     };
   }, [showTherapistSearchLoading, handleTherapistSearchComplete, therapistSearchPreloader]);
 
-  if (!therapist) return null;
+  // Debug logging
+  console.log('🔍 MatchedTherapist Debug:', {
+    therapistsList: therapistsList,
+    therapistsListLength: therapistsList?.length,
+    currentIndex,
+    currentTherapistData,
+    therapist,
+    hasTherapist: !!therapist
+  });
+
+  if (!therapist) {
+    console.error('❌ No therapist data found!', {
+      therapistsList,
+      currentIndex,
+      currentTherapistData
+    });
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3' }}>
+        <div className="text-center max-w-md">
+          <h2 className="text-xl font-bold mb-4 text-red-600">No Therapist Data</h2>
+          <p className="text-gray-600 mb-4">
+            Unable to load therapist information. 
+            {therapistsList?.length === 0 ? ' No therapists in list.' : 
+             !therapistsList ? ' Therapists list is undefined.' :
+             ` Current index ${currentIndex} out of bounds (${therapistsList.length} items).`}
+          </p>
+          <Button onClick={onBack} className="bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106]">
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // Show therapist search loading screen if searching for next therapist
   if (showTherapistSearchLoading) {
