@@ -1264,10 +1264,11 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                   {/* PHQ-9 Square Video Container */}
                   <div className="relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden bg-white aspect-square">
                     {/* White background that shows while video loads */}
-                    <div className={`absolute inset-0 bg-white transition-opacity duration-600 ${phq9VideoLoaded ? 'opacity-0' : 'opacity-100'}`} />
+                    <div className={`absolute inset-0 bg-white transition-opacity duration-600 z-0 ${phq9VideoLoaded ? 'opacity-0' : 'opacity-100'}`} />
                     
                     <video
-                      className={`w-full h-full object-cover transition-opacity duration-600 ${phq9VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
+                      className={`w-full h-full object-cover transition-opacity duration-600 relative ${phq9VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
+                      style={{ zIndex: 1 }}
                       src={VIDEOS.emotionalWellBeing}
                       autoPlay
                       muted
@@ -1291,11 +1292,11 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                         setPhq9VideoLoaded(true); // Continue anyway
                       }}
                     />
-                    <div className="absolute inset-x-0 bottom-3 flex justify-center">
+                    <div className="absolute inset-x-0 bottom-3 flex justify-center z-10 pointer-events-none">
                       <Button
                         onClick={() => setShowPhq9Intro(false)}
-                        className="py-2 sm:py-2.5 px-5 rounded-full text-base sm:text-lg bg-white/90 hover:bg-white text-gray-800"
-                         style={{ fontFamily: 'var(--font-inter)' }}
+                        className="py-2 sm:py-2.5 px-5 rounded-full text-base sm:text-lg bg-white/90 hover:bg-white text-gray-800 shadow-lg pointer-events-auto"
+                         style={{ fontFamily: 'var(--font-inter)', zIndex: 20 }}
                        >
                          Continue
                        </Button>
@@ -1494,10 +1495,11 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                  {/* GAD-7 Square Video Container */}
                  <div className="relative border border-[#5C3106] rounded-3xl p-0 shadow-[1px_1px_0_#5C3106] overflow-hidden bg-white aspect-square">
                    {/* White background that shows while video loads */}
-                   <div className={`absolute inset-0 bg-white transition-opacity duration-600 ${gad7VideoLoaded ? 'opacity-0' : 'opacity-100'}`} />
+                   <div className={`absolute inset-0 bg-white transition-opacity duration-600 z-0 ${gad7VideoLoaded ? 'opacity-0' : 'opacity-100'}`} />
                    
                    <video
-                     className={`w-full h-full object-cover transition-opacity duration-600 ${gad7VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
+                     className={`w-full h-full object-cover transition-opacity duration-600 relative ${gad7VideoLoaded ? 'opacity-100' : 'opacity-0'}`}
+                     style={{ zIndex: 1 }}
                      src={VIDEOS.measuringAnxiety}
                      autoPlay
                      muted
@@ -1520,11 +1522,11 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                        setGad7VideoLoaded(true); // Continue anyway
                      }}
                    />
-                   <div className="absolute inset-x-0 bottom-3 flex justify-center">
+                   <div className="absolute inset-x-0 bottom-3 flex justify-center z-10 pointer-events-none">
                      <Button
                        onClick={() => setShowGad7Intro(false)}
-                       className="py-2 sm:py-2.5 px-5 rounded-full text-base sm:text-lg bg-white/90 hover:bg-white text-gray-800"
-                         style={{ fontFamily: 'var(--font-inter)' }}
+                       className="py-2 sm:py-2.5 px-5 rounded-full text-base sm:text-lg bg-white/90 hover:bg-white text-gray-800 shadow-lg pointer-events-auto"
+                         style={{ fontFamily: 'var(--font-inter)', zIndex: 20 }}
                        >
                          Continue
                        </Button>

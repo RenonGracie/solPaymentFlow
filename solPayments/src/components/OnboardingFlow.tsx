@@ -1471,22 +1471,12 @@ export default function OnboardingFlow({
                 return countB - countA; // Sort highest to lowest
               });
               
-              // Calculate how many slots are needed to complete the last row
-              const totalStates = sortedStates.length;
-              const remainingSlots = totalStates % 3 === 0 ? 0 : 3 - (totalStates % 3);
-              
-              // Determine the column span for "Other State" button
-              let otherStateColSpan = 'col-span-1';
-              if (remainingSlots === 2) {
-                otherStateColSpan = 'col-span-2';
-              } else if (remainingSlots === 3) {
-                otherStateColSpan = 'col-span-3';
-              }
-              
               return (
-                <div className="grid grid-cols-3 gap-2 mb-4 px-4">
-                  {/* Render sorted states */}
-                  {sortedStates.map((stateCode, index) => {
+                <div className="mb-4 px-4">
+                  {/* States Grid */}
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {/* Render sorted states */}
+                    {sortedStates.map((stateCode, index) => {
                     const stateName = allStates.find(s => s.code === stateCode)?.name || stateCode;
                     const therapistCount = stateCounts[stateCode];
                     // Calculate animation delay based on position (cascade from top-left to bottom-right)
@@ -1540,9 +1530,10 @@ export default function OnboardingFlow({
                         )}
                       </button>
                     );
-                  })}
+                    })}
+                  </div>
                   
-                  {/* Other State Button - Dynamically sized based on remaining slots */}
+                  {/* Other State Button - Full Width Below Grid */}
                   <button
                     onClick={() => {
                       setShowOtherStateInput(!showOtherStateInput);
@@ -1551,39 +1542,36 @@ export default function OnboardingFlow({
                         setSelectedState('');
                       }
                     }}
-                    className={`relative ${otherStateColSpan} py-2 px-1 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center transform hover:scale-[1.02] min-h-[70px] animate-in fade-in slide-in-from-top-2 ${
+                    className={`w-full py-3 px-4 rounded-xl border-2 transition-all duration-300 flex items-center justify-center transform hover:scale-[1.02] min-h-[60px] animate-in fade-in slide-in-from-top-2 ${
                       showOtherStateInput
                         ? 'border-[#5C3106] bg-[#5C3106] text-white shadow-lg' 
                         : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
                     }`}
                     style={{
-                      animationDelay: `${(Math.floor(totalStates / 3) * 3 + (totalStates % 3)) * 100}ms`,
+                      animationDelay: `${(Math.floor(sortedStates.length / 3) + 1) * 100}ms`,
                       animationDuration: '600ms',
                       animationFillMode: 'both'
                     } as React.CSSProperties}
                   >
-                    <div className={`w-5 h-5 flex items-center justify-center mb-1 ${showOtherStateInput ? '' : 'opacity-60'}`}>
+                    <div className={`mr-3 ${showOtherStateInput ? 'text-white' : 'text-gray-600'}`}>
                       <svg 
-                        className="w-4 h-4" 
+                        className="w-5 h-5" 
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
-                        style={{
-                          filter: showOtherStateInput ? 'brightness(0) invert(1)' : 'none'
-                        }}
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </div>
                     
-                    <span className={`text-xs font-medium text-center ${showOtherStateInput ? 'text-white' : 'text-gray-800'}`}>
+                    <span className={`text-sm font-medium ${showOtherStateInput ? 'text-white' : 'text-gray-800'}`}>
                       Other State
                     </span>
                     
                     {showOtherStateInput && (
-                      <div className="absolute top-1 right-1">
-                        <div className="bg-white rounded-full p-0.5 animate-in zoom-in-50 duration-300">
-                          <Check className="w-2.5 h-2.5" style={{ color: '#5C3106' }} />
+                      <div className="ml-auto">
+                        <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
+                          <Check className="w-3 h-3" style={{ color: '#5C3106' }} />
                         </div>
                       </div>
                     )}
