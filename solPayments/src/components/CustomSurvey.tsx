@@ -1744,7 +1744,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                        type="text"
                        value={surveyData.first_name}
                        onChange={(e) => {
-                         const formattedName = e.target.value ? e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1).toLowerCase() : '';
+                         const inputValue = e.target.value;
+                         const formattedName = inputValue ? inputValue.charAt(0).toUpperCase() + inputValue.slice(1) : '';
                          updateSurveyData('first_name', formattedName);
                          // If preferred_name is empty or same as old first_name, update it too
                          if (!surveyData.preferred_name || surveyData.preferred_name === surveyData.first_name) {
@@ -1770,7 +1771,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                        type="text"
                        value={surveyData.preferred_name || ''}
                        onChange={(e) => {
-                         const formattedName = e.target.value ? e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1).toLowerCase() : '';
+                         const inputValue = e.target.value;
+                         const formattedName = inputValue ? inputValue.charAt(0).toUpperCase() + inputValue.slice(1) : '';
                          updateSurveyData('preferred_name', formattedName || surveyData.first_name);
                        }}
                        placeholder={`Leave empty to use "${surveyData.first_name}"`}
@@ -1791,7 +1793,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                        type="text"
                        value={surveyData.last_name}
                        onChange={(e) => {
-                         const formattedName = e.target.value ? e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1).toLowerCase() : '';
+                         const inputValue = e.target.value;
+                         const formattedName = inputValue ? inputValue.charAt(0).toUpperCase() + inputValue.slice(1) : '';
                          updateSurveyData('last_name', formattedName);
                        }}
                        className={`w-full p-2.5 sm:p-3 border-2 border-gray-300 rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg text-center ${invalidLast ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-300'}`}

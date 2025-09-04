@@ -823,14 +823,23 @@ export default function MainPageComponent() {
         return birthDate.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
       };
 
+      // Helper function to properly format names for backend
+      const formatNameForBackend = (name: string): string => {
+        if (!name || typeof name !== 'string') return '';
+        return name.trim()
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+      };
+
       // Build comprehensive user data with ALL collected information
       const comprehensiveUserData: ComprehensiveUserData = {
         // Core identity
         id: `client_${responseId}`,
         response_id: responseId,
-        first_name: surveyData.first_name || formData?.firstName || onboardingData?.firstName || "",
-        last_name: surveyData.last_name || formData?.lastName || onboardingData?.lastName || "",
-        preferred_name: surveyData.preferred_name || formData?.preferredName || onboardingData?.preferredName,
+        first_name: formatNameForBackend(surveyData.first_name || formData?.firstName || onboardingData?.firstName || ""),
+        last_name: formatNameForBackend(surveyData.last_name || formData?.lastName || onboardingData?.lastName || ""),
+        preferred_name: formatNameForBackend(surveyData.preferred_name || formData?.preferredName || onboardingData?.preferredName || ""),
         email: surveyData.email,
         phone: surveyData.phone,
         
@@ -971,9 +980,10 @@ export default function MainPageComponent() {
         response_id: responseId,
         payment_type: selectedPaymentType,
         
-        // Ensure onboarding data is preserved (especially preferred_name)
-        preferred_name: surveyData.preferred_name || formData?.preferredName || onboardingData?.preferredName,
-        first_name: surveyData.first_name || formData?.firstName || onboardingData?.firstName,
+        // Ensure onboarding data is preserved with proper formatting
+        preferred_name: formatNameForBackend(surveyData.preferred_name || formData?.preferredName || onboardingData?.preferredName || ""),
+        first_name: formatNameForBackend(surveyData.first_name || formData?.firstName || onboardingData?.firstName || ""),
+        last_name: formatNameForBackend(surveyData.last_name || formData?.lastName || onboardingData?.lastName || ""),
         
         // Add insurance information if available
         ...(selectedPaymentType === 'insurance' && formData && {

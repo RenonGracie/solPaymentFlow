@@ -442,9 +442,9 @@ export default function OnboardingFlow({
         setShowWaitlistPopup(true);
       } else {
         // Proceed with supported state
-        // Ensure preferred name is capitalized
-        const capitalizedPreferredName = formData.preferredName 
-          ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase()
+        // Capitalize first letter only, preserve rest of the name
+        const preferredName = formData.preferredName 
+          ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1)
           : '';
 
         // For cash_pay at state selection, we only need email and preferred name
@@ -458,10 +458,10 @@ export default function OnboardingFlow({
         }
 
         onComplete({
-          firstName: capitalizedPreferredName, // Use preferred name as firstName for now
+          firstName: preferredName, // Use preferred name as firstName for now
           lastName: '', // Will be collected in next step
           email: formData.email,
-          preferredName: capitalizedPreferredName,
+          preferredName: preferredName,
           state: selectedState,
           paymentType: 'cash_pay',
           whatBringsYou: formData.whatBringsYou
@@ -529,11 +529,16 @@ export default function OnboardingFlow({
       setVerificationStep('success');
       
       // Update form data with verified information from response
+      // Keep user-entered names but use API data for other fields
       if (responseData.subscriber) {
+        // Helper function to capitalize first letter only
+        const capitalizeFirst = (name: string) => name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
+        
         setFormData(prev => ({
           ...prev,
-          firstName: responseData.subscriber?.firstName || prev.firstName,
-          lastName: responseData.subscriber?.lastName || prev.lastName,
+          // Use user input if available, otherwise format API data with first letter capitalization only
+          firstName: prev.firstName || capitalizeFirst(responseData.subscriber?.firstName || ''),
+          lastName: prev.lastName || capitalizeFirst(responseData.subscriber?.lastName || ''),
           dateOfBirth: responseData.subscriber?.dateOfBirth || prev.dateOfBirth,
           memberId: responseData.subscriber?.memberId || prev.memberId
         }));
@@ -547,17 +552,19 @@ export default function OnboardingFlow({
   };
 
   const handleInsuranceComplete = () => {
-    // Ensure preferred name is capitalized
-    const capitalizedPreferredName = formData.preferredName 
-      ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase()
-      : formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1).toLowerCase();
+    // Capitalize first letter only, preserve rest of the name
+    const finalPreferredName = formData.preferredName 
+      ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1)
+      : formData.firstName 
+        ? formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1)
+        : '';
 
     // Complete the onboarding with verified insurance data
     onComplete({
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
-      preferredName: capitalizedPreferredName,
+      preferredName: finalPreferredName,
       state: 'NJ', // Default to NJ for insurance
       provider: selectedProvider,
       memberId: formData.memberId,
@@ -1257,11 +1264,11 @@ export default function OnboardingFlow({
 
   // Payment Selection Screen (Step 4)
   if (currentStep === 4) {
-    // Capitalize first letter of name
+    // Capitalize first letter only for display
     const displayName = formData.preferredName 
-      ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1).toLowerCase()
+      ? formData.preferredName.charAt(0).toUpperCase() + formData.preferredName.slice(1)
       : formData.firstName 
-        ? formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1).toLowerCase()
+        ? formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1)
         : 'there';
 
     return (
