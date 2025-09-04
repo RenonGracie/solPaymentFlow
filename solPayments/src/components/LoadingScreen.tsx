@@ -238,7 +238,9 @@ export const LoadingScreen = ({
           
           if (!preloadData || preloadComplete) {
             console.log('🎯 LoadingScreen: Completing - preload status:', preloadComplete);
+            console.log('🎯 LoadingScreen: About to call onComplete callback');
             onComplete?.();
+            console.log('🎯 LoadingScreen: onComplete callback called');
           } else if (checkCount >= maxChecks) {
             // Failsafe: if we've been waiting too long, proceed anyway
             console.warn('⚠️ LoadingScreen: Preloading timeout reached, proceeding anyway');

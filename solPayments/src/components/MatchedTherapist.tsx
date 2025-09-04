@@ -391,10 +391,11 @@ export default function MatchedTherapist({
   };
   
   const handleTherapistSearchComplete = () => {
-    console.log(`[Find Another] Preloading complete, switching to next therapist`);
+    console.log(`[Find Another] ⭐ COMPLETION CALLBACK TRIGGERED - switching to next therapist`);
     
     // Switch to the next therapist
     const nextIndex = (currentIndex + 1) % therapistsList.length;
+    console.log(`[Find Another] ⭐ Switching from index ${currentIndex} to ${nextIndex}`);
     setCurrentIndex(nextIndex);
     setSelectedTimeSlot(null);
     setSelectedDateObj(null);
@@ -405,6 +406,7 @@ export default function MatchedTherapist({
     // Hide loading screen
     setShowTherapistSearchLoading(false);
     setTherapistSearchPreloader(null);
+    console.log(`[Find Another] ⭐ Loading screen hidden, therapist switch complete`);
   };
   
   const handleFindAnotherFallback = async () => {
@@ -1440,7 +1442,7 @@ export default function MatchedTherapist({
         variant="therapist-search"
         preloadData={therapistSearchPreloader || undefined}
         onComplete={handleTherapistSearchComplete}
-        minDisplayTime={3000}
+        minDisplayTime={6000}
       />
     );
   }
