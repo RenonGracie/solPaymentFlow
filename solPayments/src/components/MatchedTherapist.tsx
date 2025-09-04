@@ -1437,12 +1437,49 @@ export default function MatchedTherapist({
 
   // Show therapist search loading screen if searching for next therapist
   if (showTherapistSearchLoading) {
+    // Simple timeout-based completion instead of complex LoadingScreen logic
+    useEffect(() => {
+      let mounted = true;
+      let timeoutId: NodeJS.Timeout;
+      
+      console.log(`[Find Another] 🔄 Starting simple preload + timeout approach`);
+      
+      const handleCompletion = () => {
+        if (mounted) {
+          console.log(`[Find Another] ⏰ Timeout reached, calling completion`);
+          handleTherapistSearchComplete();
+        }
+      };
+      
+      // If we have a preloader, run it
+      if (therapistSearchPreloader) {
+        therapistSearchPreloader()
+          .then(() => {
+            console.log(`[Find Another] ✅ Preload complete, waiting for minimum time`);
+            // Wait at least 4 seconds total before completing
+            timeoutId = setTimeout(handleCompletion, 4000);
+          })
+          .catch((error) => {
+            console.error(`[Find Another] ❌ Preload failed:`, error);
+            // Still complete even if preload fails
+            timeoutId = setTimeout(handleCompletion, 4000);
+          });
+      } else {
+        // No preloader, just wait minimum time
+        timeoutId = setTimeout(handleCompletion, 4000);
+      }
+      
+      return () => {
+        mounted = false;
+        if (timeoutId) clearTimeout(timeoutId);
+      };
+    }, []); // Only run once when component mounts
+    
     return (
       <LoadingScreen
         variant="therapist-search"
-        preloadData={therapistSearchPreloader || undefined}
-        onComplete={handleTherapistSearchComplete}
-        minDisplayTime={6000}
+        // Don't pass preloadData or onComplete - we handle it manually
+        minDisplayTime={10000} // Long timeout as fallback
       />
     );
   }

@@ -223,9 +223,13 @@ export const LoadingScreen = ({
   }, [preloadData, isPreloading, preloadComplete]);
 
   useEffect(() => {
+    console.log(`🔄 LoadingScreen: State ${currentStateIndex}/${loadingStates.length - 1} (hasCompletedCycle: ${hasCompletedCycle})`);
+    
     // Cycle through states
     if (currentStateIndex >= loadingStates.length - 1) {
+      console.log(`🏁 LoadingScreen: Reached final state, hasCompletedCycle: ${hasCompletedCycle}`);
       if (!hasCompletedCycle) {
+        console.log(`🎯 LoadingScreen: Setting hasCompletedCycle to true`);
         setHasCompletedCycle(true);
         
         // Wait for both minimum display time AND preloading to complete
