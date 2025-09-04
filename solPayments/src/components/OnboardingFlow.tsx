@@ -51,7 +51,7 @@ interface OnboardingFlowProps {
 }
 
 // Benefits display logic function based on benefit structure
-function getBenefitsDisplay(benefits: EligibilityBenefits, payerIdOverride?: string) {
+function getBenefitsDisplay(benefits: EligibilityBenefits) {
   // Parse numeric values from string amounts
   const parseAmount = (amount: string): number => {
     return parseFloat(amount.replace(/[$,]/g, '')) || 0;
@@ -65,7 +65,7 @@ function getBenefitsDisplay(benefits: EligibilityBenefits, payerIdOverride?: str
   const benefitStructure = benefits.benefitStructure || '';
   
   // Session rate (allowed amount) varies by payer; default fallback=200
-  const sessionRate90791 = getSessionCostForPayer(payerIdOverride, 200);
+  // sessionRate90791 calculation removed as it was unused
 
   // Main yellow box text (ALL benefit structures show this)
   const largeText = `Based on your benefits, you can expect to pay ~$${memberObligation.toFixed(0)} for your sessions.`;
@@ -1505,7 +1505,7 @@ export default function OnboardingFlow({
                     {/* Render sorted states */}
                     {sortedStates.map((stateCode, index) => {
                     const stateName = allStates.find(s => s.code === stateCode)?.name || stateCode;
-                    const therapistCount = stateCounts[stateCode];
+                    // const therapistCount = stateCounts[stateCode]; // Unused
                     // Calculate animation delay based on position (cascade from top-left to bottom-right)
                     const row = Math.floor(index / 3);
                     const col = index % 3;
@@ -2082,20 +2082,20 @@ export default function OnboardingFlow({
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                         <div className="text-green-800">
                           <p className="font-medium text-base mb-2">
-                            {getBenefitsDisplay(verificationResponse.benefits, tradingPartnerServiceIdMap[selectedProvider as keyof typeof tradingPartnerServiceIdMap]).largeText}
+                            {getBenefitsDisplay(verificationResponse.benefits).largeText}
                           </p>
                           <p className="text-sm text-green-700">
-                            {getBenefitsDisplay(verificationResponse.benefits, tradingPartnerServiceIdMap[selectedProvider as keyof typeof tradingPartnerServiceIdMap]).smallText}
+                            {getBenefitsDisplay(verificationResponse.benefits).smallText}
                           </p>
                         </div>
                       </div>
 
                       {/* Yellow Box - Additional Details (if applicable) */}
-                      {getBenefitsDisplay(verificationResponse.benefits, tradingPartnerServiceIdMap[selectedProvider as keyof typeof tradingPartnerServiceIdMap]).additionalDetails && (
+                      {getBenefitsDisplay(verificationResponse.benefits).additionalDetails && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                           <div className="text-yellow-800">
                             <p className="text-sm leading-relaxed whitespace-pre-line">
-                              {getBenefitsDisplay(verificationResponse.benefits, tradingPartnerServiceIdMap[selectedProvider as keyof typeof tradingPartnerServiceIdMap]).additionalDetails}
+                              {getBenefitsDisplay(verificationResponse.benefits).additionalDetails}
                             </p>
                           </div>
                         </div>
