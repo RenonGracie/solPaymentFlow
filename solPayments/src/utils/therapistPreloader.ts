@@ -274,5 +274,23 @@ export const createTherapistPreloader = (
   clientState?: string,
   paymentType?: string
 ) => {
-  return () => preloadMultipleTherapists(therapistsList, clientState, paymentType);
+  return async () => {
+    try {
+      console.log(`[Preloader] 🔄 Creating preloader for ${therapistsList.length} therapists`);
+      
+      // Add a global timeout for the entire preload process
+      const preloadPromise = preloadMultipleTherapists(therapistsList, clientState, paymentType);
+      const timeoutPromise = new Promise<void>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Preloader global timeout (15 seconds)'));
+        }, 15000);
+      });
+      
+      await Promise.race([preloadPromise, timeoutPromise]);
+      console.log(`[Preloader] ✅ Preloader completed successfully`);
+    } catch (error) {
+      console.error(`[Preloader] ❌ Preloader failed:`, error);
+      // Don't throw - let the loading screen proceed anyway
+    }
+  };
 };
