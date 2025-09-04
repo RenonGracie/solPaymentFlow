@@ -90,7 +90,7 @@ export const TherapistConfirmationModal = ({
 
   return (
     <Dialog open={isVisible} onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-md bg-white rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
+      <DialogContent className="sm:max-w-md bg-yellow-50 rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
         <div className="p-8">
           {/* Header */}
           <div className="text-center mb-8">
@@ -202,7 +202,7 @@ export const TherapistConfirmationModal = ({
           {/* Action Buttons */}
           <div className="flex flex-col gap-4">
             <Button
-              className="w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 py-4 rounded-full text-base font-medium border border-[#5C3106] shadow-[1px_1px_0_#5C3106] transition-all"
+              className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-800 py-4 rounded-full text-base font-medium border border-[#5C3106] shadow-[1px_1px_0_#5C3106] transition-all"
               onClick={onConfirm}
               style={{ fontFamily: 'var(--font-inter)' }}
             >

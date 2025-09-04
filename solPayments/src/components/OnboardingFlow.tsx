@@ -1325,7 +1325,7 @@ export default function OnboardingFlow({
                       : 'rounded-2xl'
                   }`}
                   style={{
-                    backgroundColor: expandedCard === 'cash_pay' ? '#f5f0d8' : '#f8f3db',
+                    backgroundColor: expandedCard === 'cash_pay' ? '#fef08a' : '#fde047',
                     borderColor: '#fef3cd',
                     padding: expandedCard === 'cash_pay' ? '16px 20px 12px 20px' : '16px 20px'
                   }}
@@ -1344,7 +1344,7 @@ export default function OnboardingFlow({
                     <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
                       Graduate Therapists
                     </p>
-                    <span className="inline-block rounded-full bg-yellow-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
+                    <span className="inline-block rounded-full bg-yellow-300 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
                       $30 per session
                     </span>
                   </div>

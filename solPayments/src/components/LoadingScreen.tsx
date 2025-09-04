@@ -229,9 +229,20 @@ export const LoadingScreen = ({
         setHasCompletedCycle(true);
         
         // Wait for both minimum display time AND preloading to complete
+        const maxWaitTime = Math.max(minDisplayTime, 10000); // Never wait longer than 10 seconds
+        let checkCount = 0;
+        const maxChecks = maxWaitTime / 100; // Maximum number of checks based on wait time
+        
         const checkCompletion = () => {
+          checkCount++;
+          
           if (!preloadData || preloadComplete) {
             console.log('🎯 LoadingScreen: Completing - preload status:', preloadComplete);
+            onComplete?.();
+          } else if (checkCount >= maxChecks) {
+            // Failsafe: if we've been waiting too long, proceed anyway
+            console.warn('⚠️ LoadingScreen: Preloading timeout reached, proceeding anyway');
+            console.warn('⚠️ LoadingScreen: Preload status:', { preloadComplete, checkCount, maxChecks });
             onComplete?.();
           } else {
             // Check again in a short interval
