@@ -1132,7 +1132,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                               onClick={() => {
                                 updateSurveyData('alcohol_frequency', option);
                               }}
-                              className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
+                              className={`w-full py-2 sm:py-2.5 px-3 sm:px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white border border-[#5C3106]'
                                   : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
@@ -1161,7 +1161,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                               onClick={() => {
                                 updateSurveyData('recreational_drugs_frequency', option);
                               }}
-                              className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl text-base sm:text-lg font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
+                              className={`w-full py-2 sm:py-2.5 px-3 sm:px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
                                 isSelected
                                   ? 'bg-[#5C3106] text-white border border-[#5C3106]'
                                   : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
