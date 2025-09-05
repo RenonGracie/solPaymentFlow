@@ -1380,6 +1380,14 @@ export default function MainPageComponent() {
             } : {};
           })())
         }),
+        
+        // Pass complete Nirvana data to backend for comprehensive processing
+        ...(clientData.payment_type === 'insurance' && clientData.insurance_data?.verification_response?.rawNirvanaResponse ? {
+          nirvana_data: clientData.insurance_data.verification_response.rawNirvanaResponse,
+          insurance_verification_data: JSON.stringify(clientData.insurance_data.verification_response.rawNirvanaResponse),
+          rawNirvanaResponse: clientData.insurance_data.verification_response.rawNirvanaResponse
+        } : {}),
+        
         // Flatten UTM data
         ...(clientData.utm && {
           utm_source: clientData.utm.utm_source,
