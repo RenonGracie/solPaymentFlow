@@ -584,8 +584,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
-              <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto">
+            <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8">
+              <div className="flow-narrow w-full mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-6 text-gray-800 leading-[1.1]" 
@@ -666,11 +666,11 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
-              <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto">
-                <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
-                  <div className="text-center mb-6 sm:mb-8">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-5 text-gray-800 leading-tight"
+            <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8">
+              <div className="flow-narrow w-full mx-auto">
+                <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
+                  <div className="text-center space-y-4">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800 leading-tight"
                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                        Would you like to be matched with a therapist, or are you requesting someone specific?
                      </h1>
@@ -744,10 +744,10 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
-              <div className="flow-narrow w-full -mt-4 sm:-mt-8 mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent">
-                <div className="text-center mb-6 sm:mb-8">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
+            <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8">
+              <div className="flow-narrow w-full mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent space-y-6">
+                <div className="text-center space-y-4">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                     Search for Your Therapist
                   </h1>
