@@ -296,10 +296,36 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
 
   // Get therapist category from selected therapist data
   const getTherapistCategory = () => {
-    const program = currentUserData?.selected_therapist?.program?.trim();
-    console.log('🏷️ [Booking Confirmation] Program value:', program);
+    const therapist = currentUserData?.selected_therapist;
+    const program = therapist?.program?.trim();
+    const paymentType = currentUserData?.payment_type;
+    
+    console.log('🏷️ [Booking Confirmation] Complete therapist debug:', {
+      has_selected_therapist: !!therapist,
+      therapist_keys: therapist ? Object.keys(therapist) : [],
+      program_value: program,
+      raw_program: therapist?.program,
+      payment_type: paymentType,
+      full_therapist: therapist
+    });
+    
+    // Primary: Use program field if available
     if (program === 'Limited Permit') return 'Associate Therapist';
-    return 'Graduate Therapist'; // Default for MHC, MSW, MFT, or unknown
+    if (program === 'MHC' || program === 'MSW' || program === 'MFT') return 'Graduate Therapist';
+    
+    // Fallback: Use payment type logic as a secondary indicator
+    // Insurance clients typically get Associate Therapists, Cash pay gets Graduate Therapists
+    if (paymentType === 'insurance') {
+      console.log('🏷️ [Booking Confirmation] Using payment type fallback: insurance -> Associate Therapist');
+      return 'Associate Therapist';
+    } else if (paymentType === 'cash_pay') {
+      console.log('🏷️ [Booking Confirmation] Using payment type fallback: cash_pay -> Graduate Therapist');
+      return 'Graduate Therapist';
+    }
+    
+    // Final fallback
+    console.log('🏷️ [Booking Confirmation] Using final fallback: Graduate Therapist');
+    return 'Graduate Therapist';
   };
 
   // Get session duration based on therapist category
@@ -1773,6 +1799,10 @@ export default function MainPageComponent() {
                           therapist_data_keys: Object.keys(therapistData),
                           image_link_in_therapist: therapist.image_link,
                           image_link_in_therapistData: therapistData.therapist?.image_link,
+                          program_in_therapist: therapist.program,
+                          program_in_therapistData: therapistData.therapist?.program,
+                          cohort_in_therapist: therapist.cohort,
+                          cohort_in_therapistData: therapistData.therapist?.cohort,
                           full_therapist_object: therapist,
                           full_therapistData_object: therapistData
                         });
@@ -1787,14 +1817,21 @@ export default function MainPageComponent() {
                           image_link: therapist.image_link || therapistData.therapist?.image_link || undefined,
                           states: therapist.states || [],
                           therapeutic_orientation: therapist.therapeutic_orientation || [],
-                          program: therapist.program || undefined
+                          // Try multiple sources for the program field
+                          program: therapist.program || therapistData.therapist?.program || therapist.cohort || therapistData.therapist?.cohort || undefined
                         };
                         
-                        console.log('🖼️ [MAIN COMPONENT] Created therapistInfo with image_link:', therapistInfo.image_link);
+                        console.log('🖼️ [MAIN COMPONENT] Created therapistInfo with program:', therapistInfo.program);
                         
                         // Calculate correct duration based on therapist program
-                        const therapistCategory = therapist.program?.trim() === 'Limited Permit' ? 'Associate Therapist' : 'Graduate Therapist';
+                        const therapistCategory = therapistInfo.program?.trim() === 'Limited Permit' ? 'Associate Therapist' : 'Graduate Therapist';
                         const sessionDuration = therapistCategory === 'Associate Therapist' ? 55 : 45;
+                        
+                        console.log('🏷️ [MAIN COMPONENT] Therapist category calculation:', {
+                          program: therapistInfo.program,
+                          category: therapistCategory,
+                          duration: sessionDuration
+                        });
                         
                         const appointmentInfo = {
                           date: slotDate.toLocaleDateString(),
