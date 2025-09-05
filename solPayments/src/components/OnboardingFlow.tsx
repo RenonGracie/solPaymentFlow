@@ -10,6 +10,13 @@ import { PAYER_ID_BY_PROVIDER, NPI, getSessionCostForPayer } from "@/api/eligibi
 import { useInputFocus } from "@/hooks/useInputFocus";
 import { useAvailableStates } from "@/api/hooks/useAvailableStates";
 
+// Meta pixel type declaration
+declare global {
+  interface Window {
+    fbq: (action: string, event: string, params?: any) => void;
+  }
+}
+
 interface EligibilityBenefits {
   copay: string;
   coinsurance: string;
@@ -457,6 +464,16 @@ export default function OnboardingFlow({
           return; // Don't proceed without required fields
         }
 
+        // Track Meta pixel conversion for cash pay flow completion
+        if (typeof window !== 'undefined' && window.fbq) {
+          window.fbq('track', 'Lead', {
+            content_name: 'Cash Pay Onboarding Complete',
+            content_category: 'cash_pay',
+            value: 30.00,
+            currency: 'USD'
+          });
+        }
+
         onComplete({
           firstName: preferredName, // Use preferred name as firstName for now
           lastName: '', // Will be collected in next step
@@ -569,6 +586,17 @@ export default function OnboardingFlow({
       : formData.firstName 
         ? formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1)
         : '';
+
+    // Track Meta pixel conversion for insurance flow completion
+    if (typeof window !== 'undefined' && window.fbq) {
+      const memberObligation = verificationResponse?.benefits?.memberObligation || 'Unknown';
+      window.fbq('track', 'Lead', {
+        content_name: 'Insurance Onboarding Complete',
+        content_category: 'insurance',
+        value: parseFloat(memberObligation.replace(/[$,]/g, '')) || 0,
+        currency: 'USD'
+      });
+    }
 
     // Complete the onboarding with verified insurance data
     onComplete({
@@ -1024,8 +1052,8 @@ export default function OnboardingFlow({
         {/* Content - truly centered with only preferred name */}
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="flow-narrow w-full mx-auto">
-            <div className="text-center mb-12">
-              <span className="text-5xl mb-6 block">👋</span>
+            <div className="text-center space-y-4 mb-8">
+              <span className="text-4xl sm:text-5xl block">👋</span>
               <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What can we call you?
@@ -1033,7 +1061,7 @@ export default function OnboardingFlow({
             </div>
 
             {/* Single Preferred Name Input */}
-            <div className="mb-8">
+            <div className="space-y-6">
               <input
                 ref={nameInputRef}
                 type="text"
@@ -1050,21 +1078,20 @@ export default function OnboardingFlow({
                 inputMode="text"
               />
 
+              <Button
+                onClick={handleContinue}
+                disabled={!formData.preferredName.trim()}
+                className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors duration-200 ${
+                  formData.preferredName.trim() 
+                    ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Continue
+                <ChevronRight className="inline w-5 h-5 ml-2" />
+              </Button>
             </div>
-
-            <Button
-              onClick={handleContinue}
-              disabled={!formData.preferredName.trim()}
-              className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors duration-200 ${
-                formData.preferredName.trim() 
-                  ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-              style={{ fontFamily: 'var(--font-inter)' }}
-            >
-              Continue
-              <ChevronRight className="inline w-5 h-5 ml-2" />
-            </Button>
           </div>
         </div>
       </div>
@@ -1151,7 +1178,7 @@ export default function OnboardingFlow({
           <div className="w-10"></div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-10">
+        <div className="flex-1 flex flex-col justify-center px-4 md:px-6 py-8">
           <div className="w-full max-w-md mx-auto">
             <div className="text-center mb-8">
               <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
@@ -1251,10 +1278,10 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content - Email Input */}
-        <div className="flex-1 flex items-center justify-center px-6 pb-16">
-          <div className="flow-narrow w-full -mt-16 mx-auto">
-            <div className="text-center mb-12">
-              <span className="text-5xl mb-6 block">📧</span>
+        <div className="flex-1 flex flex-col justify-center px-6 py-8">
+          <div className="flow-narrow w-full mx-auto space-y-8">
+            <div className="text-center space-y-4">
+              <span className="text-4xl sm:text-5xl block">📧</span>
               <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What's Your Email?
@@ -1262,7 +1289,7 @@ export default function OnboardingFlow({
             </div>
 
             {/* Email Input */}
-            <div className="mb-8">
+            <div className="space-y-6">
               <input
                 ref={emailInputRef}
                 type="email"
@@ -1278,21 +1305,21 @@ export default function OnboardingFlow({
                 autoCapitalize="off"
                 inputMode="email"
               />
-            </div>
 
-            <Button
-              onClick={handleContinue}
-              disabled={!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)}
-              className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors duration-200 ${
-                formData.email.trim() && /\S+@\S+\.\S+/.test(formData.email)
-                  ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-              style={{ fontFamily: 'var(--font-inter)' }}
-            >
-              Continue
-              <ChevronRight className="inline w-5 h-5 ml-2" />
-            </Button>
+              <Button
+                onClick={handleContinue}
+                disabled={!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)}
+                className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors duration-200 ${
+                  formData.email.trim() && /\S+@\S+\.\S+/.test(formData.email)
+                    ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Continue
+                <ChevronRight className="inline w-5 h-5 ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -1361,8 +1388,8 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content - truly centered in remaining space */}
-        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
-          <div className="flow-narrow w-full -mt-12 mx-auto">
+        <div className="flex-1 flex flex-col justify-center px-4 md:px-6 py-8">
+          <div className="flow-narrow w-full mx-auto space-y-6">
             <div className="text-center mb-6 md:mb-8">
               <span className="text-3xl md:text-5xl mb-3 md:mb-4 block">🎉</span>
               <h1 className="text-2xl sm:text-3xl md:text-4xl mb-3 md:mb-4 text-gray-800" 
@@ -1592,7 +1619,7 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center px-4 md:px-6 pb-12">
+        <div className="flex-1 flex flex-col justify-center px-4 md:px-6 py-8">
           <div className="flow-narrow w-full mx-auto">
             <div className="text-center mb-6">
               <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 text-gray-800" 
@@ -2032,8 +2059,8 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center px-6 pb-14">
-          <div className="flow-narrow w-full -mt-6 sm:-mt-8 mx-auto">
+        <div className="flex-1 flex flex-col justify-center px-6 py-8">
+          <div className="flow-narrow w-full mx-auto space-y-6">
             <div className="text-center mb-8 flow-narrow mx-auto">
               <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>

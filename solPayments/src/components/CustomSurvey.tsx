@@ -1097,7 +1097,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               >
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
-              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <div></div>
               <div className="w-8"></div>
             </div>
 

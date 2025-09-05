@@ -10,6 +10,13 @@ import Image from "next/image";
 import axios from "@/api/axios";
 import { getMediaUrlWithFallback, S3MediaType } from "@/utils/s3";
 
+// Meta pixel type declaration
+declare global {
+  interface Window {
+    fbq: (action: string, event: string, params?: any) => void;
+  }
+}
+
 // Video analysis types (reused from MatchedTherapist)
 interface VideoAnalysis {
   hasVideo: boolean;

@@ -21,6 +21,13 @@ import { sendMandatoryForm } from "@/app/api/intakeq";
 import { STEPS } from "@/constants";
 import { createTherapistPreloader } from "@/utils/therapistPreloader";
 
+// Meta pixel type declaration
+declare global {
+  interface Window {
+    fbq: (action: string, event: string, params?: any) => void;
+  }
+}
+
 type PaymentType = "insurance" | "cash_pay";
 
 // Interface for mandatory form API response
@@ -1052,6 +1059,23 @@ export default function MainPageComponent() {
     }
     
     // Session booked successfully
+    
+    // Track Meta pixel conversion for successful appointment booking
+    if (typeof window !== 'undefined' && window.fbq) {
+      const sessionPaymentType = currentUserData?.payment_type || 'cash_pay';
+      const sessionValue = sessionPaymentType === 'cash_pay' ? 30 : 0;
+      window.fbq('track', 'Purchase', {
+        content_name: 'Therapy Session Booked',
+        content_category: 'appointment_booking',
+        content_type: sessionPaymentType,
+        value: sessionValue,
+        currency: 'USD',
+        therapist_name: bookedSession.PractitionerName,
+        therapist_email: bookedSession.PractitionerEmail,
+        appointment_id: bookedSession.Id,
+        session_duration: bookedSession.Duration
+      });
+    }
     
     // Log appointment info after successful booking
     console.log('📅 APPOINTMENT INFO (AFTER BOOKING):', {
