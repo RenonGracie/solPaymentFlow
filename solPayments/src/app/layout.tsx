@@ -28,6 +28,18 @@ export default function RootLayout({
           name="viewport" 
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" 
         />
+        {/* Preload critical fonts to prevent rendering issues */}
+        <link 
+          rel="preload" 
+          href="/VeryVogue-Text.otf" 
+          as="font" 
+          type="font/otf"
+          crossOrigin="anonymous" 
+        />
+        {/* Preload critical assets */}
+        <link rel="preload" href="/sol-health-logo.svg" as="image" />
+        <link rel="preload" href="/onboarding-banner.jpg" as="image" />
+        
         {videoCdn && (
           <>
             <link rel="preconnect" href={videoCdn} crossOrigin="anonymous" />

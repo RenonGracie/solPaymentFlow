@@ -1087,7 +1087,10 @@ export default function MatchedTherapist({
   const goNextMonth = () => {
     const next = new Date(currentYear, currentMonth + 1, 1);
     const now = new Date();
-    const maximumBookingDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+    // Normalize 14-day limit to end of 14th day
+    const maximumBookingDate = new Date(now);
+    maximumBookingDate.setDate(maximumBookingDate.getDate() + 14);
+    maximumBookingDate.setHours(23, 59, 59, 999); // End of 14th day
     
     // Don't navigate to a month that's entirely beyond the 14-day window
     if (next.getTime() > maximumBookingDate.getTime()) {
@@ -1170,14 +1173,24 @@ export default function MatchedTherapist({
     const dateMonth = date.getMonth();
     const isSameMonth = (dateYear === currentYear && dateMonth === currentMonth);
     
-    // 24-hour minimum lead time check
+    // 24-hour minimum lead time check - normalized to day after tomorrow at start of day
     const now = new Date();
-    const minimumBookingTime = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // Start of tomorrow
+    
+    const dayAfterTomorrow = new Date(tomorrow);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
+    dayAfterTomorrow.setHours(0, 0, 0, 0); // Start of day after tomorrow
+    
+    const minimumBookingTime = dayAfterTomorrow; // Always start of day after tomorrow
     const dateEndOfDay = new Date(date);
     dateEndOfDay.setHours(23, 59, 59, 999); // End of the selected day
     
-    // 14-day advance limit check
-    const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+    // 14-day advance limit - normalized to 14 days from today at end of day
+    const maximumBookingTime = new Date(now);
+    maximumBookingTime.setDate(maximumBookingTime.getDate() + 14);
+    maximumBookingTime.setHours(23, 59, 59, 999); // End of 14th day
     const dateStartOfDay = new Date(date);
     dateStartOfDay.setHours(0, 0, 0, 0); // Start of the selected day
     
@@ -1193,11 +1206,14 @@ export default function MatchedTherapist({
       // Filter sessions to respect 24-hour lead time
       let availableSessions = sessions.length > 0 ? sessions : (payload.slots || []).filter(s => s.is_free).map(s => ({ start: s.start, end: s.end }));
       
-      // Apply 24-hour lead time and 14-day advance limit filter
-      const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+      // Apply 24-hour lead time and 14-day advance limit filter  
+      // Use the normalized maximumBookingTime already calculated above
+      const normalizedMaxBookingTime = new Date(now);
+      normalizedMaxBookingTime.setDate(normalizedMaxBookingTime.getDate() + 14);
+      normalizedMaxBookingTime.setHours(23, 59, 59, 999);
       availableSessions = availableSessions.filter(session => {
         const sessionTime = new Date(session.start);
-        return sessionTime.getTime() >= minimumBookingTime.getTime() && sessionTime.getTime() <= maximumBookingTime.getTime();
+        return sessionTime.getTime() >= minimumBookingTime.getTime() && sessionTime.getTime() <= normalizedMaxBookingTime.getTime();
       });
       
       // Apply hourly restriction for Associate Therapists
@@ -1223,10 +1239,12 @@ export default function MatchedTherapist({
           .map((iso: string) => new Date(iso))
           .filter((dt: Date) => dt.toDateString() === date.toDateString());
         
-        // Apply filters
-        const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+        // Apply filters - use normalized maximumBookingTime
+        const normalizedMaxBookingTimeLegacy = new Date(now);
+        normalizedMaxBookingTimeLegacy.setDate(normalizedMaxBookingTimeLegacy.getDate() + 14);
+        normalizedMaxBookingTimeLegacy.setHours(23, 59, 59, 999);
         let filteredSlots = daySlots.filter(dt => 
-          dt.getTime() >= minimumBookingTime.getTime() && dt.getTime() <= maximumBookingTime.getTime()
+          dt.getTime() >= minimumBookingTime.getTime() && dt.getTime() <= normalizedMaxBookingTimeLegacy.getTime()
         );
         
         const therapistCategory = getTherapistCategory(therapist);
@@ -1248,8 +1266,19 @@ export default function MatchedTherapist({
   useEffect(() => {
     if (!selectedDateObj && (availability?.days || Object.keys(fetchedSlots).length > 0) && !isSwitchingTherapists) {
       const now = new Date();
-      const minimumBookingDate = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
-      const maximumBookingDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+      // Normalize to day after tomorrow at start of day
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      
+      const minimumBookingDate = new Date(tomorrow);
+      minimumBookingDate.setDate(minimumBookingDate.getDate() + 1);
+      minimumBookingDate.setHours(0, 0, 0, 0); // Start of day after tomorrow
+      
+      // Normalize to 14 days from today at end of day  
+      const maximumBookingDate = new Date(now);
+      maximumBookingDate.setDate(maximumBookingDate.getDate() + 14);
+      maximumBookingDate.setHours(23, 59, 59, 999); // End of 14th day
       
       console.log(`[Calendar] Simple auto-selection: Looking for available dates in current month only`);
       
@@ -1355,8 +1384,19 @@ export default function MatchedTherapist({
 
     // 24-HOUR MINIMUM LEAD TIME & 14-DAY ADVANCE LIMIT: Only show slots within booking window
     const now = new Date();
-    const minimumBookingTime = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
-    const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)); // 14 days from now
+    // Normalize to day after tomorrow at start of day for minimum
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    const minimumBookingTime = new Date(tomorrow);
+    minimumBookingTime.setDate(minimumBookingTime.getDate() + 1);
+    minimumBookingTime.setHours(0, 0, 0, 0); // Start of day after tomorrow
+    
+    // Normalize to 14 days from today at end of day for maximum
+    const maximumBookingTime = new Date(now);
+    maximumBookingTime.setDate(maximumBookingTime.getDate() + 14);
+    maximumBookingTime.setHours(23, 59, 59, 999); // End of 14th day
     
     const beforeTimeWindowFilter = filteredSlots.length;
     filteredSlots = filteredSlots.filter(dt => {
@@ -1804,7 +1844,10 @@ export default function MatchedTherapist({
                           aria-label="Next month"
                           disabled={(() => {
                             const now = new Date();
-                            const maximumBookingDate = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
+                            // Normalize to 14 days from today at end of day
+                            const maximumBookingDate = new Date(now);
+                            maximumBookingDate.setDate(maximumBookingDate.getDate() + 14);
+                            maximumBookingDate.setHours(23, 59, 59, 999);
                             const nextMonth = new Date(currentYear, currentMonth + 1, 1);
                             return nextMonth.getTime() > maximumBookingDate.getTime();
                           })()}
@@ -1823,8 +1866,21 @@ export default function MatchedTherapist({
                         {calendarCells.map((cell) => {
                           const selected = selectedDateObj ? isSameDay(cell.date, selectedDateObj) : false;
                           const now = new Date();
-                          const minimumBookingTime = new Date(now.getTime() + (24 * 60 * 60 * 1000));
-                          const maximumBookingTime = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
+                          
+                          // Normalize minimum time to day after tomorrow at start of day
+                          const tomorrow = new Date(now);
+                          tomorrow.setDate(tomorrow.getDate() + 1);
+                          tomorrow.setHours(0, 0, 0, 0);
+                          
+                          const minimumBookingTime = new Date(tomorrow);
+                          minimumBookingTime.setDate(minimumBookingTime.getDate() + 1);
+                          minimumBookingTime.setHours(0, 0, 0, 0); // Start of day after tomorrow
+                          
+                          // Normalize maximum time to 14 days from today at end of day
+                          const maximumBookingTime = new Date(now);
+                          maximumBookingTime.setDate(maximumBookingTime.getDate() + 14);
+                          maximumBookingTime.setHours(23, 59, 59, 999); // End of 14th day
+                          
                           const isToday = isSameDay(cell.date, now);
                           const isWithinLeadTime = cell.date.getTime() < minimumBookingTime.getTime();
                           const isBeyond14Days = cell.date.getTime() > maximumBookingTime.getTime();

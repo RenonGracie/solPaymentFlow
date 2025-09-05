@@ -596,30 +596,9 @@ export default function OnboardingFlow({
 
     const preloadCriticalAssets = async () => {
       try {
-        // 1) Preload fonts first (most critical for visual consistency)
-        const fontPreloads = [
-          'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-        ];
-
-        const fontPromises = fontPreloads.map((href) => {
-          return new Promise<void>((resolve) => {
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'style';
-            link.href = href;
-            link.onload = () => resolve();
-            link.onerror = () => resolve(); // Continue even if font fails
-            document.head.appendChild(link);
-            preloadedAssets.push(link);
-            
-            // Also add the actual stylesheet
-            const styleLink = document.createElement('link');
-            styleLink.rel = 'stylesheet';
-            styleLink.href = href;
-            document.head.appendChild(styleLink);
-            preloadedAssets.push(styleLink);
-          });
-        });
+        // 1) Fonts are already loaded in globals.css - skip duplicate loading
+        // This prevents font loading race conditions that can affect SVG rendering
+        const fontPromises: Promise<void>[] = [];
 
         // 2) Preload critical images
         const imageAssets = [
@@ -756,6 +735,17 @@ export default function OnboardingFlow({
               src="/sol-health-logo.svg"
               alt="Sol Health"
               className="h-8 w-auto mx-auto mb-4 opacity-80"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.textContent = 'Sol Health';
+                fallback.className = 'text-gray-800 mx-auto mb-4 opacity-80';
+                fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                fallback.style.fontSize = '1.5rem';
+                fallback.style.textAlign = 'center';
+                target.parentNode?.insertBefore(fallback, target);
+              }}
             />
             <div className="flex items-center space-x-2">
               <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
@@ -1016,6 +1006,16 @@ export default function OnboardingFlow({
               src="/sol-health-logo.svg"
               alt="Sol Health"
               className="h-5 w-auto"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.textContent = 'Sol Health';
+                fallback.className = 'text-gray-800';
+                fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                fallback.style.fontSize = '1rem';
+                target.parentNode?.insertBefore(fallback, target);
+              }}
             />
           </div>
           <div className="w-10"></div>
@@ -1132,7 +1132,21 @@ export default function OnboardingFlow({
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
           <div className="flex items-center">
-            <img src="/sol-health-logo.svg" alt="Sol Health" className="h-5 w-auto" />
+            <img 
+              src="/sol-health-logo.svg" 
+              alt="Sol Health" 
+              className="h-5 w-auto" 
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.textContent = 'Sol Health';
+                fallback.className = 'text-gray-800';
+                fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                fallback.style.fontSize = '1rem';
+                target.parentNode?.insertBefore(fallback, target);
+              }}
+            />
           </div>
           <div className="w-10"></div>
         </div>
@@ -1221,6 +1235,16 @@ export default function OnboardingFlow({
               src="/sol-health-logo.svg"
               alt="Sol Health"
               className="h-5 w-auto"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.textContent = 'Sol Health';
+                fallback.className = 'text-gray-800';
+                fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                fallback.style.fontSize = '1rem';
+                target.parentNode?.insertBefore(fallback, target);
+              }}
             />
           </div>
           <div className="w-10"></div>
@@ -1321,6 +1345,16 @@ export default function OnboardingFlow({
               src="/sol-health-logo.svg"
               alt="Sol Health"
               className="h-5 w-auto"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.textContent = 'Sol Health';
+                fallback.className = 'text-gray-800';
+                fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                fallback.style.fontSize = '1rem';
+                target.parentNode?.insertBefore(fallback, target);
+              }}
             />
           </div>
           <div className="w-10"></div>
@@ -1542,6 +1576,16 @@ export default function OnboardingFlow({
               src="/sol-health-logo.svg"
               alt="Sol Health"
               className="h-5 w-auto"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.textContent = 'Sol Health';
+                fallback.className = 'text-gray-800';
+                fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                fallback.style.fontSize = '1rem';
+                target.parentNode?.insertBefore(fallback, target);
+              }}
             />
           </div>
           <div className="w-10"></div>
@@ -1809,6 +1853,16 @@ export default function OnboardingFlow({
               src="/sol-health-logo.svg"
               alt="Sol Health"
               className="h-5 w-auto"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.textContent = 'Sol Health';
+                fallback.className = 'text-gray-800';
+                fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                fallback.style.fontSize = '1rem';
+                target.parentNode?.insertBefore(fallback, target);
+              }}
             />
           </div>
           <div className="w-10"></div>
