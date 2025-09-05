@@ -297,6 +297,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
   // Get therapist category from selected therapist data
   const getTherapistCategory = () => {
     const program = currentUserData?.selected_therapist?.program?.trim();
+    console.log('🏷️ [Booking Confirmation] Program value:', program);
     if (program === 'Limited Permit') return 'Associate Therapist';
     return 'Graduate Therapist'; // Default for MHC, MSW, MFT, or unknown
   };
@@ -441,7 +442,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gray-500" />
                 <p className="font-medium text-gray-800 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                  {timeStr} - {new Date(new Date(bookingData.StartDateIso).getTime() + 45*60000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} {timezone}
+                  {timeStr} - {new Date(new Date(bookingData.StartDateIso).getTime() + getSessionDuration()*60000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} {timezone}
                 </p>
               </div>
             </div>
