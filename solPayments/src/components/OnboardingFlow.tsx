@@ -1049,19 +1049,19 @@ export default function OnboardingFlow({
           <div className="w-10"></div>
         </div>
 
-        {/* Content - truly centered with only preferred name */}
-        <div className="flex-1 flex items-center justify-center px-6">
-          <div className="flow-narrow w-full mx-auto">
-            <div className="text-center space-y-4 mb-8">
-              <span className="text-4xl sm:text-5xl block">👋</span>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" 
+        {/* Content - compact centered layout */}
+        <div className="flex-1 flex items-center justify-center px-6 py-4">
+          <div className="flow-narrow w-full mx-auto max-w-sm">
+            <div className="text-center space-y-3 mb-6">
+              <span className="text-3xl sm:text-4xl block">👋</span>
+              <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What can we call you?
               </h1>
             </div>
 
             {/* Single Preferred Name Input */}
-            <div className="space-y-6">
+            <div className="space-y-5">
               <input
                 ref={nameInputRef}
                 type="text"
@@ -1081,7 +1081,7 @@ export default function OnboardingFlow({
               <Button
                 onClick={handleContinue}
                 disabled={!formData.preferredName.trim()}
-                className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors duration-200 ${
+                className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 ${
                   formData.preferredName.trim() 
                     ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -1178,10 +1178,10 @@ export default function OnboardingFlow({
           <div className="w-10"></div>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center px-4 md:px-6 py-8">
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-4">
           <div className="w-full max-w-md mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+            <div className="text-center mb-5">
+              <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What brings you here today?
               </h1>
             </div>
@@ -1278,18 +1278,18 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content - Email Input */}
-        <div className="flex-1 flex flex-col justify-center px-6 py-8">
-          <div className="flow-narrow w-full mx-auto space-y-8">
-            <div className="text-center space-y-4">
-              <span className="text-4xl sm:text-5xl block">📧</span>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800" 
+        <div className="flex-1 flex items-center justify-center px-6 py-4">
+          <div className="flow-narrow w-full mx-auto max-w-sm space-y-6">
+            <div className="text-center space-y-3">
+              <span className="text-3xl sm:text-4xl block">📧</span>
+              <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What's Your Email?
               </h1>
             </div>
 
             {/* Email Input */}
-            <div className="space-y-6">
+            <div className="space-y-5">
               <input
                 ref={emailInputRef}
                 type="email"
@@ -1309,7 +1309,7 @@ export default function OnboardingFlow({
               <Button
                 onClick={handleContinue}
                 disabled={!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)}
-                className={`w-full py-5 px-8 rounded-full text-lg font-medium transition-colors duration-200 ${
+                className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 ${
                   formData.email.trim() && /\S+@\S+\.\S+/.test(formData.email)
                     ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -1387,16 +1387,16 @@ export default function OnboardingFlow({
           <div className="w-10"></div>
         </div>
 
-        {/* Content - truly centered in remaining space */}
-        <div className="flex-1 flex flex-col justify-center px-4 md:px-6 py-8">
-          <div className="flow-narrow w-full mx-auto space-y-6">
-            <div className="text-center mb-6 md:mb-8">
-              <span className="text-3xl md:text-5xl mb-3 md:mb-4 block">🎉</span>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl mb-3 md:mb-4 text-gray-800" 
+        {/* Content - compact centered layout */}
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-4">
+          <div className="w-full max-w-md mx-auto space-y-5">
+            <div className="text-center mb-5">
+              <span className="text-3xl mb-3 block">🎉</span>
+              <h1 className="text-xl sm:text-2xl md:text-3xl mb-2 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 Welcome {displayName}
               </h1>
-              <p className="text-gray-600 text-sm md:text-base px-2" style={{ fontFamily: 'var(--font-inter)' }}>
+              <p className="text-gray-600 text-sm px-2" style={{ fontFamily: 'var(--font-inter)' }}>
                 Learn about our accessible offerings and choose what's most relevant for you.
               </p>
             </div>
@@ -1619,10 +1619,10 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col justify-center px-4 md:px-6 py-8">
-          <div className="flow-narrow w-full mx-auto">
-            <div className="text-center mb-6">
-              <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 text-gray-800" 
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-4">
+          <div className="w-full max-w-md mx-auto">
+            <div className="text-center mb-5">
+              <h1 className="text-lg sm:text-xl md:text-2xl mb-2 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What State Are You In?
               </h1>
@@ -1896,10 +1896,10 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center px-4 md:px-6">
-          <div className="flow-narrow w-full mx-auto">
-            <div className="text-center mb-6">
-              <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 text-gray-800" 
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-4">
+          <div className="w-full max-w-md mx-auto">
+            <div className="text-center mb-5">
+              <h1 className="text-lg sm:text-xl md:text-2xl mb-2 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 Is Your Health Plan From New Jersey?
               </h1>
@@ -2059,10 +2059,10 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col justify-center px-6 py-8">
-          <div className="flow-narrow w-full mx-auto space-y-6">
-            <div className="text-center mb-8 flow-narrow mx-auto">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 text-gray-800" 
+        <div className="flex-1 px-6 py-4 overflow-y-auto">
+          <div className="w-full max-w-md mx-auto space-y-5">
+            <div className="text-center mb-5">
+              <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 Great, We're In Network!
               </h1>
@@ -2073,7 +2073,7 @@ export default function OnboardingFlow({
 
             {/* Form - Only show when in form or verifying state */}
             {(verificationStep === 'form' || verificationStep === 'verifying') && (
-              <div className="space-y-6 mb-8 flow-narrow mx-auto">
+              <div className="space-y-4 mb-6">
                 {/* Insurance Provider */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -2083,7 +2083,7 @@ export default function OnboardingFlow({
                     value={selectedProvider}
                     onChange={(e) => setSelectedProvider(e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-base sm:text-lg"
+                    className="w-full p-2.5 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-sm sm:text-base"
                     style={{ fontFamily: 'var(--font-inter)' }}
                   >
                     <option value="" className="text-gray-400 text-center">Select provider</option>
@@ -2107,7 +2107,7 @@ export default function OnboardingFlow({
                       value={formData.firstName}
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
                       disabled={verificationStep === 'verifying'}
-                      className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-base sm:text-lg"
+                      className="w-full p-2.5 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-sm sm:text-base"
                       style={{ fontFamily: 'var(--font-inter)' }}
                       placeholder="John"
                     />
@@ -2123,7 +2123,7 @@ export default function OnboardingFlow({
                       value={formData.lastName}
                       onChange={(e) => handleInputChange('lastName', e.target.value)}
                       disabled={verificationStep === 'verifying'}
-                      className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-base sm:text-lg"
+                      className="w-full p-2.5 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-sm sm:text-base"
                       style={{ fontFamily: 'var(--font-inter)' }}
                       placeholder="Last Name"
                     />
@@ -2140,7 +2140,7 @@ export default function OnboardingFlow({
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                     disabled={verificationStep === 'verifying'}
-                    className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-base sm:text-lg"
+                    className="w-full p-2.5 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-gray-700 text-center disabled:opacity-50 shadow-[1px_1px_0_#5C3106] text-sm sm:text-base"
                     style={{ fontFamily: 'var(--font-inter)' }}
                     placeholder={new Date().toISOString().split('T')[0]}
                   />
@@ -2204,7 +2204,7 @@ export default function OnboardingFlow({
               <Button
                 onClick={handleInsuranceVerification}
                 disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId}
-                className={`flow-narrow mx-auto w-full py-5 px-8 rounded-full text-lg font-medium transition-colors ${
+                className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors ${
                   selectedProvider && formData.firstName && formData.lastName && formData.dateOfBirth && formData.memberId
                     ? 'bg-amber-700 text-white hover:bg-amber-800' 
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -2212,7 +2212,7 @@ export default function OnboardingFlow({
                 style={{ fontFamily: 'var(--font-inter)' }}
               >
                 Verify Insurance
-                <ChevronRight className="inline w-5 h-5 ml-2" />
+                <ChevronRight className="inline w-4 h-4 ml-2" />
               </Button>
             )}
 
@@ -2265,11 +2265,11 @@ export default function OnboardingFlow({
                 
                 <Button
                   onClick={handleInsuranceComplete}
-                  className="w-full py-5 px-8 rounded-full text-lg font-medium bg-green-600 text-white hover:bg-green-700 transition-colors"
+                  className="w-full py-3 px-6 rounded-full text-base font-medium bg-green-600 text-white hover:bg-green-700 transition-colors"
                   style={{ fontFamily: 'var(--font-inter)' }}
                 >
                   Continue to Questionnaire
-                  <ChevronRight className="inline w-5 h-5 ml-2" />
+                  <ChevronRight className="inline w-4 h-4 ml-2" />
                 </Button>
               </div>
             )}
