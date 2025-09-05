@@ -834,7 +834,7 @@ export default function OnboardingFlow({
           <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
             <Button
               onClick={handleContinue}
-              className={`py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-lg font-medium hover:bg-white/10 transition-colors min-w-[200px] max-w-[300px] ${
+              className={`py-3 px-6 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-base font-medium hover:bg-white/10 transition-colors min-w-[180px] max-w-[280px] ${
                 !initialVideoReady ? 'opacity-50' : 'opacity-100'
               }`}
               style={{ fontFamily: 'var(--font-inter)' }}
@@ -858,7 +858,7 @@ export default function OnboardingFlow({
     // iPad/Tablet portrait - show only 16x9 video, auto-advance
     if (screenType === 'tablet') {
       return (
-        <div className="relative bg-black w-full overflow-hidden" style={{ minHeight: '100%' }}>
+        <div className="relative bg-black w-full h-[100vh] overflow-hidden">
           <video
             className="absolute inset-0 w-full h-full object-contain bg-black"
             autoPlay
@@ -880,10 +880,10 @@ export default function OnboardingFlow({
           </video>
 
           {/* Bottom Continue button */}
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
+          <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-6 flex justify-center">
             <Button
               onClick={handleContinue}
-              className={`py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-lg font-medium hover:bg-white/10 transition-colors min-w-[200px] max-w-[300px] ${
+              className={`py-3 px-6 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-base font-medium hover:bg-white/10 transition-colors min-w-[180px] max-w-[280px] ${
                 !initialVideoReady ? 'opacity-50' : 'opacity-100'
               }`}
               style={{ fontFamily: 'var(--font-inter)' }}
@@ -907,7 +907,7 @@ export default function OnboardingFlow({
     // Desktop landscape (narrow) - full-screen 16x9 video, auto-advance
     if (isWideScreen === false && screenType === 'desktop') {
       return (
-        <div className="relative bg-black w-full overflow-hidden" style={{ minHeight: '100%' }}>
+        <div className="relative bg-black w-full h-[100vh] overflow-hidden">
           <video 
             className="absolute inset-0 w-full h-full object-contain bg-black"
             autoPlay 
@@ -928,10 +928,10 @@ export default function OnboardingFlow({
             Your browser does not support the video tag.
           </video>
 
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-8 flex justify-center">
+          <div className="absolute bottom-0 left-0 right-0 z-20 px-6 pb-6 flex justify-center">
             <Button
               onClick={handleContinue}
-              className={`py-5 px-8 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-lg font-medium hover:bg-white/10 transition-colors min-w-[200px] max-w-[300px] ${
+              className={`py-3 px-6 bg-transparent border-2 border-gray-300 rounded-2xl text-white text-base font-medium hover:bg-white/10 transition-colors min-w-[180px] max-w-[280px] ${
                 !initialVideoReady ? 'opacity-50' : 'opacity-100'
               }`}
               style={{ fontFamily: 'var(--font-inter)' }}

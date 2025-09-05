@@ -1044,7 +1044,7 @@ export default function MainPageComponent() {
       });
 
       // Store the client response directly in our backend
-      const response = await axiosInstance.post('/clients_signup', completeClientData);
+      await axiosInstance.post('/clients_signup', completeClientData);
       // Client data stored successfully
 
       // Both insurance and cash_pay flows use the SAME therapist-matching API call
