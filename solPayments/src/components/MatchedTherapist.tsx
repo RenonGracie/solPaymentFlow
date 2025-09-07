@@ -1663,6 +1663,10 @@ export default function MatchedTherapist({
                     
                     <div className="w-full mt-4">
                       <h2 className="very-vogue-title text-xl sm:text-2xl text-gray-800">{therapist.intern_name}</h2>
+                      {/* Therapist category */}
+                      <p className="text-sm text-gray-600 mt-1 mb-3" style={{ fontFamily: 'var(--font-inter)' }}>
+                        {getTherapistCategory(therapist)}
+                      </p>
                       {/* Matched specialties */}
                       <div className="flex flex-wrap gap-2 mt-3">
                         {matchedSpecialties.slice(0, 3).map((specialty, i) => (
@@ -2102,7 +2106,6 @@ export default function MatchedTherapist({
                       </div>
                     )}
                     <p className="font-medium text-xs" style={{ fontFamily: 'var(--font-inter)' }}>{therapistData.therapist.intern_name}</p>
-                    <p className="text-xs text-gray-500" style={{ fontFamily: 'var(--font-inter)' }}>{therapistData.therapist.program}</p>
                   </button>
                 ))}
               </div>
