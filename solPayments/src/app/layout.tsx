@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Sol Health Payments",
+  title: "Sol Health Onboarding",
   description: "Payments for Sol Health",
 };
  
