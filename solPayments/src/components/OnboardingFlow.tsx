@@ -2319,6 +2319,7 @@ export default function OnboardingFlow({
 
             {verificationStep === 'success' && (
               <div className="space-y-4">
+ 
                 <div className="text-center py-4">
                   <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
                     <Check className="w-6 h-6 text-green-600" />
