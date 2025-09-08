@@ -39,6 +39,7 @@ export default function RootLayout({
         {/* Preload critical assets */}
         <link rel="preload" href="/sol-health-logo.svg" as="image" />
         <link rel="preload" href="/onboarding-banner.jpg" as="image" />
+        <link rel="icon" href="/Favicon.png" />
         
         {videoCdn && (
           <>

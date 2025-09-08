@@ -3,7 +3,7 @@
 import { useCallback, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Calendar, Clock, Play, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Play } from "lucide-react";
 import Image from "next/image";
 import CustomSurvey from "@/components/CustomSurvey";
 import OnboardingFlow from "@/components/OnboardingFlow";
@@ -20,6 +20,13 @@ import IntakeQService from "@/api/services/intakeqService";
 import { sendMandatoryForm } from "@/app/api/intakeq";
 import { STEPS } from "@/constants";
 import { createTherapistPreloader } from "@/utils/therapistPreloader";
+import { 
+  buildSuperJson, 
+  updateSuperJsonWithTherapistMatch, 
+  updateSuperJsonWithSelectedTherapist, 
+  updateSuperJsonWithAppointmentConfirmation, 
+  type SuperJsonData 
+} from "@/utils/superJsonBuilder";
 
 // Meta pixel type declaration
 declare global {
@@ -739,6 +746,9 @@ export default function MainPageComponent() {
   // Comprehensive user data state
   const [currentUserData, setCurrentUserData] = useState<ComprehensiveUserData | null>(null);
   
+  // SuperJson state for comprehensive data management
+  const [superJsonData, setSuperJsonData] = useState<SuperJsonData | null>(null);
+  
   // Track whether user is changing preferences vs starting fresh
   const [isChangingPreferences, setIsChangingPreferences] = useState(false);
   
@@ -819,6 +829,22 @@ export default function MainPageComponent() {
   //   setCurrentStep(STEPS.TYPEFORM);
   // };
 
+  // Function to send SuperJson updates to backend for Google Sheets logging
+  const sendSuperJsonToBackend = useCallback(async (superJson: SuperJsonData, stage: string) => {
+    try {
+      console.log(`🔄 Sending SuperJson to backend for stage: ${stage}`);
+      await axiosInstance.post('/clients_signup/update_journey', {
+        response_id: superJson.response_id,
+        stage,
+        super_json_data: superJson
+      });
+      console.log(`✅ SuperJson sent to backend successfully for stage: ${stage}`);
+    } catch (error) {
+      console.error(`❌ Failed to send SuperJson to backend for stage ${stage}:`, error);
+      // Don't throw - we don't want to break the user flow if logging fails
+    }
+  }, []);
+
   // Updated to handle custom survey submission
   const handleSurveySubmit = useCallback(async (surveyData: SurveyData) => {
     console.log('🎯 Survey submitted with data:', surveyData);
@@ -833,161 +859,94 @@ export default function MainPageComponent() {
       const responseId = `response_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
       setClientResponseId(responseId);
 
-      // Calculate assessment scores
-      const calculatePHQ9Score = (scores: Record<string, string>): number => {
-        const scoreMap = { "Not at all": 0, "Several days": 1, "More than half the days": 2, "Nearly every day": 3 };
-        return Object.values(scores).reduce((total, answer) => total + (scoreMap[answer as keyof typeof scoreMap] || 0), 0);
-      };
+      // Build comprehensive SuperJson data payload  
+      const superJson = buildSuperJson(
+        responseId,
+        {
+          ...surveyData,
+          date_of_birth: '',
+          terms_accepted: true
+        } as any,
+        selectedPaymentType || 'cash_pay',
+        onboardingData || undefined,
+        formData || undefined,
+        new Date().toISOString()
+      );
 
-      const calculateGAD7Score = (scores: Record<string, string>): number => {
-        const scoreMap = { "Not at all": 0, "Several days": 1, "More than half the days": 2, "Nearly every day": 3 };
-        return Object.values(scores).reduce((total, answer) => total + (scoreMap[answer as keyof typeof scoreMap] || 0), 0);
-      };
+      // Store SuperJson in state
+      setSuperJsonData(superJson);
 
-      // Calculate date of birth from age
-      const calculateDateOfBirthFromAge = (age: string | number): string => {
-        if (!age) return "";
-        const ageNum = typeof age === 'string' ? parseInt(age) : age;
-        if (isNaN(ageNum) || ageNum < 0 || ageNum > 150) return "";
-        
-        const currentDate = new Date();
-        const birthYear = currentDate.getFullYear() - ageNum;
-        // Use January 1st as default since we only have age, not exact birth date
-        const birthDate = new Date(birthYear, 0, 1); // January 1st of birth year
-        return birthDate.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
-      };
+      console.log('🏗️ SuperJson built with comprehensive data:', {
+        total_fields: Object.keys(superJson).length,
+        phq9_score: superJson.phq9_total_score,
+        gad7_score: superJson.gad7_total_score,
+        has_insurance_data: !!superJson.insurance_verification_data,
+        completeness_score: superJson.data_completeness_score
+      });
 
-      // Helper function to properly format names for backend
-      const formatNameForBackend = (name: string): string => {
-        if (!name || typeof name !== 'string') return '';
-        return name.trim()
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join(' ');
-      };
-
-      // Build comprehensive user data with ALL collected information
+      // Build comprehensive user data from SuperJson for backward compatibility
       const comprehensiveUserData: ComprehensiveUserData = {
-        // Core identity
-        id: `client_${responseId}`,
-        response_id: responseId,
-        first_name: formatNameForBackend(surveyData.first_name || formData?.firstName || onboardingData?.firstName || ""),
-        last_name: formatNameForBackend(surveyData.last_name || formData?.lastName || onboardingData?.lastName || ""),
-        preferred_name: formatNameForBackend(surveyData.preferred_name || formData?.preferredName || onboardingData?.preferredName || ""),
-        email: surveyData.email,
-        phone: surveyData.phone,
+        // Core identity from SuperJson
+        id: superJson.response_id,
+        response_id: superJson.response_id,
+        first_name: superJson.first_name,
+        last_name: superJson.last_name,
+        preferred_name: superJson.preferred_name,
+        email: superJson.email,
+        phone: superJson.phone,
         
-        // Assessment scores with detailed breakdown
-        phq9_scores: {
-          pleasure_doing_things: surveyData.pleasure_doing_things,
-          feeling_down: surveyData.feeling_down,
-          trouble_falling: surveyData.trouble_falling,
-          feeling_tired: surveyData.feeling_tired,
-          poor_appetite: surveyData.poor_appetite,
-          feeling_bad_about_yourself: surveyData.feeling_bad_about_yourself,
-          trouble_concentrating: surveyData.trouble_concentrating,
-          moving_or_speaking_so_slowly: surveyData.moving_or_speaking_so_slowly,
-          suicidal_thoughts: surveyData.suicidal_thoughts
-        },
-        gad7_scores: {
-          feeling_nervous: surveyData.feeling_nervous,
-          not_control_worrying: surveyData.not_control_worrying,
-          worrying_too_much: surveyData.worrying_too_much,
-          trouble_relaxing: surveyData.trouble_relaxing,
-          being_so_restless: surveyData.being_so_restless,
-          easily_annoyed: surveyData.easily_annoyed,
-          feeling_afraid: surveyData.feeling_afraid
-        },
+        // Assessment scores from SuperJson
+        phq9_scores: superJson.phq9_responses,
+        phq9_total: superJson.phq9_total_score,
+        gad7_scores: superJson.gad7_responses,
+        gad7_total: superJson.gad7_total_score,
         
-        // Calculate assessment totals
-        phq9_total: calculatePHQ9Score({
-          pleasure_doing_things: surveyData.pleasure_doing_things,
-          feeling_down: surveyData.feeling_down,
-          trouble_falling: surveyData.trouble_falling,
-          feeling_tired: surveyData.feeling_tired,
-          poor_appetite: surveyData.poor_appetite,
-          feeling_bad_about_yourself: surveyData.feeling_bad_about_yourself,
-          trouble_concentrating: surveyData.trouble_concentrating,
-          moving_or_speaking_so_slowly: surveyData.moving_or_speaking_so_slowly,
-          suicidal_thoughts: surveyData.suicidal_thoughts
-        }),
-        gad7_total: calculateGAD7Score({
-          feeling_nervous: surveyData.feeling_nervous,
-          not_control_worrying: surveyData.not_control_worrying,
-          worrying_too_much: surveyData.worrying_too_much,
-          trouble_relaxing: surveyData.trouble_relaxing,
-          being_so_restless: surveyData.being_so_restless,
-          easily_annoyed: surveyData.easily_annoyed,
-          feeling_afraid: surveyData.feeling_afraid
-        }),
+        // Demographics from SuperJson
+        age: superJson.age,
+        date_of_birth: superJson.date_of_birth,
+        gender: superJson.gender,
+        state: superJson.state,
+        race_ethnicity: superJson.race_ethnicity,
+        lived_experiences: superJson.lived_experiences,
+        university: superJson.university,
         
-        // Complete demographics
-        age: surveyData.age,
-        date_of_birth: (() => {
-          // Prefer insurance DOB if available, otherwise calculate from age
-          if (selectedPaymentType === 'insurance' && formData?.dateOfBirth) {
-            console.log('📅 Using insurance verification DOB:', formData.dateOfBirth);
-            return formData.dateOfBirth; // This is from insurance verification
+        // Therapy context from SuperJson
+        what_brings_you: superJson.what_brings_you,
+        therapist_gender_preference: superJson.therapist_identifies_as,
+        therapist_specialization: superJson.therapist_specializes_in,
+        therapist_lived_experiences: superJson.lived_experiences,
+        
+        // Substance screening from SuperJson
+        alcohol_frequency: superJson.alcohol_frequency,
+        recreational_drugs_frequency: superJson.recreational_drugs_frequency,
+        
+        // Safety and matching from SuperJson
+        safety_screening: superJson.safety_screening,
+        matching_preference: superJson.matching_preference,
+        
+        // Payment info from SuperJson
+        payment_type: superJson.payment_type,
+        
+        // Insurance data from SuperJson (if applicable)
+        ...(superJson.payment_type === 'insurance' && superJson.nirvana_raw_response && {
+          insurance_data: {
+            provider: superJson.insurance_provider,
+            member_id: superJson.insurance_member_id,
+            date_of_birth: superJson.insurance_date_of_birth,
+            verification_response: superJson.nirvana_raw_response,
+            benefits: superJson.nirvana_benefits
           }
-          const calculatedDOB = calculateDateOfBirthFromAge(surveyData.age);
-          console.log('📅 Calculated DOB from age:', { age: surveyData.age, calculated_dob: calculatedDOB });
-          return calculatedDOB;
-        })(),
-        gender: surveyData.gender,
-        state: surveyData.state,
-        race_ethnicity: surveyData.race_ethnicity,
-        lived_experiences: surveyData.lived_experiences,
-        university: surveyData.university,
+        }),
         
-        // Therapy context
-        what_brings_you: onboardingData?.whatBringsYou,
-        therapist_gender_preference: surveyData.therapist_gender_preference,
-        therapist_specialization: surveyData.therapist_specialization,
-        therapist_lived_experiences: surveyData.therapist_lived_experiences,
-        
-        // Substance screening
-        alcohol_frequency: surveyData.alcohol_frequency,
-        recreational_drugs_frequency: surveyData.recreational_drugs_frequency,
-        
-        // Safety and matching
-        safety_screening: surveyData.safety_screening,
-        matching_preference: surveyData.matching_preference,
-        
-        // Payment info
-        payment_type: selectedPaymentType || undefined,
-        
-        // Insurance data (if applicable)
-        ...(selectedPaymentType === 'insurance' && formData && (() => {
-          console.log('💳 Insurance Data Processing:', {
-            provider: formData.provider,
-            member_id: formData.memberId,
-            has_verification_data: !!formData.verificationData,
-            has_benefits: !!formData.verificationData?.benefits,
-            member_obligation: formData.verificationData?.benefits?.memberObligation,
-            verification_data_keys: formData.verificationData ? Object.keys(formData.verificationData) : [],
-            benefits_keys: formData.verificationData?.benefits ? Object.keys(formData.verificationData.benefits) : []
-          });
-          
-          return {
-            insurance_data: {
-              provider: formData.provider,
-              member_id: formData.memberId,
-              date_of_birth: formData.dateOfBirth,
-              verification_response: formData.verificationData,
-              benefits: formData.verificationData?.benefits
-            }
-          };
-        })()),
-        
-        // Tracking
+        // Tracking from SuperJson
         utm: {
-          utm_source: 'sol_payments',
-          utm_medium: 'direct',
-          utm_campaign: 'onboarding'
+          utm_source: superJson.utm_source || 'sol_payments',
+          utm_medium: superJson.utm_medium || 'direct',
+          utm_campaign: superJson.utm_campaign || 'onboarding'
         },
-        referred_by: Array.isArray(surveyData.referred_by) ? surveyData.referred_by : (surveyData.referred_by ? [surveyData.referred_by] : undefined),
-        onboarding_completed_at: new Date().toISOString(),
-        survey_completed_at: new Date().toISOString(),
+        referred_by: superJson.referred_by ? [superJson.referred_by] : undefined,
+        onboarding_completed_at: superJson.journey_milestones?.onboarding_completed_at,
+        survey_completed_at: superJson.survey_completed_at,
         last_updated: new Date().toISOString()
       };
 
@@ -1007,45 +966,28 @@ export default function MainPageComponent() {
         total_fields: Object.keys(comprehensiveUserData).length
       });
 
-      // Add payment type to survey data WITHOUT overwriting state
+      // Use SuperJson as the complete client data payload
       const completeClientData = {
-        ...surveyData,
+        ...superJson,
+        // Ensure backend compatibility
         id: `client_${responseId}`,
-        response_id: responseId,
-        payment_type: selectedPaymentType,
-        
-        // Ensure onboarding data is preserved with proper formatting
-        preferred_name: formatNameForBackend(surveyData.preferred_name || formData?.preferredName || onboardingData?.preferredName || ""),
-        first_name: formatNameForBackend(surveyData.first_name || formData?.firstName || onboardingData?.firstName || ""),
-        last_name: formatNameForBackend(surveyData.last_name || formData?.lastName || onboardingData?.lastName || ""),
-        
-        // Add insurance information if available
-        ...(selectedPaymentType === 'insurance' && formData && {
-          insurance_provider: formData.provider,
-          insurance_member_id: formData.memberId,
-          insurance_date_of_birth: formData.dateOfBirth,
-          insurance_verification_data: formData.verificationData ? JSON.stringify(formData.verificationData) : null,
-        }),
-        
-        // REMOVED: state: 'completed' - keep the actual US state from survey
-        utm: {
-          utm_source: 'sol_payments',
-          utm_medium: 'direct',
-          utm_campaign: 'onboarding'
-        }
+        // SuperJson already contains all the comprehensive data we need
       };
 
       console.log('📦 Complete client data being sent:', completeClientData);
       // Payment type in client data
       console.log('🎯 SPECIFIC THERAPIST DEBUG:', {
         matching_preference: completeClientData.matching_preference,
-        selected_therapist: completeClientData.selected_therapist,
+        selected_therapist: completeClientData.selected_therapist_data,
         selected_therapist_email: 'selected_therapist_email' in completeClientData ? completeClientData.selected_therapist_email : undefined
       });
 
       // Store the client response directly in our backend
       await axiosInstance.post('/clients_signup', completeClientData);
       // Client data stored successfully
+
+      // Send initial SuperJson to backend for Google Sheets logging
+      await sendSuperJsonToBackend(superJson, 'survey_completed');
 
       // Both insurance and cash_pay flows use the SAME therapist-matching API call
       await pollFormAndRequestMatch(responseId);
@@ -1059,7 +1001,7 @@ export default function MainPageComponent() {
     } finally {
       setIsProcessingResponse(false);
     }
-  }, [selectedPaymentType, pollFormAndRequestMatch, formData, onboardingData]);
+  }, [selectedPaymentType, pollFormAndRequestMatch, formData, onboardingData, sendSuperJsonToBackend]);
 
   const handleBackFromSurvey = () => {
     setCurrentStep(null);
@@ -1622,6 +1564,16 @@ export default function MainPageComponent() {
   useEffect(() => {
     if (matchData?.therapists) {
       if (matchData.therapists.length > 0) {
+        // Update SuperJson with therapist matching results
+        if (superJsonData) {
+          const updatedSuperJson = updateSuperJsonWithTherapistMatch(superJsonData, matchData);
+          setSuperJsonData(updatedSuperJson);
+          console.log('🔄 SuperJson updated with therapist matching results');
+          
+          // Send update to backend for Google Sheets logging
+          sendSuperJsonToBackend(updatedSuperJson, 'therapist_matched');
+        }
+
         // Create preloader for therapist data
         const preloader = createTherapistPreloader(
           matchData.therapists,
@@ -1642,7 +1594,7 @@ export default function MainPageComponent() {
         preloaderCreated: matchData.therapists.length > 0
       });
     }
-  }, [matchData?.therapists, selectedPaymentType, currentUserData?.state]);
+  }, [matchData, selectedPaymentType, currentUserData?.state, superJsonData, sendSuperJsonToBackend]);
 
   // If showing onboarding flow
   if (showOnboarding) {
@@ -1871,6 +1823,20 @@ export default function MainPageComponent() {
                         });
                         
                         setCurrentUserData(enrichedData);
+
+                        // Update SuperJson with selected therapist
+                        if (superJsonData) {
+                          const cleanTherapist = {
+                            ...therapist,
+                            image_link: therapist.image_link || undefined
+                          };
+                          const updatedSuperJson = updateSuperJsonWithSelectedTherapist(superJsonData, cleanTherapist);
+                          setSuperJsonData(updatedSuperJson);
+                          console.log('🔄 SuperJson updated with selected therapist');
+                          
+                          // Send update to backend for Google Sheets logging
+                          await sendSuperJsonToBackend(updatedSuperJson, 'therapist_selected');
+                        }
                       }
                       
                       // Log the final API request data
@@ -1898,6 +1864,16 @@ export default function MainPageComponent() {
                       
                       console.log('✅ [MAIN COMPONENT] API RESPONSE FROM BACKEND:');
                       console.log('Response:', JSON.stringify(bookedSession, null, 2));
+
+                      // Update SuperJson with appointment confirmation
+                      if (superJsonData) {
+                        const updatedSuperJson = updateSuperJsonWithAppointmentConfirmation(superJsonData, bookedSession);
+                        setSuperJsonData(updatedSuperJson);
+                        console.log('🔄 SuperJson updated with appointment confirmation');
+                        
+                        // Send final update to backend for Google Sheets logging
+                        await sendSuperJsonToBackend(updatedSuperJson, 'appointment_confirmed');
+                      }
 
                       handleBookSession(bookedSession);
                     } catch (error) {

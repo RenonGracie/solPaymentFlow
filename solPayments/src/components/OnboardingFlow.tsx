@@ -162,10 +162,10 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
       case 'Fully covered after deductible':
         if (hasHitDeductible) {
           // Situation 1 (hit deductible)
-          additionalDetails = "Great news—you've already hit your deductible, so your sessions are **fully covered** by insurance. You won't owe anything.";
+          additionalDetails = "Great news—you've already hit your deductible, so your sessions are fully covered by insurance. You won't owe anything.";
         } else {
           // Situation 2 (haven't hit deductible)
-          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have **$${remainingDeductible.toFixed(0)}** to go. After that, your sessions will be **$0**.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your sessions will be $0.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
         }
         break;
         
@@ -214,7 +214,17 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
     switch (benefitStructure) {
       case 'Fully covered':
         showAdditionalPanel = true;
-        additionalDetails = "Great news—your sessions are **fully covered** by insurance. You won't owe anything.";
+        additionalDetails = "Great news—your sessions are fully covered by insurance. You won't owe anything.";
+        break;
+        
+      case 'Copay, no deductible, with OOP Max':
+      case 'Copay, no deductible, no OOP Max':
+      case 'Coinsurance, no deductible, with OOP Max':
+      case 'Coinsurance, no deductible, no OOP Max':
+      case 'Copay and coinsurance, no deductible, with OOP Max':
+        // These cases don't show additional coverage details according to PAYMENT_LOGIC.md
+        showAdditionalPanel = false;
+        additionalDetails = null;
         break;
         
       default:
