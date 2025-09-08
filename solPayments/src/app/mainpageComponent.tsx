@@ -1117,6 +1117,36 @@ export default function MainPageComponent() {
     setCurrentStep(STEPS.CONFIRMATION);
     setIsBookingInProgress(false); // Reset booking state
     
+    // Clear therapist preloader since booking is complete
+    setTherapistPreloader(null);
+    console.log('🧹 Cleared therapist preloader after booking - no longer needed');
+    
+    // Preload welcome video assets for the confirmation page
+    console.log('🎬 Preloading welcome video assets for confirmation page...');
+    const preloadWelcomeVideo = () => {
+      // Preload YouTube thumbnail
+      const videoId = 'q2dgtDe83uA';
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      
+      const img = typeof window !== 'undefined' ? new window.Image() : null;
+      if (img) {
+        img.onload = () => console.log('✅ Welcome video thumbnail preloaded');
+        img.onerror = () => console.warn('⚠️ Failed to preload welcome video thumbnail');
+        img.src = thumbnailUrl;
+      }
+      
+      // Preload Sol Health logo
+      const logo = typeof window !== 'undefined' ? new window.Image() : null;
+      if (logo) {
+        logo.onload = () => console.log('✅ Sol Health logo preloaded');
+        logo.onerror = () => console.warn('⚠️ Failed to preload Sol Health logo');
+        logo.src = '/sol-health-logo.svg';
+      }
+    };
+    
+    // Run preload in background without blocking
+    setTimeout(preloadWelcomeVideo, 100);
+    
     // Enrich current user data with booking information
     if (currentUserData) {
       console.log('🔄 Enriching user data with booking information...');
@@ -1615,22 +1645,29 @@ export default function MainPageComponent() {
     if (matchData?.therapists) {
       if (matchData.therapists.length > 0) {
         // Update SuperJson with therapist matching results
-        if (superJsonData) {
-          const updatedSuperJson = updateSuperJsonWithTherapistMatch(superJsonData, matchData);
-          setSuperJsonData(updatedSuperJson);
-          console.log('🔄 SuperJson updated with therapist matching results');
-          
-          // Send update to backend for Google Sheets logging
-          sendSuperJsonToBackend(updatedSuperJson, 'therapist_matched');
-        }
+        setSuperJsonData(prevSuperJson => {
+          if (prevSuperJson && prevSuperJson.current_stage !== 'therapist_matched') {
+            const updatedSuperJson = updateSuperJsonWithTherapistMatch(prevSuperJson, matchData);
+            console.log('🔄 SuperJson updated with therapist matching results');
+            
+            // Send update to backend for Google Sheets logging
+            sendSuperJsonToBackend(updatedSuperJson, 'therapist_matched');
+            
+            return updatedSuperJson;
+          }
+          return prevSuperJson;
+        });
 
-        // Create preloader for therapist data
-        const preloader = createTherapistPreloader(
-          matchData.therapists,
-          currentUserData?.state,
-          selectedPaymentType || undefined
-        );
-        setTherapistPreloader(() => preloader);
+        // Create preloader for ONLY the first therapist (not all of them)
+        const firstTherapist = matchData.therapists[0];
+        if (firstTherapist) {
+          const preloader = createTherapistPreloader(
+            [firstTherapist], // Only preload the first therapist
+            currentUserData?.state,
+            selectedPaymentType || undefined
+          );
+          setTherapistPreloader(() => preloader);
+        }
         
         setCurrentStep(STEPS.MATCHED_THERAPIST);
       } else {
@@ -1644,7 +1681,7 @@ export default function MainPageComponent() {
         preloaderCreated: matchData.therapists.length > 0
       });
     }
-  }, [matchData, selectedPaymentType, currentUserData?.state, superJsonData, sendSuperJsonToBackend]);
+  }, [matchData, selectedPaymentType, currentUserData?.state, sendSuperJsonToBackend]);
 
   // If showing onboarding flow
   if (showOnboarding) {

@@ -78,7 +78,7 @@ export interface SurveyData {
     session_id: string;
     journey_started_at: string;
     survey_completed_at: string;
-    current_stage: 'survey_completed';
+    current_stage: 'survey_completed' | 'therapist_matched' | 'therapist_selected' | 'appointment_booked';
     
     // === DEMOGRAPHICS ===
     first_name: string;
