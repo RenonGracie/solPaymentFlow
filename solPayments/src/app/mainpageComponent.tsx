@@ -859,6 +859,56 @@ export default function MainPageComponent() {
       const responseId = `response_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
       setClientResponseId(responseId);
 
+      // ============== MAIN COMPONENT SUPERJSON BUILD ==============
+      console.log('🎯 ==========================================');
+      console.log('🎯 MAIN COMPONENT - SUPERJSON BUILD CALL');
+      console.log('🎯 ==========================================');
+      
+      console.log('📊 PRE-BUILD DATA ANALYSIS:', {
+        responseId,
+        hasSelectedPaymentType: !!selectedPaymentType,
+        selectedPaymentType: selectedPaymentType,
+        hasOnboardingData: !!onboardingData,
+        hasFormData: !!formData,
+        hasFormDataVerification: !!(formData?.verificationData),
+        surveyDataKeys: Object.keys(surveyData).length,
+        timestamp: new Date().toISOString()
+      });
+      
+      if (onboardingData) {
+        console.log('🎯 ONBOARDING DATA PASSED TO SUPERJSON:', {
+          firstName: onboardingData.firstName,
+          lastName: onboardingData.lastName,
+          email: onboardingData.email,
+          state: onboardingData.state,
+          provider: (onboardingData as any).provider,
+          memberId: (onboardingData as any).memberId,
+          dateOfBirth: (onboardingData as any).dateOfBirth,
+          paymentType: (onboardingData as any).paymentType
+        });
+      }
+      
+      if (formData) {
+        console.log('🎯 FORM DATA PASSED TO SUPERJSON:', {
+          provider: formData.provider,
+          memberId: formData.memberId,
+          dateOfBirth: formData.dateOfBirth,
+          hasVerificationData: !!formData.verificationData,
+          paymentType: formData.paymentType
+        });
+      }
+      
+      console.log('🎯 SURVEY DATA SAMPLE:', {
+        firstName: surveyData.first_name,
+        lastName: surveyData.last_name,
+        email: surveyData.email,
+        age: surveyData.age,
+        state: surveyData.state,
+        totalFields: Object.keys(surveyData).length
+      });
+      
+      console.log('🎯 ==========================================');
+
       // Build comprehensive SuperJson data payload  
       const superJson = buildSuperJson(
         responseId,

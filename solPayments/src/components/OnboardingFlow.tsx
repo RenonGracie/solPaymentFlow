@@ -550,8 +550,77 @@ export default function OnboardingFlow({
       }
     };
 
+    // ============== COMPREHENSIVE LOGGING FOR NIRVANA DATA FLOW ==============
+    console.log('🔍 ==========================================');
+    console.log('🔍 ONBOARDING FLOW - NIRVANA DATA ANALYSIS');
+    console.log('🔍 ==========================================');
+    
+    // 1. Form Data Analysis
+    console.log('📝 RAW FORM DATA:', {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      dateOfBirth: formData.dateOfBirth,
+      memberId: formData.memberId,
+      provider: formData.provider,
+      state: formData.state,
+      preferredName: formData.preferredName
+    });
+    
+    // 2. Provider Mapping Analysis
+    console.log('🏥 PROVIDER MAPPING:', {
+      selectedProvider,
+      payerId,
+      tradingPartnerServiceIdMap,
+      fullMappingTable: Object.entries(tradingPartnerServiceIdMap).map(([provider, id]) => ({
+        provider,
+        id
+      }))
+    });
+    
+    // 3. Date Formatting Analysis
+    console.log('📅 DATE FORMATTING:', {
+      originalDateOfBirth: formData.dateOfBirth,
+      formattedForNirvana: dobFormatted,
+      formatSteps: {
+        input: formData.dateOfBirth,
+        split: formData.dateOfBirth.split('-'),
+        joined: dobFormatted
+      }
+    });
+    
+    // 4. Session Cost Calculation
+    console.log('💰 SESSION COST CALCULATION:', {
+      selectedProvider,
+      payerId,
+      sessionCostDollars,
+      sessionCostCents,
+      calculationMethod: 'getSessionCostForPayer'
+    });
+    
+    // 5. Complete Nirvana Payload
+    console.log('🚀 COMPLETE PAYLOAD TO NIRVANA:', JSON.stringify(payload, null, 2));
+    
+    // 6. Field-by-field validation
+    console.log('✅ PAYLOAD VALIDATION:', {
+      hasControlNumber: !!payload.controlNumber,
+      hasTradingPartnerServiceId: !!payload.tradingPartnerServiceId,
+      hasProviderInfo: !!(payload.provider && payload.provider.npi && payload.provider.sessionCost),
+      hasSubscriberInfo: !!(payload.subscriber && payload.subscriber.firstName && payload.subscriber.lastName && payload.subscriber.dateOfBirth && payload.subscriber.memberId),
+      subscriberFieldsDetail: {
+        firstName: { value: payload.subscriber.firstName, type: typeof payload.subscriber.firstName, length: payload.subscriber.firstName?.length },
+        lastName: { value: payload.subscriber.lastName, type: typeof payload.subscriber.lastName, length: payload.subscriber.lastName?.length },
+        dateOfBirth: { value: payload.subscriber.dateOfBirth, type: typeof payload.subscriber.dateOfBirth, length: payload.subscriber.dateOfBirth?.length },
+        memberId: { value: payload.subscriber.memberId, type: typeof payload.subscriber.memberId, length: payload.subscriber.memberId?.length }
+      }
+    });
+    
+    console.log('🔍 ==========================================');
+
     try {
+      console.log('📡 CALLING checkEligibility API...');
       const responseData = await checkEligibility(payload);
+      console.log('✅ NIRVANA API RESPONSE RECEIVED:', JSON.stringify(responseData, null, 2));
       setVerificationResponse(responseData);
       setVerificationStep('success');
       
@@ -582,7 +651,17 @@ export default function OnboardingFlow({
         }));
       }
     } catch (error) {
-      console.error("Verification error:", error);
+      console.error('❌ ==========================================');
+      console.error('❌ NIRVANA API ERROR ANALYSIS');
+      console.error('❌ ==========================================');
+      console.error('📋 Error Details:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorType: typeof error,
+        errorStack: error instanceof Error ? error.stack : 'No stack trace'
+      });
+      console.error('📋 Payload that failed:', JSON.stringify(payload, null, 2));
+      console.error('❌ ==========================================');
       setVerificationStep('failed');
     } finally {
       setIsVerifying(false);

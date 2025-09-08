@@ -521,13 +521,61 @@ export interface SurveyData {
     surveyStartTime?: string
   ): SuperJsonData {
     
-    console.log('🏗️ Building SuperJson with:', {
+    console.log('🏗️ ==========================================');
+    console.log('🏗️ SUPERJSON BUILDER - DATA TRANSFORMATION');
+    console.log('🏗️ ==========================================');
+    
+    console.log('📥 INPUT DATA ANALYSIS:', {
       responseId,
       hasOnboardingData: !!onboardingData,
       hasFormData: !!formData,
       hasInsuranceVerification: !!(formData?.verificationData),
       paymentType: selectedPaymentType
     });
+    
+    console.log('🧮 SURVEY DATA STRUCTURE:', {
+      totalFields: Object.keys(surveyData).length,
+      hasPhq9Fields: !!(surveyData.pleasure_doing_things && surveyData.feeling_down),
+      hasGad7Fields: !!(surveyData.feeling_nervous && surveyData.not_control_worrying),
+      hasDemographics: !!(surveyData.first_name && surveyData.email && surveyData.age),
+      hasTherapistPreferences: !!(surveyData.therapist_gender_preference || surveyData.therapist_specialization),
+      surveyDataKeys: Object.keys(surveyData).sort()
+    });
+    
+    if (onboardingData) {
+      console.log('🎯 ONBOARDING DATA:', {
+        fields: Object.keys(onboardingData).filter(key => onboardingData[key as keyof OnboardingData]),
+        firstName: onboardingData.firstName,
+        lastName: onboardingData.lastName,
+        email: onboardingData.email,
+        state: onboardingData.state,
+        paymentType: onboardingData.paymentType,
+        provider: onboardingData.provider,
+        memberId: onboardingData.memberId
+      });
+    }
+    
+    if (formData) {
+      console.log('📋 FORM DATA (Insurance):', {
+        fields: Object.keys(formData).filter(key => formData[key as keyof FormData]),
+        provider: formData.provider,
+        memberId: formData.memberId,
+        dateOfBirth: formData.dateOfBirth,
+        hasVerificationData: !!formData.verificationData,
+        verificationDataKeys: formData.verificationData ? Object.keys(formData.verificationData) : []
+      });
+      
+      if (formData.verificationData) {
+        console.log('🏥 INSURANCE VERIFICATION DATA:', {
+          hasBenefits: !!formData.verificationData.benefits,
+          hasSubscriber: !!formData.verificationData.subscriber,
+          hasCoverage: !!formData.verificationData.coverage,
+          hasRawNirvanaResponse: !!formData.verificationData.rawNirvanaResponse,
+          hasRawFinancials: !!formData.verificationData.rawFinancials,
+          hasTelehealth: !!formData.verificationData.telehealth
+        });
+      }
+    }
     
     const now = new Date().toISOString();
     const utmParams = getUTMParameters();
@@ -666,14 +714,57 @@ export interface SurveyData {
     // Calculate completeness score
     superJson.data_completeness_score = calculateCompletenessScore(superJson);
     
-    console.log('✅ SuperJson built successfully:', {
+    console.log('🔍 FINAL SUPERJSON DATA PRIORITY CHECK:');
+    console.log('📋 Name Resolution (priority: survey > form > onboarding):', {
+      firstName: {
+        survey: surveyData.first_name,
+        form: formData?.firstName,
+        onboarding: onboardingData?.firstName,
+        final: superJson.first_name
+      },
+      lastName: {
+        survey: surveyData.last_name,
+        form: formData?.lastName,
+        onboarding: onboardingData?.lastName,
+        final: superJson.last_name
+      },
+      email: {
+        survey: surveyData.email,
+        form: formData?.email,
+        onboarding: onboardingData?.email,
+        final: superJson.email
+      }
+    });
+    
+    console.log('📋 Insurance Data Flow:', {
+      paymentType: selectedPaymentType,
+      hasInsuranceData: !!superJson.insurance_verification_data,
+      insuranceProvider: superJson.insurance_provider,
+      insuranceMemberId: superJson.insurance_member_id,
+      insuranceDateOfBirth: superJson.insurance_date_of_birth,
+      insuranceVerified: superJson.insurance_verified,
+      hasNirvanaRawResponse: !!superJson.nirvana_raw_response,
+      hasNirvanabenefits: !!superJson.nirvana_benefits
+    });
+    
+    console.log('📊 Assessment Scores:', {
+      phq9Total: superJson.phq9_total_score,
+      gad7Total: superJson.gad7_total_score,
+      phq9RiskLevel: superJson.phq9_risk_level,
+      gad7RiskLevel: superJson.gad7_risk_level,
+      hasPhq9Responses: !!superJson.phq9_responses && Object.keys(superJson.phq9_responses).length > 0,
+      hasGad7Responses: !!superJson.gad7_responses && Object.keys(superJson.gad7_responses).length > 0
+    });
+    
+    console.log('✅ SUPERJSON BUILD COMPLETE:', {
       totalFields: Object.keys(superJson).length,
       coreFieldsPresent: !!(superJson.first_name && superJson.last_name && superJson.email),
-      hasInsuranceData: !!superJson.insurance_verification_data,
-      phq9Score: superJson.phq9_total_score,
-      gad7Score: superJson.gad7_total_score,
-      completenessScore: superJson.data_completeness_score
+      completenessScore: superJson.data_completeness_score,
+      currentStage: superJson.current_stage,
+      sessionId: superJson.session_id
     });
+    
+    console.log('🏗️ ==========================================');
     
     return superJson;
   }
