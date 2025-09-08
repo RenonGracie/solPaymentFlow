@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Plus } from "lucide-react";
 import { VIDEOS } from "@/lib/videos";
 import { useTherapistSearch } from "@/api/hooks/useTherapistSearch";
@@ -2075,6 +2075,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              <DialogTitle className="text-left text-2xl font-medium" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                Why we ask this question
              </DialogTitle>
+             <DialogDescription>
+               Learn why this question is important for providing you with safe and appropriate therapy care.
+             </DialogDescription>
            </DialogHeader>
            <div className="space-y-4 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
              <p>
@@ -2107,6 +2110,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              <DialogTitle className="text-left text-3xl font-medium leading-tight" style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                Let's get you to the right level of care
              </DialogTitle>
+             <DialogDescription>
+               Based on your responses, we recommend connecting you with appropriate care resources and crisis support.
+             </DialogDescription>
            </DialogHeader>
            <div className="space-y-6 text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
              <p>

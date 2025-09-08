@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TMatchedTherapistData } from "@/api/types/therapist.types";
 
@@ -91,6 +91,12 @@ export const TherapistConfirmationModal = ({
   return (
     <Dialog open={isVisible} onOpenChange={onCancel}>
       <DialogContent className="sm:max-w-md bg-yellow-50 rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Confirm Your Therapist Selection</DialogTitle>
+          <DialogDescription>
+            Review your selected therapist and appointment details before confirming your booking.
+          </DialogDescription>
+        </DialogHeader>
         <div className="p-8">
           {/* Header */}
           <div className="text-center mb-8">

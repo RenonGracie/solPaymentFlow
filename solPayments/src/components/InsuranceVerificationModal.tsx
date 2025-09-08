@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X, Loader2 } from "lucide-react";
 import { checkEligibility } from "../app/api/eligibility.js";
@@ -205,8 +205,13 @@ export default function InsuranceVerificationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogHeader><DialogTitle className="sr-only">Insurance Eligibility Modal</DialogTitle></DialogHeader>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#FFFBF3' }}>
+        <DialogHeader className="sr-only">
+          <DialogTitle>Insurance Eligibility Verification</DialogTitle>
+          <DialogDescription>
+            Enter your insurance information to verify your eligibility and benefits for therapy sessions.
+          </DialogDescription>
+        </DialogHeader>
         <div className="transition-all duration-500 ease-in-out">
 
         {/* Insurance Information Form */}

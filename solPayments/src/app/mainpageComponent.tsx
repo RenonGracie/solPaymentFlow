@@ -1187,6 +1187,12 @@ export default function MainPageComponent() {
       return;
     }
     
+    // Additional safeguard: Check if we already have an IntakeQ client ID
+    if (clientData.intakeq_client_id) {
+      console.warn('⚠️ IntakeQ client already exists, skipping duplicate creation:', clientData.intakeq_client_id);
+      return;
+    }
+    
     try {
       setIsIntakeQProcessing(true);
       console.log('🔄 =================================================');
@@ -1487,10 +1493,23 @@ export default function MainPageComponent() {
         
         // Update the user data state with IntakeQ info
         if (currentUserData) {
+          // Check if backend returns client_uuid for proper URL format
+          // The UUID (e.g., e5a0a85b-af74-478d-bd77-22dc8072db71) should come from IntakeQ API
+          const extendedResult = intakeQResult as any;
+          const clientUrl = extendedResult.client_uuid 
+            ? `https://intakeq.com/#/client/${extendedResult.client_uuid}?tab=overview`
+            : intakeQResult.intake_url; // fallback to form URL if no UUID
+            
+          console.log('🔗 IntakeQ URL update for state:', {
+            has_client_uuid: !!extendedResult.client_uuid,
+            client_uuid: extendedResult.client_uuid,
+            final_url: clientUrl
+          });
+            
           setCurrentUserData({
             ...currentUserData,
             intakeq_client_id: intakeQResult.client_id,
-            intakeq_intake_url: intakeQResult.intake_url,
+            intakeq_intake_url: clientUrl,
             last_updated: new Date().toISOString()
           });
         }
@@ -1498,9 +1517,22 @@ export default function MainPageComponent() {
         // Update the database with IntakeQ client ID
         if (intakeQResult.client_id && clientData.response_id) {
           try {
+            // Check if we have a client_uuid for the proper URL format
+            const extendedResult = intakeQResult as any;
+            const clientUrl = extendedResult.client_uuid 
+              ? `https://intakeq.com/#/client/${extendedResult.client_uuid}?tab=overview`
+              : intakeQResult.intake_url; // fallback to form URL if no UUID
+              
+            console.log('🔗 IntakeQ URL format:', {
+              has_client_uuid: !!extendedResult.client_uuid,
+              client_uuid: extendedResult.client_uuid,
+              original_intake_url: intakeQResult.intake_url,
+              final_url: clientUrl
+            });
+            
             await axiosInstance.patch(`/clients_signup/${clientData.response_id}`, {
               intakeq_client_id: intakeQResult.client_id,
-              intakeq_intake_url: intakeQResult.intake_url
+              intakeq_intake_url: clientUrl
             });
             // Database updated with IntakeQ client ID
           } catch (error) {
