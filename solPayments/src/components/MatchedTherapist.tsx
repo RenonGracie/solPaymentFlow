@@ -297,13 +297,16 @@ export default function MatchedTherapist({
       const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, API_BASE);
       url.searchParams.set("year", String(currentYear));
       url.searchParams.set("month", String(currentMonth + 1));
+      // Use user's timezone for display purposes, but business hours remain 7am-10pm EST
+      // Backend will calculate availability using EST business hours and convert to user's timezone
       url.searchParams.set("timezone", timezone);
       
       // Pass the actual payment type
       const paymentType = getSelectedPaymentType();
       url.searchParams.set("payment_type", paymentType);
       
-      // Use reasonable work hours (7 AM to 10 PM)
+      // Business hours are fixed at 7am-10pm EST, but displayed in user's local timezone
+      // Backend will automatically convert EST business hours to user's timezone for display
       url.searchParams.set("work_start", "07:00");
       url.searchParams.set("work_end", "22:00");
       
