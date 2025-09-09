@@ -216,7 +216,7 @@ export default function InsuranceVerificationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#FFFBF3' }}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
         <DialogHeader className="sr-only">
           <DialogTitle>Insurance Eligibility Verification</DialogTitle>
           <DialogDescription>
@@ -392,7 +392,7 @@ export default function InsuranceVerificationModal({
             </div>
 
             <div className="mx-auto max-w-md">
-              <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-6 text-center animate-in fade-in-0 duration-700 delay-500">
+              <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-6 text-center animate-in fade-in-0 duration-700 delay-500" style={{ backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
                 <p className="inter text-gray-800" style={{ fontSize: '16px', fontWeight: '500' }}>
                   {verificationResponse?.benefits ? (
                     <>
@@ -484,7 +484,7 @@ export default function InsuranceVerificationModal({
           <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
             <div className="text-center space-y-4">
               <div className="flex justify-center mb-4">
-                <div className="bg-yellow-100 border border-yellow-400 rounded-full px-6 py-3 inter text-yellow-800 animate-in fade-in-0 duration-700 delay-300" style={{ fontSize: '16px', fontWeight: '500' }}>
+                <div className="bg-yellow-100 border border-yellow-400 rounded-full px-6 py-3 inter text-yellow-800 animate-in fade-in-0 duration-700 delay-300" style={{ fontSize: '16px', fontWeight: '500', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
                   💰 $30 / Session Out-of-Pocket Selected
                 </div>
               </div>

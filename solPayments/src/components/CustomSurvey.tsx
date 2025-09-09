@@ -441,7 +441,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="flex-1 flex flex-col justify-center items-center px-8 py-12">
                 <div className="max-w-md w-full space-y-8">
                   <h2 
-                    className="text-center text-2xl sm:text-3xl md:text-4xl text-gray-800"
+                    className="text-center text-xl sm:text-2xl md:text-3xl text-gray-800"
                     style={{ 
                       fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       lineHeight: '1.1'
@@ -486,7 +486,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="flex-1 flex flex-col justify-center items-center px-8 py-8 lg:py-10 min-h-[200px] max-h-[300px]">
                 <div className="max-w-2xl w-full space-y-6">
                   <h2 
-                    className="text-center text-2xl sm:text-3xl md:text-4xl text-gray-800"
+                    className="text-center text-xl sm:text-2xl md:text-3xl text-gray-800"
                     style={{ 
                       fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       lineHeight: '1.1'
@@ -555,7 +555,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'safety_screening':
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
             <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
@@ -586,11 +586,11 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8">
-              <div className="flow-narrow w-full mx-auto">
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 min-h-0">
+              <div className="w-full max-w-md mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
                   <div className="text-center mb-6 sm:mb-8">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-6 text-gray-800 leading-[1.1]" 
+                    <h1 className="text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6 text-gray-800 leading-[1.1]" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Over the past 2 weeks, have you been actively suicidal or homicidal OR have you been experiencing hallucinations or delusions?
                     </h1>
@@ -633,6 +633,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             className="min-h-screen flex flex-col"
             style={{
               backgroundColor: '#FFFBF3',
+              backgroundImage: 'url("/beige texture 2048.svg")',
+              backgroundRepeat: 'repeat',
+              backgroundSize: '200px 200px',
               backgroundImage:
                 "radial-gradient(rgba(0,0,0,0.04) 1px, transparent 1px)",
               backgroundSize: '16px 16px'
@@ -668,11 +671,11 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8">
-              <div className="flow-narrow w-full mx-auto">
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 min-h-0">
+              <div className="w-full max-w-md mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
                   <div className="text-center space-y-4">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl text-gray-800 leading-tight"
+                    <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800 leading-tight"
                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                        Would you like to be matched with a therapist, or are you requesting someone specific?
                      </h1>
@@ -715,7 +718,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'therapist_search':
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
             <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
@@ -747,7 +750,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
             {/* Content */}
             <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8">
-              <div className="flow-narrow w-full mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent space-y-6">
+              <div className="w-full max-w-md mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent space-y-6">
                 <div className="text-center space-y-4">
                   <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
@@ -807,7 +810,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'therapist_preferences':
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
             <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
@@ -841,7 +844,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             <div className="flex-1 px-4 sm:px-6 pb-10 sm:pb-14 overflow-y-auto">
               <div className="flow-narrow mx-auto -mt-4">
                 <div className="text-center mb-4 sm:mb-6 mt-2 flow-narrow mx-auto">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl mb-3 sm:mb-4 text-gray-800" 
+                  <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
                       style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                     Therapist Preferences
                   </h1>
@@ -1069,7 +1072,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'alcohol_drugs':
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
             <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
@@ -1118,7 +1121,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                   </div>
 
                   {/* Stacked Questions */}
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-5 sm:p-7 shadow-[1px_1px_0_#5C3106] space-y-6">
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
                     {/* Alcohol */}
                     <div>
                       <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2 mb-4" 
@@ -1246,7 +1249,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
         if (showPhq9Intro) {
           return (
-            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
               <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
                 <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
@@ -1311,7 +1314,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
         }
 
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image - smaller for mobile */}
             <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
               <img 
@@ -1363,7 +1366,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                     </h1>
                   </div>
 
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] flow-narrow mx-auto">
+                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] w-full max-w-md mx-auto">
                     <div key={phq9CarouselIndex} className={`text-center mb-6 sm:mb-8 ${phq9IsTransitioning ? 'animate-question-exit' : 'animate-question'}`}>
                       {/* Question */}
                       <div className="mb-4 sm:mb-5">
@@ -1482,7 +1485,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
        if (showGad7Intro) {
          return (
-           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
              <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
                <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
@@ -1603,7 +1606,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                    )}
                  </div>
 
-                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] flow-narrow mx-auto">
+                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] w-full max-w-md mx-auto">
                    <div key={gad7CarouselIndex} className={`text-center mb-6 sm:mb-8 ${gad7IsTransitioning ? 'animate-question-exit' : 'animate-question'}`}>
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
@@ -1726,7 +1729,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
            <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 overflow-y-auto">
              <div className="flow-narrow mx-auto">
                <div className="text-center mb-6 sm:mb-8 mt-0">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6" style={{ backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
                    <span className="text-3xl sm:text-4xl">🎉</span>
                  </div>
                  

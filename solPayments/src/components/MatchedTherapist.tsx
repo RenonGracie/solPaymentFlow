@@ -1509,7 +1509,7 @@ export default function MatchedTherapist({
       currentTherapistData
     });
     return (
-      <div className="flex items-center justify-center" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
+      <div className="flex items-center justify-center" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
         <div className="text-center max-w-md">
           <h2 className="text-xl font-bold mb-4 text-red-600">No Therapist Data</h2>
           <p className="text-gray-600 mb-4">
@@ -1538,7 +1538,7 @@ export default function MatchedTherapist({
   }
 
   return (
-    <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
+    <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
       {/* Header */}
       <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
         <Image

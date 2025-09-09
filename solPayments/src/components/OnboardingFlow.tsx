@@ -874,9 +874,10 @@ export default function OnboardingFlow({
       <div className="relative w-full overflow-hidden transition-opacity duration-1000" 
            style={{ 
              minHeight: '100%',
-             backgroundImage: assetsPreloaded ? "url('/beige texture 2048.svg')" : 'none',
              backgroundColor: assetsPreloaded ? '#FFFBF3' : '#000000',
-             backgroundSize: 'cover',
+             backgroundImage: assetsPreloaded ? 'url("/beige texture 2048.svg")' : 'none',
+             backgroundRepeat: 'repeat',
+             backgroundSize: '200px 200px',
              backgroundPosition: 'center',
              opacity: assetsPreloaded ? 1 : 1
            }}>
@@ -925,9 +926,10 @@ export default function OnboardingFlow({
         <div className="relative w-full overflow-hidden" 
              style={{ 
                minHeight: '100%',
-               backgroundImage: "url('/beige texture 2048.svg')",
                backgroundColor: '#FFFBF3',
-               backgroundSize: 'cover',
+               backgroundImage: 'url("/beige texture 2048.svg")',
+               backgroundRepeat: 'repeat',
+               backgroundSize: '200px 200px',
                backgroundPosition: 'center'
              }} />
       );
@@ -1128,7 +1130,7 @@ export default function OnboardingFlow({
   // Name Input Screen - Only Preferred Name
   if (currentStep === 1) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
         {/* Header with sunset image - fixed height */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1138,7 +1140,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+            <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                 style={{ 
                   fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
@@ -1177,7 +1179,7 @@ export default function OnboardingFlow({
 
         {/* Content - compact centered layout */}
         <div className="flex-1 flex items-center justify-center px-6 py-4">
-          <div className="flow-narrow w-full mx-auto max-w-sm">
+          <div className="w-full max-w-md mx-auto">
             <div className="text-center space-y-3 mb-6">
               <span className="text-3xl sm:text-4xl block">👋</span>
               <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
@@ -1263,12 +1265,12 @@ export default function OnboardingFlow({
     ];
 
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-2xl sm:text-3xl md:text-4xl text-gray-800 font-normal px-4" 
+            <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                 style={{ 
                   fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
@@ -1356,7 +1358,7 @@ export default function OnboardingFlow({
   // Email Input Screen (Step 3)
   if (currentStep === 3) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
         {/* Header with sunset image */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1366,7 +1368,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+            <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                 style={{ 
                   fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
@@ -1405,7 +1407,7 @@ export default function OnboardingFlow({
 
         {/* Content - Email Input */}
         <div className="flex-1 flex items-center justify-center px-6 py-4">
-          <div className="flow-narrow w-full mx-auto max-w-sm space-y-6">
+          <div className="w-full max-w-md mx-auto space-y-6">
             <div className="text-center space-y-3">
               <span className="text-3xl sm:text-4xl block">📧</span>
               <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
@@ -1462,7 +1464,7 @@ export default function OnboardingFlow({
         : 'there';
 
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
         {/* Header - fixed height */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1472,7 +1474,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+            <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                 style={{ 
                   fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
@@ -1697,7 +1699,7 @@ export default function OnboardingFlow({
   // State Selection Screen (Step 4)
   if (currentStep === 5) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
         {/* Header with image */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1707,7 +1709,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+            <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                 style={{ 
                   fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
@@ -1748,7 +1750,7 @@ export default function OnboardingFlow({
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-4">
           <div className="w-full max-w-md mx-auto">
             <div className="text-center mb-5">
-              <h1 className="text-lg sm:text-xl md:text-2xl mb-2 text-gray-800" 
+              <h1 className="text-xl sm:text-2xl md:text-3xl mb-2 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 What State Are You In?
               </h1>
@@ -1988,7 +1990,7 @@ export default function OnboardingFlow({
   // NJ Insurance Plan Verification Screen (Step 6)
   if (currentStep === 6) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
         {/* Header with image */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -1998,7 +2000,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+            <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                 style={{ 
                   fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
@@ -2046,7 +2048,7 @@ export default function OnboardingFlow({
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-4">
           <div className="w-full max-w-md mx-auto">
             <div className="text-center mb-5">
-              <h1 className="text-lg sm:text-xl md:text-2xl mb-2 text-gray-800" 
+              <h1 className="text-xl sm:text-2xl md:text-3xl mb-2 text-gray-800" 
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
                 Is Your Health Plan From New Jersey?
               </h1>
@@ -2168,7 +2170,7 @@ export default function OnboardingFlow({
   // Insurance Form Screen (Step 6)
   if (currentStep === 7) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
         {/* Header with image */}
         <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
           <img 
@@ -2178,7 +2180,7 @@ export default function OnboardingFlow({
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+            <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                 style={{ 
                   fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
@@ -2405,7 +2407,7 @@ export default function OnboardingFlow({
 
                       {/* Yellow Box - Additional Details (if applicable) */}
                       {getBenefitsDisplay(verificationResponse.benefits).additionalDetails && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3" style={{ backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
                           <div className="text-yellow-800">
                             <p className="text-sm leading-snug whitespace-pre-line">
                               {getBenefitsDisplay(verificationResponse.benefits).additionalDetails}

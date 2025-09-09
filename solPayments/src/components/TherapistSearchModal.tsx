@@ -28,7 +28,7 @@ export const TherapistSearchModal = ({ isVisible, onComplete }: TherapistSearchM
       <div className="absolute inset-0 bg-white/80 animate-fade-in" />
       
       {/* Yellow modal */}
-      <div className="relative bg-yellow-100 rounded-3xl p-8 shadow-2xl border border-[#5C3106] max-w-sm mx-4 animate-modal-appear">
+      <div className="relative bg-yellow-100 rounded-3xl p-8 shadow-2xl border border-[#5C3106] max-w-sm mx-4 animate-modal-appear" style={{ backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
         <div className="text-center">
           <h2 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-[#5C3106] mb-8 leading-tight text-center">
             Finding your next<br />

@@ -90,7 +90,7 @@ export const TherapistConfirmationModal = ({
 
   return (
     <Dialog open={isVisible} onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-md bg-yellow-50 rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
+      <DialogContent className="sm:max-w-md bg-yellow-50 rounded-3xl p-0 overflow-hidden border-0 shadow-2xl" style={{ backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
         <DialogHeader className="sr-only">
           <DialogTitle>Confirm Your Therapist Selection</DialogTitle>
           <DialogDescription>
