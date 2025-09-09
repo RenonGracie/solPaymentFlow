@@ -873,12 +873,8 @@ export default function OnboardingFlow({
     return (
       <div className="relative w-full overflow-hidden transition-opacity duration-1000" 
            style={{ 
-             minHeight: '100%',
-             backgroundColor: assetsPreloaded ? '#FFFBF3' : '#000000',
-             backgroundImage: assetsPreloaded ? 'url("/beige texture 2048.svg")' : 'none',
-             backgroundRepeat: 'repeat',
-             backgroundSize: '200px 200px',
-             backgroundPosition: 'center',
+             height: '100%',
+             backgroundColor: assetsPreloaded ? 'transparent' : '#000000',
              opacity: assetsPreloaded ? 1 : 1
            }}>
         {/* Content that fades in once assets are loaded */}
@@ -925,12 +921,7 @@ export default function OnboardingFlow({
       return (
         <div className="relative w-full overflow-hidden" 
              style={{ 
-               minHeight: '100%',
-               backgroundColor: '#FFFBF3',
-               backgroundImage: 'url("/beige texture 2048.svg")',
-               backgroundRepeat: 'repeat',
-               backgroundSize: '200px 200px',
-               backgroundPosition: 'center'
+               height: '100%'
              }} />
       );
     }
@@ -1082,7 +1073,7 @@ export default function OnboardingFlow({
 
     // Desktop landscape - wide screens: full-screen 16x9 video, auto-advance
     return (
-      <div className="relative bg-black w-full overflow-hidden" style={{ minHeight: '100%' }}>
+      <div className="relative bg-black w-full overflow-visible" style={{ height: '100%' }}>
         <video 
           className="absolute inset-0 w-full h-full object-contain bg-black"
           autoPlay 
@@ -1130,9 +1121,9 @@ export default function OnboardingFlow({
   // Name Input Screen - Only Preferred Name
   if (currentStep === 1) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ height: '100%' }}>
         {/* Header with sunset image - fixed height */}
-        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-visible">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -1265,8 +1256,8 @@ export default function OnboardingFlow({
     ];
 
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
-        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+      <div className="flex flex-col" style={{ height: '100%' }}>
+        <div className="relative h-20 md:h-24 overflow-visible">
           <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
           <div className="absolute inset-0 flex items-center justify-center">
@@ -1358,9 +1349,9 @@ export default function OnboardingFlow({
   // Email Input Screen (Step 3)
   if (currentStep === 3) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ height: '100%' }}>
         {/* Header with sunset image */}
-        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-visible">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -1464,9 +1455,9 @@ export default function OnboardingFlow({
         : 'there';
 
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ height: '100%' }}>
         {/* Header - fixed height */}
-        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-visible">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -1699,9 +1690,9 @@ export default function OnboardingFlow({
   // State Selection Screen (Step 4)
   if (currentStep === 5) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ height: '100%' }}>
         {/* Header with image */}
-        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-visible">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -1990,9 +1981,9 @@ export default function OnboardingFlow({
   // NJ Insurance Plan Verification Screen (Step 6)
   if (currentStep === 6) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ height: '100%' }}>
         {/* Header with image */}
-        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-visible">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -2170,9 +2161,9 @@ export default function OnboardingFlow({
   // Insurance Form Screen (Step 6)
   if (currentStep === 7) {
     return (
-      <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
+      <div className="flex flex-col" style={{ height: '100%' }}>
         {/* Header with image */}
-        <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+        <div className="relative h-20 md:h-24 overflow-visible">
           <img 
             src="/onboarding-banner.jpg" 
             alt="" 
@@ -2208,7 +2199,7 @@ export default function OnboardingFlow({
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-6 py-4 overflow-y-auto">
+        <div className="flex-1 px-6 py-4 min-h-0">
           <div className="w-full max-w-md mx-auto space-y-5">
             {/* Header - Only show when not in success state */}
             {verificationStep !== 'success' && (

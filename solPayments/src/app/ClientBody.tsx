@@ -137,6 +137,10 @@ export default function ClientBody({
         transition: "none", // Prevent animation on height change
         WebkitOverflowScrolling: "touch", // Smooth scrolling on iOS
         scrollBehavior: isKeyboardVisible ? "auto" : "smooth", // Disable smooth scroll when keyboard is visible
+        backgroundColor: '#FFFBF3',
+        backgroundImage: 'url("/beige texture 2048.svg")',
+        backgroundRepeat: 'repeat',
+        backgroundSize: '200px 200px'
       }}
       data-keyboard-visible={isKeyboardVisible}
     >

@@ -557,7 +557,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-visible">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -629,17 +629,10 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'therapist_matching':
         return (
-          <div
-            className="min-h-screen flex flex-col"
-            style={{
-              backgroundColor: '#FFFBF3',
-              backgroundImage: 'url("/beige texture 2048.svg")',
-              backgroundRepeat: 'repeat',
-              backgroundSize: '200px 200px'
-            }}
+          <div className="h-full flex flex-col"
           >
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-visible">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -717,7 +710,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-visible">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -746,7 +739,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8">
+            <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8 min-h-0">
               <div className="w-full max-w-md mx-auto border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] bg-transparent space-y-6">
                 <div className="text-center space-y-4">
                   <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
@@ -809,7 +802,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-visible">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -838,7 +831,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             </div>
 
             {/* Content */}
-            <div className="flex-1 px-4 sm:px-6 pb-10 sm:pb-14 overflow-y-auto">
+            <div className="flex-1 px-4 sm:px-6 pb-10 sm:pb-14 min-h-0">
               <div className="flow-narrow mx-auto -mt-4">
                 <div className="text-center mb-4 sm:mb-6 mt-2 flow-narrow mx-auto">
                   <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
@@ -1071,7 +1064,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-visible">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1247,7 +1240,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
         if (showPhq9Intro) {
           return (
             <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
-              <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+              <div className="relative h-20 md:h-24 overflow-visible">
                 <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               </div>
@@ -1313,7 +1306,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
         return (
           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image - smaller for mobile */}
-            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+            <div className="relative h-20 md:h-24 overflow-visible">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1483,7 +1476,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
        if (showGad7Intro) {
          return (
            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
-             <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
+             <div className="relative h-20 md:h-24 overflow-visible">
                <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
              </div>
@@ -1723,7 +1716,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
            </div>
 
            {/* Content */}
-           <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 overflow-y-auto">
+           <div className="flex-1 px-4 sm:px-6 pb-8 sm:pb-16 min-h-0">
              <div className="flow-narrow mx-auto">
                <div className="text-center mb-6 sm:mb-8 mt-0">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6" style={{ backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>

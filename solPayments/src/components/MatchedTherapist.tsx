@@ -1509,7 +1509,7 @@ export default function MatchedTherapist({
       currentTherapistData
     });
     return (
-      <div className="flex items-center justify-center" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
+      <div className="flex items-center justify-center" style={{ height: '100%' }}>
         <div className="text-center max-w-md">
           <h2 className="text-xl font-bold mb-4 text-red-600">No Therapist Data</h2>
           <p className="text-gray-600 mb-4">
@@ -1538,9 +1538,9 @@ export default function MatchedTherapist({
   }
 
   return (
-    <div className="flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px', minHeight: '100%' }}>
+    <div className="flex flex-col" style={{ height: '100%' }}>
       {/* Header */}
-      <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
+      <div className="relative h-12 sm:h-20 md:h-24 overflow-visible">
         <Image
           src="/onboarding-banner.jpg"
           alt="Onboarding Banner"
@@ -1570,7 +1570,7 @@ export default function MatchedTherapist({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-4 md:px-6 py-4">
+      <div className="flex-1 px-4 md:px-6 py-4 min-h-0">
         <div className="h-full flex flex-col max-w-7xl mx-auto">
           <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 min-h-0">
             {/* Left Column - Therapist Details */}

@@ -258,7 +258,7 @@ function BookingConfirmedContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+      <div className="h-full flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -271,7 +271,7 @@ function BookingConfirmedContent() {
 
   if (error || !bookingData) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+      <div className="h-full flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
             {error || 'Failed to load booking information'}
@@ -287,7 +287,7 @@ function BookingConfirmedContent() {
   const { dateStr, timeStr } = formatAppointmentDateTime(bookingData.appointment.datetime, bookingData.appointment.duration_minutes);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+    <div className="h-full flex flex-col">
       {/* Header */}
       <div className="relative h-12 sm:h-20 md:h-24 overflow-hidden flex-shrink-0">
         <Image
@@ -586,7 +586,7 @@ function BookingConfirmedContent() {
 
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+    <div className="h-full flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
         <p className="text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>

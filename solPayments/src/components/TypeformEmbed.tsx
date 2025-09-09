@@ -110,9 +110,9 @@ export default function TypeformEmbed({
 
   // Original component with header (for standalone use)
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+    <div className="h-full">
       {/* Header with back button */}
-      <div className="relative overflow-hidden h-[120px] sm:h-[180px] md:h-[180px] lg:h-[180px]">
+      <div className="relative overflow-visible h-[120px] sm:h-[180px] md:h-[180px] lg:h-[180px]">
         {/* Banner Image */}
         <img
           src="/onboarding-banner.jpg"
