@@ -2153,7 +2153,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
        </Dialog>
 
        {/* Enhanced style for smooth, bubbly transitions */}
-       <style jsx>{`
+       <style>{`
          .animate-question { 
            animation: appleSpringIn 850ms cubic-bezier(0.175, 0.885, 0.32, 1.4) both;
          }
