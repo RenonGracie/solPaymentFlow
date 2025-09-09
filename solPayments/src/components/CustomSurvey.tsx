@@ -195,9 +195,11 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
   
   // PHQ-9 carousel state  
   const [phq9CarouselIndex, setPhq9CarouselIndex] = useState(0);
+  const [phq9IsTransitioning, setPhq9IsTransitioning] = useState(false);
   
   // GAD-7 carousel state
   const [gad7CarouselIndex, setGad7CarouselIndex] = useState(0);
+  const [gad7IsTransitioning, setGad7IsTransitioning] = useState(false);
   
   // Section intro videos
   const [showPhq9Intro, setShowPhq9Intro] = useState(true);
@@ -1362,7 +1364,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                   </div>
 
                   <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] flow-narrow mx-auto">
-                    <div key={phq9CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
+                    <div key={phq9CarouselIndex} className={`text-center mb-6 sm:mb-8 ${phq9IsTransitioning ? 'animate-question-exit' : 'animate-question'}`}>
                       {/* Question */}
                       <div className="mb-4 sm:mb-5">
                         <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -1390,7 +1392,12 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                                   setCurrentStep('gad7');
                                 }
                               } else {
-                                setTimeout(() => setPhq9CarouselIndex(phq9CarouselIndex + 1), 120);
+                                // Smooth transition to next question
+                                setPhq9IsTransitioning(true);
+                                setTimeout(() => {
+                                  setPhq9CarouselIndex(phq9CarouselIndex + 1);
+                                  setPhq9IsTransitioning(false);
+                                }, 180);
                               }
                             }}
                             onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
@@ -1597,7 +1604,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                  </div>
 
                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] flow-narrow mx-auto">
-                   <div key={gad7CarouselIndex} className="text-center mb-6 sm:mb-8 animate-question">
+                   <div key={gad7CarouselIndex} className={`text-center mb-6 sm:mb-8 ${gad7IsTransitioning ? 'animate-question-exit' : 'animate-question'}`}>
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
                        <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -1623,7 +1630,12 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                                  setCurrentStep('matching_complete');
                                }
                              } else {
-                               setTimeout(() => setGad7CarouselIndex(gad7CarouselIndex + 1), 120);
+                               // Smooth transition to next question
+                               setGad7IsTransitioning(true);
+                               setTimeout(() => {
+                                 setGad7CarouselIndex(gad7CarouselIndex + 1);
+                                 setGad7IsTransitioning(false);
+                               }, 180);
                              }
                            }}
                            onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
@@ -2142,12 +2154,163 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
          </DialogContent>
        </Dialog>
 
-       {/* Local style for subtle transitions */}
+       {/* Enhanced style for smooth, bubbly transitions */}
        <style jsx>{`
-         .animate-question { animation: fadeScale 160ms ease-out both; }
-         @keyframes fadeScale {
-           from { opacity: 0; transform: scale(0.985); background-color: white; }
-           to { opacity: 1; transform: scale(1); background-color: transparent; }
+         .animate-question { 
+           animation: bubbleInQuestion 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+         }
+         
+         .animate-question-exit {
+           animation: bubbleOutQuestion 200ms cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
+         }
+         
+         @keyframes bubbleInQuestion {
+           0% { 
+             opacity: 0; 
+             transform: scale(0.85) translateY(30px); 
+             filter: blur(3px);
+           }
+           30% {
+             opacity: 0.3;
+             transform: scale(0.98) translateY(5px);
+             filter: blur(1px);
+           }
+           60% {
+             opacity: 0.8;
+             transform: scale(1.08) translateY(-8px);
+             filter: blur(0px);
+           }
+           100% { 
+             opacity: 1; 
+             transform: scale(1) translateY(0px); 
+             filter: blur(0px);
+           }
+         }
+         
+         @keyframes bubbleOutQuestion {
+           0% {
+             opacity: 1;
+             transform: scale(1) translateY(0px);
+             filter: blur(0px);
+           }
+           100% {
+             opacity: 0;
+             transform: scale(0.9) translateY(-15px);
+             filter: blur(2px);
+           }
+         }
+         
+         /* Delightful bounce for buttons when they appear */
+         .animate-question .space-y-3 > button,
+         .animate-question .space-y-4 > button {
+           animation: bubbleInButton 700ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+           animation-delay: 300ms;
+           transform-origin: center bottom;
+         }
+         
+         @keyframes bubbleInButton {
+           0% {
+             opacity: 0;
+             transform: scale(0.8) translateY(25px) rotate(-1deg);
+           }
+           50% {
+             opacity: 0.7;
+             transform: scale(1.08) translateY(-5px) rotate(0.5deg);
+           }
+           75% {
+             opacity: 0.95;
+             transform: scale(0.98) translateY(2px) rotate(-0.2deg);
+           }
+           100% {
+             opacity: 1;
+             transform: scale(1) translateY(0px) rotate(0deg);
+           }
+         }
+         
+         /* Stagger the button animations for a beautiful cascading effect */
+         .animate-question .space-y-3 > button:nth-child(1),
+         .animate-question .space-y-4 > button:nth-child(1) { animation-delay: 350ms; }
+         .animate-question .space-y-3 > button:nth-child(2),
+         .animate-question .space-y-4 > button:nth-child(2) { animation-delay: 400ms; }
+         .animate-question .space-y-3 > button:nth-child(3),
+         .animate-question .space-y-4 > button:nth-child(3) { animation-delay: 450ms; }
+         .animate-question .space-y-3 > button:nth-child(4),
+         .animate-question .space-y-4 > button:nth-child(4) { animation-delay: 500ms; }
+         
+         /* Enhanced hover animations with gentle spring */
+         .animate-question button:hover {
+           transform: scale(1.03) translateY(-1px);
+           transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+           box-shadow: 0 4px 8px rgba(92, 49, 6, 0.15);
+         }
+         
+         /* Active state with satisfying squish */
+         .animate-question button:active {
+           transform: scale(0.98) translateY(1px);
+           transition: transform 100ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+         }
+         
+         /* Enhanced progress dots animation */
+         .animate-question + * .h-0\\.5 {
+           animation: progressDotPulse 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+           animation-delay: 550ms;
+         }
+         
+         @keyframes progressDotPulse {
+           0% {
+             opacity: 0;
+             transform: scale(0.3) translateY(10px);
+           }
+           30% {
+             opacity: 0.4;
+             transform: scale(0.8) translateY(-2px);
+           }
+           60% {
+             opacity: 0.8;
+             transform: scale(1.3) translateY(-1px);
+           }
+           100% {
+             opacity: 1;
+             transform: scale(1) translateY(0px);
+           }
+         }
+         
+         /* Add a subtle glow effect when buttons are selected */
+         .animate-question button[class*="bg-[#5C3106]"] {
+           box-shadow: 0 0 20px rgba(92, 49, 6, 0.3);
+           animation: selectedGlow 300ms ease-out both;
+         }
+         
+         @keyframes selectedGlow {
+           0% {
+             box-shadow: 0 0 0px rgba(92, 49, 6, 0);
+             transform: scale(1);
+           }
+           50% {
+             box-shadow: 0 0 25px rgba(92, 49, 6, 0.4);
+             transform: scale(1.05);
+           }
+           100% {
+             box-shadow: 0 0 20px rgba(92, 49, 6, 0.3);
+             transform: scale(1);
+           }
+         }
+         
+         /* Add subtle entrance animation for the question container */
+         .animate-question > div:first-child {
+           animation: questionTextFloat 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+           animation-delay: 100ms;
+         }
+         
+         @keyframes questionTextFloat {
+           0% {
+             opacity: 0;
+             transform: translateY(15px);
+           }
+           100% {
+             opacity: 1;
+             transform: translateY(0px);
+           }
          }
        `}</style>
      </>

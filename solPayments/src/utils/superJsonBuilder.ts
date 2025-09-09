@@ -8,6 +8,8 @@
  * eliminating the need for complex data reconstruction on the server side.
  */
 
+import { getProviderNameByPayerId } from '../api/eligibilityConfig';
+
 // Import types (fix the import issue)
 // We'll define SurveyData locally to avoid import issues
 export interface SurveyData {
@@ -442,10 +444,12 @@ export interface SurveyData {
     
     // Extract plan details (coverage info)
     if (verificationData.coverage) {
+      const payerId = verificationData.coverage.payerId;
       result.nirvana_plan_details = {
         plan_name: verificationData.coverage.planName,
         group_id: verificationData.coverage.groupId,
-        payer_id: verificationData.coverage.payerId,
+        payer_id: payerId,
+        provider_name: getProviderNameByPayerId(payerId),
         plan_status: verificationData.coverage.planStatus,
         coverage_status: verificationData.coverage.coverageStatus,
         insurance_type: verificationData.coverage.insuranceType,
@@ -479,7 +483,7 @@ export interface SurveyData {
     
     const urlParams = new URLSearchParams(window.location.search);
     return {
-      utm_source: urlParams.get('utm_source') || 'sol_payments',
+      utm_source: urlParams.get('utm_source') || 'hello_sol',
       utm_medium: urlParams.get('utm_medium') || 'direct',
       utm_campaign: urlParams.get('utm_campaign') || 'onboarding'
     };

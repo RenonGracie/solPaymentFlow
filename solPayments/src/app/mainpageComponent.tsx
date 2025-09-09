@@ -990,7 +990,7 @@ export default function MainPageComponent() {
         
         // Tracking from SuperJson
         utm: {
-          utm_source: superJson.utm_source || 'sol_payments',
+          utm_source: superJson.utm_source || 'hello_sol',
           utm_medium: superJson.utm_medium || 'direct',
           utm_campaign: superJson.utm_campaign || 'onboarding'
         },

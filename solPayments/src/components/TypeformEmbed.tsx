@@ -29,7 +29,7 @@ export default function TypeformEmbed({
   const getUtmParams = (): Record<string, string> => {
     if (typeof window === 'undefined') {
       return {
-        utm_source: 'sol_payments',
+        utm_source: 'hello_sol',
         utm_medium: 'payments_modal',
         utm_campaign: 'onboarding',
         utm_term: '',
@@ -39,7 +39,7 @@ export default function TypeformEmbed({
 
     const params = new URLSearchParams(window.location.search);
     return {
-      utm_source: params.get('utm_source') || 'sol_payments',
+      utm_source: params.get('utm_source') || 'hello_sol',
       utm_medium: params.get('utm_medium') || 'payments_modal',
       utm_campaign: params.get('utm_campaign') || 'onboarding',
       utm_term: params.get('utm_term') || '',

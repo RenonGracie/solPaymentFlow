@@ -75,6 +75,7 @@ export default function InsuranceVerificationModal({
     email: ""
   });
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Input focus hooks for better mobile keyboard handling
   const firstNameInputRef = useInputFocus({ scrollOffset: 100 });
@@ -118,7 +119,12 @@ export default function InsuranceVerificationModal({
   const handleVerifyInsurance = async () => {
     if (!selectedProvider) return;
 
-    setModalState("verifying");
+    setIsTransitioning(true);
+    // Brief delay to show fade out animation
+    setTimeout(() => {
+      setModalState("verifying");
+      setIsTransitioning(false);
+    }, 300);
 
     const formatDOB = (dobStr: string): string | null => {
       const [year, month, day] = dobStr.split("-");
@@ -161,7 +167,12 @@ export default function InsuranceVerificationModal({
     try {
       const responseData = await checkEligibility(payload);
       setVerificationResponse(responseData);
-      setModalState("verification-success");
+      setIsTransitioning(true);
+      // Brief delay to show fade out animation before success state
+      setTimeout(() => {
+        setModalState("verification-success");
+        setIsTransitioning(false);
+      }, 300);
     } catch (error) {
       console.error("Verification error:", error);
       setModalState("verification-failed");
@@ -216,16 +227,7 @@ export default function InsuranceVerificationModal({
 
         {/* Insurance Information Form */}
         {modalState === "insurance-form" && (
-          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
-            <div className="text-center space-y-4">
-              <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ lineHeight: '1.1' }}>
-                Great, We're In Network!
-              </h1>
-              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
-                Next, to verify your eligibility and estimate your co-pay, please enter your insurance information below.
-              </p>
-            </div>
-
+          <div className={`space-y-6 py-4 transition-all duration-300 ${isTransitioning ? 'animate-out fade-out-0 scale-out-95' : 'animate-in fade-in-0 slide-in-from-bottom-5'} duration-500`}>
             <div className="mx-auto max-w-md">
               <div className="border border-gray-300 rounded-xl p-6 bg-white space-y-6">
                 {/* Insurance Provider Dropdown */}
@@ -378,12 +380,12 @@ export default function InsuranceVerificationModal({
 
         {/* Verification Success State */}
         {modalState === "verification-success" && (
-          <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in-50 duration-700 delay-300">
-                <Check className="w-8 h-8 text-green-600" />
+          <div className="space-y-6 py-4 animate-in fade-in-0 scale-in-95 duration-700">
+            <div className="text-center space-y-3">
+              <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2 animate-in zoom-in-50 duration-700 delay-300">
+                <Check className="w-6 h-6 text-green-600" />
               </div>
-              <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ lineHeight: '1.1' }}>
+              <h1 className="very-vogue-title text-xl sm:text-2xl md:text-3xl text-gray-800" style={{ lineHeight: '1.1' }}>
                 You're Covered!<br />
                 Here's How It Works.
               </h1>
@@ -394,28 +396,17 @@ export default function InsuranceVerificationModal({
                 <p className="font-inter text-gray-800" style={{ fontSize: '16px', fontWeight: '500' }}>
                   {verificationResponse?.benefits ? (
                     <>
-                      Based on your benefits, your estimated costs are:<br />
-                      <strong>Copay: {verificationResponse.benefits.copay}</strong><br />
-                      {verificationResponse.benefits.coinsurance !== "0%" && (
-                        <>
-                          <strong>Coinsurance: {verificationResponse.benefits.coinsurance}</strong><br />
-                        </>
-                      )}
                       {(() => {
                         const mo = verificationResponse.benefits.memberObligation;
                         // Parse like "$137.26" -> 137.26
                         const amt = typeof mo === 'string' ? parseFloat(mo.replace(/[$,]/g, '')) : NaN;
-                        const display = !isNaN(amt) && amt > 100 ? `$${Math.floor(amt).toFixed(0)}` : mo;
+                        const display = !isNaN(amt) && amt > 100 ? "You can expect to pay $90-110 per session" : `You can expect to pay ~${mo} for your sessions`;
                         return (
                           <>
-                            <strong>Your cost per session: {display}</strong><br />
+                            <strong>{display}</strong><br />
                           </>
                         );
                       })()}
-                      {/* Estimated allowed amount based on payer config */}
-                      <span className="block mt-2 text-gray-700 font-normal">
-                        Estimated allowed amount we use for calculations: ${getSessionCostForPayer(tradingPartnerServiceIdMap[selectedProvider ?? "cash-pay"]) }
-                      </span>
                     </>
                   ) : (
                     <>Given our estimates, you'll pay <strong>$50</strong> for your first session and <strong>$25</strong> for all follow-up sessions.</>
@@ -434,12 +425,9 @@ export default function InsuranceVerificationModal({
                 </div>
               )}
 
-              <div className="space-y-4 text-center text-gray-700 mt-6 animate-in fade-in-0 duration-700 delay-700">
-                <p className="font-inter" style={{ fontSize: '16px', lineHeight: '1.5' }}>
+              <div className="space-y-3 text-center text-gray-700 mt-4 animate-in fade-in-0 duration-700 delay-700">
+                <p className="font-inter" style={{ fontSize: '15px', lineHeight: '1.5' }}>
                   Next, answer a brief questionnaire to help us find your best fit therapist.
-                </p>
-                <p className="font-inter" style={{ fontSize: '16px', lineHeight: '1.5' }}>
-                  You'll be matched to an Associate-Level Therapist, but you can always browse our $30/session Graduate-Level Therapists.
                 </p>
               </div>
             </div>

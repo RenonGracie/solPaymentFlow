@@ -7,6 +7,15 @@ export const PAYER_ID_BY_PROVIDER: Record<string, string> = {
 	AmeriHealth: "22248",
 };
 
+// Create reverse mapping for payerId -> provider name
+const PROVIDER_BY_PAYER_ID = Object.fromEntries(
+	Object.entries(PAYER_ID_BY_PROVIDER).map(([provider, payerId]) => [payerId, provider])
+);
+
+export function getProviderNameByPayerId(payerId: string): string | undefined {
+	return PROVIDER_BY_PAYER_ID[payerId];
+}
+
 // Default NPI for all eligibility requests (overridable via env)
 export const NPI: string = process.env.NEXT_PUBLIC_NPI || "1356936132";
 
