@@ -232,13 +232,13 @@ export default function InsuranceVerificationModal({
               <div className="border border-gray-300 rounded-xl p-6 bg-white space-y-6">
                 {/* Insurance Provider Dropdown */}
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Insurance Provider*
                   </label>
                   <select
                     value={selectedProvider ?? ""}
                     onChange={(e) => setSelectedProvider(e.target.value as InsuranceProvider)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter bg-white"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 inter bg-white"
                     style={{ fontSize: '16px' }}
                   >
                     <option value="" disabled>Select provider</option>
@@ -249,35 +249,35 @@ export default function InsuranceVerificationModal({
                 </div>
 
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     First Name*
                   </label>
                   <input
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange("firstName", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 inter"
                     placeholder="Enter your first name"
                     style={{ fontSize: '16px' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Last Name*
                   </label>
                   <input
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange("lastName", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 inter"
                     placeholder="Enter your last name"
                     style={{ fontSize: '16px' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Date of Birth*
                   </label>
                   <input
@@ -285,14 +285,14 @@ export default function InsuranceVerificationModal({
                     type="date"
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 inter"
                     style={{ fontSize: '16px' }}
                     autoComplete="bday"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Member ID*
                   </label>
                   <input
@@ -300,7 +300,7 @@ export default function InsuranceVerificationModal({
                     type="text"
                     value={formData.memberId}
                     onChange={(e) => handleInputChange("memberId", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 inter"
                     placeholder="Enter your member ID"
                     style={{ fontSize: '16px' }}
                     autoComplete="off"
@@ -311,7 +311,7 @@ export default function InsuranceVerificationModal({
                 </div>
 
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Email*
                   </label>
                   <input
@@ -319,7 +319,7 @@ export default function InsuranceVerificationModal({
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 font-inter"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 inter"
                     placeholder="Enter your email address"
                     style={{ fontSize: '16px' }}
                     autoComplete="email"
@@ -335,7 +335,7 @@ export default function InsuranceVerificationModal({
               <Button
                 onClick={onClose}
                 variant="outline"
-                className="px-6 py-3 font-inter rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300 hover:scale-105"
+                className="px-6 py-3 inter rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px', fontWeight: '500' }}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -344,7 +344,7 @@ export default function InsuranceVerificationModal({
               <Button
                 onClick={handleVerifyInsurance}
                 disabled={!selectedProvider || !formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.memberId || !formData.email}
-                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
+                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 inter rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
                 style={{ fontSize: '16px' }}
               >
                 Verify & estimate cost
@@ -371,7 +371,7 @@ export default function InsuranceVerificationModal({
               <div className="w-48 h-2 bg-gray-200 rounded-full mx-auto overflow-hidden">
                 <div className="h-2 bg-gradient-to-r from-orange-400 to-blue-400 rounded-full animate-pulse" style={{ width: '60%' }}></div>
               </div>
-              <p className="font-inter text-gray-600" style={{ fontSize: '16px' }}>
+              <p className="inter text-gray-600" style={{ fontSize: '16px' }}>
                 This usually takes just a few seconds...
               </p>
             </div>
@@ -393,7 +393,7 @@ export default function InsuranceVerificationModal({
 
             <div className="mx-auto max-w-md">
               <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-6 text-center animate-in fade-in-0 duration-700 delay-500">
-                <p className="font-inter text-gray-800" style={{ fontSize: '16px', fontWeight: '500' }}>
+                <p className="inter text-gray-800" style={{ fontSize: '16px', fontWeight: '500' }}>
                   {verificationResponse?.benefits ? (
                     <>
                       {(() => {
@@ -416,7 +416,7 @@ export default function InsuranceVerificationModal({
 
               {verificationResponse?.benefits && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4 text-sm animate-in fade-in-0 duration-700 delay-600">
-                  <p className="font-inter text-gray-700">
+                  <p className="inter text-gray-700">
                     <strong>Additional Coverage Details:</strong><br />
                     Deductible: {verificationResponse.benefits.deductible} (Remaining: {verificationResponse.benefits.remainingDeductible})<br />
                     Out-of-Pocket Max: {verificationResponse.benefits.oopMax} (Remaining: {verificationResponse.benefits.remainingOopMax})<br />
@@ -426,7 +426,7 @@ export default function InsuranceVerificationModal({
               )}
 
               <div className="space-y-3 text-center text-gray-700 mt-4 animate-in fade-in-0 duration-700 delay-700">
-                <p className="font-inter" style={{ fontSize: '15px', lineHeight: '1.5' }}>
+                <p className="inter" style={{ fontSize: '15px', lineHeight: '1.5' }}>
                   Next, answer a brief questionnaire to help us find your best fit therapist.
                 </p>
               </div>
@@ -435,7 +435,7 @@ export default function InsuranceVerificationModal({
             <div className="flex justify-center">
               <Button
                 onClick={handleContinueToQuestionnaire}
-                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
+                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 inter rounded-full font-medium transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px' }}
               >
                 Continue to Questionnaire
@@ -454,7 +454,7 @@ export default function InsuranceVerificationModal({
               <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ lineHeight: '1.1' }}>
                 Sorry, we couldn't verify your eligibility.
               </h1>
-              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
+              <p className="inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
                 Try re-entering your insurance information again, or learn about our Out-of-Pocket offering for $30/session.
               </p>
             </div>
@@ -463,14 +463,14 @@ export default function InsuranceVerificationModal({
               <Button
                 onClick={() => setModalState("insurance-form")}
                 variant="outline"
-                className="px-6 py-3 font-inter rounded-full border-2 border-yellow-500 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                className="px-6 py-3 inter rounded-full border-2 border-yellow-500 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px', fontWeight: '500' }}
               >
                 Re-Enter Insurance
               </Button>
               <Button
                 onClick={() => setModalState("cash-pay-form")}
-                className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium transition-all duration-300 hover:scale-105"
+                className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 inter rounded-full font-medium transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px' }}
               >
                 Pay Out-of-Pocket for $30/Session
@@ -484,14 +484,14 @@ export default function InsuranceVerificationModal({
           <div className="space-y-8 py-6 animate-in fade-in-0 slide-in-from-bottom-5 duration-500">
             <div className="text-center space-y-4">
               <div className="flex justify-center mb-4">
-                <div className="bg-yellow-100 border border-yellow-400 rounded-full px-6 py-3 font-inter text-yellow-800 animate-in fade-in-0 duration-700 delay-300" style={{ fontSize: '16px', fontWeight: '500' }}>
+                <div className="bg-yellow-100 border border-yellow-400 rounded-full px-6 py-3 inter text-yellow-800 animate-in fade-in-0 duration-700 delay-300" style={{ fontSize: '16px', fontWeight: '500' }}>
                   💰 $30 / Session Out-of-Pocket Selected
                 </div>
               </div>
               <h1 className="very-vogue-title text-2xl sm:text-3xl md:text-4xl text-gray-800" style={{ lineHeight: '1.1' }}>
                 Let's Get You Matched
               </h1>
-              <p className="font-inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
+              <p className="inter text-gray-600" style={{ fontSize: '16px', fontWeight: '400', lineHeight: '1.4' }}>
                 You'll now fill out a brief questionnaire to help us match you to your best fit therapist.
               </p>
             </div>
@@ -499,7 +499,7 @@ export default function InsuranceVerificationModal({
             <div className="mx-auto max-w-md">
               <div className="border border-gray-300 rounded-xl p-6 bg-white space-y-6">
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     First Name*
                   </label>
                   <input
@@ -507,7 +507,7 @@ export default function InsuranceVerificationModal({
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange("firstName", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 font-inter"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 inter"
                     placeholder="Enter your first name"
                     style={{ fontSize: '16px' }}
                     autoComplete="given-name"
@@ -518,7 +518,7 @@ export default function InsuranceVerificationModal({
                 </div>
 
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Last Name*
                   </label>
                   <input
@@ -526,7 +526,7 @@ export default function InsuranceVerificationModal({
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange("lastName", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 font-inter"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 inter"
                     placeholder="Enter your last name"
                     style={{ fontSize: '16px' }}
                     autoComplete="family-name"
@@ -537,27 +537,27 @@ export default function InsuranceVerificationModal({
                 </div>
 
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Date of Birth*
                   </label>
                   <input
                     type="date"
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 font-inter"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 inter"
                     style={{ fontSize: '16px' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  <label className="block inter text-gray-700 mb-2" style={{ fontSize: '14px', fontWeight: '500' }}>
                     Email*
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 font-inter"
+                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-300 inter"
                     placeholder="Enter your email address"
                     style={{ fontSize: '16px' }}
                   />
@@ -569,7 +569,7 @@ export default function InsuranceVerificationModal({
               <Button
                 onClick={onClose}
                 variant="outline"
-                className="px-6 py-3 font-inter rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300 hover:scale-105"
+                className="px-6 py-3 inter rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300 hover:scale-105"
                 style={{ fontSize: '16px', fontWeight: '500' }}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -578,7 +578,7 @@ export default function InsuranceVerificationModal({
               <Button
                 onClick={handleCashPayContinue}
                 disabled={!formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.email}
-                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-inter rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
+                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-800 inter rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
                 style={{ fontSize: '16px' }}
               >
                 Continue to Questionnaire

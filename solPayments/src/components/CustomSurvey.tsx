@@ -567,7 +567,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="absolute inset-0 flex items-center justify-center">
                 <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                     style={{ 
-                      fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                      fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       fontWeight: 400,
                       letterSpacing: '0.02em',
                       lineHeight: '1.1'
@@ -649,7 +649,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="absolute inset-0 flex items-center justify-center">
                 <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                      style={{ 
-                       fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                       fontFamily: 'var(--font-very-vogue), Georgia, serif',
                        fontWeight: 400,
                        letterSpacing: '0.02em',
                        lineHeight: '1.1'
@@ -727,7 +727,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="absolute inset-0 flex items-center justify-center">
                 <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                     style={{ 
-                      fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                      fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       fontWeight: 400,
                       letterSpacing: '0.02em',
                       lineHeight: '1.1'
@@ -819,7 +819,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="absolute inset-0 flex items-center justify-center">
                 <p className="text-center text-xs md:text-sm lg:text-base text-gray-800 font-normal px-4" 
                     style={{ 
-                      fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                      fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       fontWeight: 400,
                       letterSpacing: '0.02em',
                       lineHeight: '1.1'
@@ -1081,7 +1081,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="absolute inset-0 flex items-center justify-center">
                 <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal px-4" 
                     style={{ 
-                      fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                      fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       fontWeight: 400,
                       letterSpacing: '0.02em',
                       lineHeight: '1.1'
@@ -1323,7 +1323,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="absolute inset-0 flex items-center justify-center">
                 <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal px-4" 
                     style={{ 
-                      fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                      fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       fontWeight: 400,
                       letterSpacing: '0.02em',
                       lineHeight: '1.1'
@@ -1558,7 +1558,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              <div className="absolute inset-0 flex items-center justify-center">
                <p className="text-center text-xs sm:text-sm md:text-base lg:text-lg text-gray-800 font-normal px-4" 
                    style={{ 
-                     fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                     fontFamily: 'var(--font-very-vogue), Georgia, serif',
                      fontWeight: 400,
                      letterSpacing: '0.02em',
                      lineHeight: '1.1'
@@ -1704,7 +1704,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              <div className="absolute inset-0 flex items-center justify-center">
                <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                    style={{ 
-                     fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                     fontFamily: 'var(--font-very-vogue), Georgia, serif',
                      fontWeight: 400,
                      letterSpacing: '0.02em',
                      lineHeight: '1.1'
@@ -2157,27 +2157,27 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
        {/* Enhanced style for smooth, bubbly transitions */}
        <style jsx>{`
          .animate-question { 
-           animation: bubbleInQuestion 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+           animation: appleSpringIn 850ms cubic-bezier(0.175, 0.885, 0.32, 1.4) both;
          }
          
          .animate-question-exit {
-           animation: bubbleOutQuestion 200ms cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
+           animation: appleSpringOut 320ms cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
          }
          
-         @keyframes bubbleInQuestion {
+         @keyframes appleSpringIn {
            0% { 
              opacity: 0; 
-             transform: scale(0.85) translateY(30px); 
-             filter: blur(3px);
+             transform: scale(0.7) translateY(60px) rotateX(15deg); 
+             filter: blur(6px);
            }
            30% {
              opacity: 0.3;
-             transform: scale(0.98) translateY(5px);
-             filter: blur(1px);
+             transform: scale(0.9) translateY(20px) rotateX(8deg);
+             filter: blur(3px);
            }
            60% {
              opacity: 0.8;
-             transform: scale(1.08) translateY(-8px);
+             transform: scale(1.12) translateY(-12px) rotateX(-2deg);
              filter: blur(0px);
            }
            100% { 
@@ -2203,12 +2203,12 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
          /* Delightful bounce for buttons when they appear */
          .animate-question .space-y-3 > button,
          .animate-question .space-y-4 > button {
-           animation: bubbleInButton 700ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-           animation-delay: 300ms;
+           animation: appleButtonBounce 950ms cubic-bezier(0.175, 0.885, 0.32, 1.4) both;
+           animation-delay: 450ms;
            transform-origin: center bottom;
          }
          
-         @keyframes bubbleInButton {
+         @keyframes appleButtonBounce {
            0% {
              opacity: 0;
              transform: scale(0.8) translateY(25px) rotate(-1deg);
@@ -2312,7 +2312,63 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              transform: translateY(0px);
            }
          }
-       `}</style>
+         
+        /* Extra Apple-style warm glow for the whole question card */
+        .animate-question::before {
+          content: '';
+          position: absolute;
+          inset: -8px;
+          background: linear-gradient(135deg, 
+            rgba(255, 193, 7, 0.08), 
+            rgba(92, 49, 6, 0.05), 
+            rgba(255, 193, 7, 0.08));
+          border-radius: inherit;
+          z-index: -1;
+          opacity: 0;
+          animation: warmCardGlow 3s ease-in-out infinite alternate;
+          animation-delay: 2s;
+          filter: blur(3px);
+        }
+        
+        @keyframes warmCardGlow {
+          0% {
+            opacity: 0;
+            transform: scale(0.98);
+          }
+          100% {
+            opacity: 0.4;
+            transform: scale(1.02);
+          }
+        }
+
+        /* Enhanced selected button celebration */
+        .animate-question button[class*="bg-[#5C3106]"] {
+          animation: selectedCelebration 500ms cubic-bezier(0.175, 0.885, 0.32, 1.4) both !important;
+        }
+        
+        @keyframes selectedCelebration {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 0 0px rgba(92, 49, 6, 0);
+          }
+          25% {
+            transform: scale(1.15) rotate(2deg);
+            box-shadow: 0 0 25px rgba(92, 49, 6, 0.5), 0 5px 20px rgba(255, 193, 7, 0.3);
+          }
+          50% {
+            transform: scale(0.92) rotate(-1deg);
+            box-shadow: 0 0 30px rgba(92, 49, 6, 0.6);
+          }
+          75% {
+            transform: scale(1.08) rotate(0.5deg);
+            box-shadow: 0 0 22px rgba(92, 49, 6, 0.45);
+          }
+          100% {
+            transform: scale(1) rotate(0deg);
+            box-shadow: 0 0 20px rgba(92, 49, 6, 0.35), 0 3px 12px rgba(92, 49, 6, 0.25);
+          }
+        }
+      `}</style>
      </>
    );
  }

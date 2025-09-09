@@ -133,7 +133,9 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
   // sessionRate90791 calculation removed as it was unused
 
   // Main yellow box text (ALL benefit structures show this)
-  const largeText = `Based on your benefits, you can expect to pay ~$${memberObligation.toFixed(0)} for your sessions.`;
+  // If memberObligation > $100, show $90-110 range instead
+  const displayAmount = memberObligation > 100 ? '$90-110' : `~$${memberObligation.toFixed(0)}`;
+  const largeText = `Based on your benefits, you can expect to pay ${displayAmount} for your sessions.`;
   const smallText = "This is just an estimation based on the insurance information we received.";
 
   // Additional details logic based on benefit_structure
@@ -156,7 +158,7 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
           additionalDetails = "You've already hit your deductible, so you'll just pay your estimated coinsurance (your share of the session cost).";
         } else {
           // Situation 2 (haven't hit deductible)
-          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll only pay ${coinsurance}% of each session cost.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll only pay ${coinsurance}% of each session cost.`;
         }
         break;
         
@@ -166,7 +168,7 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
           additionalDetails = "Great news—you've already hit your deductible, so your sessions are fully covered by insurance. You won't owe anything.";
         } else {
           // Situation 2 (haven't hit deductible)
-          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your sessions will be $0.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your sessions will be $0.`;
         }
         break;
         
@@ -177,7 +179,7 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
           additionalDetails = `You've already hit your deductible, so you'll pay your copay of $${copay.toFixed(0)} per session.`;
         } else {
           // Situation 2 (haven't hit deductible)
-          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your cost drops to just your copay ($${copay.toFixed(0)}) per session.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} to go. After that, your cost drops to just your copay ($${copay.toFixed(0)}) per session.`;
         }
         break;
         
@@ -187,7 +189,7 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
           additionalDetails = "You've already hit your deductible, so you'll just pay your estimated coinsurance (your share of the session cost).";
         } else {
           // Situation 2 (haven't hit deductible)
-          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll only pay ${coinsurance}% of each session cost.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll only pay ${coinsurance}% of each session cost.`;
         }
         break;
         
@@ -197,7 +199,7 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
           additionalDetails = "You've already hit your deductible, so you'll pay your estimated copay and coinsurance (your share of the session cost).";
         } else {
           // Situation 2 (haven't hit deductible)
-          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll pay your estimated copay and coinsurance.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll pay your estimated copay and coinsurance.`;
         }
         break;
         
@@ -206,7 +208,7 @@ function getBenefitsDisplay(benefits: EligibilityBenefits) {
         if (hasHitDeductible) {
           additionalDetails = "You've already hit your deductible, so you'll pay your estimated member obligation.";
         } else {
-          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll pay your estimated member obligation.\n\nNeed a lower rate? Talk to your therapist during the first session and we'll find a session rate that works for you.`;
+          additionalDetails = `You'll pay this full session rate until you reach your deductible of $${deductible.toFixed(0)}. You still have $${remainingDeductible.toFixed(0)} left to go. After that, you'll pay your estimated member obligation.`;
         }
         break;
     }
@@ -1138,7 +1140,7 @@ export default function OnboardingFlow({
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                 style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
                   letterSpacing: '0.02em',
                   lineHeight: '1.1'
@@ -1268,7 +1270,7 @@ export default function OnboardingFlow({
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-center text-2xl sm:text-3xl md:text-4xl text-gray-800 font-normal px-4" 
                 style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
                   letterSpacing: '0.02em',
                   lineHeight: '1.1'
@@ -1366,7 +1368,7 @@ export default function OnboardingFlow({
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                 style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
                   letterSpacing: '0.02em',
                   lineHeight: '1.1'
@@ -1472,7 +1474,7 @@ export default function OnboardingFlow({
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                 style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
                   letterSpacing: '0.02em',
                   lineHeight: '1.1'
@@ -1707,7 +1709,7 @@ export default function OnboardingFlow({
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                 style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
                   letterSpacing: '0.02em',
                   lineHeight: '1.1'
@@ -1998,7 +2000,7 @@ export default function OnboardingFlow({
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                 style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
                   letterSpacing: '0.02em',
                   lineHeight: '1.1'
@@ -2178,7 +2180,7 @@ export default function OnboardingFlow({
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
                 style={{ 
-                  fontFamily: "'Very Vogue Text', 'Playfair Display', Georgia, serif",
+                  fontFamily: 'var(--font-very-vogue), Georgia, serif',
                   fontWeight: 400,
                   letterSpacing: '0.02em',
                   lineHeight: '1.1'
@@ -2206,15 +2208,18 @@ export default function OnboardingFlow({
         {/* Content */}
         <div className="flex-1 px-6 py-4 overflow-y-auto">
           <div className="w-full max-w-md mx-auto space-y-5">
-            <div className="text-center mb-5">
-              <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 text-gray-800" 
-                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
-                Great, We're In Network!
-              </h1>
-              <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                Next, to verify your eligibility and estimate your co-pay, please enter your insurance information below.
-              </p>
-            </div>
+            {/* Header - Only show when not in success state */}
+            {verificationStep !== 'success' && (
+              <div className="text-center mb-5 transition-all duration-500 opacity-100 transform translate-y-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 text-gray-800" 
+                    style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                  Great, We're In Network!
+                </h1>
+                <p className="text-gray-600 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                  Next, to verify your eligibility and estimate your co-pay, please enter your insurance information below.
+                </p>
+              </div>
+            )}
 
             {/* Form - Only show when in form or verifying state */}
             {(verificationStep === 'form' || verificationStep === 'verifying') && (
@@ -2322,7 +2327,11 @@ export default function OnboardingFlow({
 
             {/* Compact form summary when verification is successful or failed */}
             {(verificationStep === 'success' || verificationStep === 'failed') && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+              <div className={`bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 transition-all duration-700 ease-out ${
+                verificationStep === 'success' 
+                  ? 'transform -translate-y-8 opacity-100 animate-slideUp' 
+                  : 'transform translate-y-0 opacity-100'
+              }`}>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Provider:</span>
@@ -2374,19 +2383,18 @@ export default function OnboardingFlow({
             )}
 
             {verificationStep === 'success' && (
-              <div className="space-y-4">
- 
-                <div className="text-center py-4">
-                  <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                    <Check className="w-6 h-6 text-green-600" />
+              <div className="space-y-3">
+                <div className="text-center py-2">
+                  <div className="mx-auto w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                    <Check className="w-5 h-5 text-green-600" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-800 mb-2">You're Covered!</h3>
+                  <h3 className="text-lg font-medium text-gray-800 mb-3">You're Covered!</h3>
                   {verificationResponse?.benefits && (
                     <>
                       {/* Green Box - Main Benefits Display */}
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
                         <div className="text-green-800">
-                          <p className="font-medium text-base mb-2">
+                          <p className="font-medium text-base mb-1">
                             {getBenefitsDisplay(verificationResponse.benefits).largeText}
                           </p>
                           <p className="text-sm text-green-700">
@@ -2397,9 +2405,9 @@ export default function OnboardingFlow({
 
                       {/* Yellow Box - Additional Details (if applicable) */}
                       {getBenefitsDisplay(verificationResponse.benefits).additionalDetails && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                           <div className="text-yellow-800">
-                            <p className="text-sm leading-relaxed whitespace-pre-line">
+                            <p className="text-sm leading-snug whitespace-pre-line">
                               {getBenefitsDisplay(verificationResponse.benefits).additionalDetails}
                             </p>
                           </div>
@@ -2455,5 +2463,25 @@ export default function OnboardingFlow({
     );
   }
 
-  return null;
+  return (
+    <>
+      <style jsx>{`
+        .animate-slideUp {
+          animation: slideUpSmooth 700ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+        
+        @keyframes slideUpSmooth {
+          0% {
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(-32px) scale(1);
+          }
+        }
+      `}</style>
+      {null}
+    </>
+  );
 }

@@ -148,7 +148,7 @@ export default function TypeformEmbed({
           <h2
             className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal"
             style={{
-              fontFamily: 'Very Vogue Text',
+              fontFamily: 'var(--font-very-vogue), Georgia, serif',
               fontWeight: 400,
               fontStyle: 'normal',
               letterSpacing: '0.02em',
