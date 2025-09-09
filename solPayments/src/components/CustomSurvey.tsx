@@ -588,9 +588,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             {/* Content */}
             <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 min-h-0">
               <div className="w-full max-w-md mx-auto">
-                <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106]">
-                  <div className="text-center mb-6 sm:mb-8">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6 text-gray-800 leading-[1.1]" 
+                <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
+                  <div className="text-center space-y-4">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800 leading-tight" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
                       Over the past 2 weeks, have you been actively suicidal or homicidal OR have you been experiencing hallucinations or delusions?
                     </h1>
@@ -640,7 +640,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-base sm:text-lg md:text-lg lg:text-xl xl:text-2xl text-gray-800 font-normal px-4" 
+                <p className="text-center text-xs sm:text-sm lg:text-base text-gray-800 font-normal px-4" 
                      style={{ 
                        fontFamily: 'var(--font-very-vogue), Georgia, serif',
                        fontWeight: 400,
@@ -1072,7 +1072,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-center text-lg sm:text-xl md:text-2xl text-gray-800 font-normal px-4" 
+                <p className="text-center text-xs sm:text-sm lg:text-base text-gray-800 font-normal px-4" 
                     style={{ 
                       fontFamily: 'var(--font-very-vogue), Georgia, serif',
                       fontWeight: 400,
@@ -1390,7 +1390,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                                 setTimeout(() => {
                                   setPhq9CarouselIndex(phq9CarouselIndex + 1);
                                   setPhq9IsTransitioning(false);
-                                }, 180);
+                                }, 320);
                               }
                             }}
                             onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
@@ -1628,7 +1628,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                                setTimeout(() => {
                                  setGad7CarouselIndex(gad7CarouselIndex + 1);
                                  setGad7IsTransitioning(false);
-                               }, 180);
+                               }, 320);
                              }
                            }}
                            onMouseUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}
@@ -1720,7 +1720,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              <div className="flow-narrow mx-auto">
                <div className="text-center mb-6 sm:mb-8 mt-0">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6" style={{ backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
-                   <span className="text-3xl sm:text-4xl">🎉</span>
+                   <span className="text-3xl sm:text-4xl">🌞</span>
                  </div>
                  
                  <h1 className="text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-6 text-gray-800" 
@@ -2020,7 +2020,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                  }`}
                  style={{ fontFamily: 'var(--font-inter)' }}
                >
-                 ⚡ Match me to my therapist →
+                 🪄 Match me to my therapist →
                </Button>
              </div>
            </div>
@@ -2177,6 +2177,24 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
              opacity: 1; 
              transform: scale(1) translateY(0px); 
              filter: blur(0px);
+           }
+         }
+         
+         @keyframes appleSpringOut {
+           0% { 
+             opacity: 1; 
+             transform: scale(1) translateY(0px) rotateX(0deg); 
+             filter: blur(0px);
+           }
+           50% {
+             opacity: 0.6;
+             transform: scale(0.95) translateY(-8px) rotateX(5deg);
+             filter: blur(1px);
+           }
+           100% {
+             opacity: 0;
+             transform: scale(0.8) translateY(-20px) rotateX(10deg);
+             filter: blur(3px);
            }
          }
          

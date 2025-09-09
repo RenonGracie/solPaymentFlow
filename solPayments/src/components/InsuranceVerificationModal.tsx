@@ -380,7 +380,7 @@ export default function InsuranceVerificationModal({
 
         {/* Verification Success State */}
         {modalState === "verification-success" && (
-          <div className="space-y-6 py-4 animate-in fade-in-0 scale-in-95 duration-700">
+          <div className="space-y-6 py-4 px-2 animate-in fade-in-0 scale-in-95 duration-700">
             <div className="text-center space-y-3">
               <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2 animate-in zoom-in-50 duration-700 delay-300">
                 <Check className="w-6 h-6 text-green-600" />
@@ -392,7 +392,7 @@ export default function InsuranceVerificationModal({
             </div>
 
             <div className="mx-auto max-w-md">
-              <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-6 text-center animate-in fade-in-0 duration-700 delay-500" style={{ backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+              <div className="bg-yellow-100 border-2 border-yellow-300 rounded-xl p-6 text-center animate-in fade-in-0 duration-700 delay-500 shadow-sm" style={{ backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
                 <p className="inter text-gray-800" style={{ fontSize: '16px', fontWeight: '500' }}>
                   {verificationResponse?.benefits ? (
                     <>
@@ -415,12 +415,14 @@ export default function InsuranceVerificationModal({
               </div>
 
               {verificationResponse?.benefits && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4 text-sm animate-in fade-in-0 duration-700 delay-600">
-                  <p className="inter text-gray-700">
-                    <strong>Additional Coverage Details:</strong><br />
-                    Deductible: {verificationResponse.benefits.deductible} (Remaining: {verificationResponse.benefits.remainingDeductible})<br />
-                    Out-of-Pocket Max: {verificationResponse.benefits.oopMax} (Remaining: {verificationResponse.benefits.remainingOopMax})<br />
-                    Benefit Structure: {verificationResponse.benefits.benefitStructure}
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 mt-4 text-sm animate-in fade-in-0 duration-700 delay-600 shadow-sm">
+                  <p className="inter text-gray-700" style={{ lineHeight: '1.4' }}>
+                    <strong className="text-blue-800">Additional Coverage Details:</strong><br />
+                    <span className="mt-2 block">
+                      <strong>Deductible:</strong> {verificationResponse.benefits.deductible} (Remaining: {verificationResponse.benefits.remainingDeductible})<br />
+                      <strong>Out-of-Pocket Max:</strong> {verificationResponse.benefits.oopMax} (Remaining: {verificationResponse.benefits.remainingOopMax})<br />
+                      <strong>Benefit Structure:</strong> {verificationResponse.benefits.benefitStructure}
+                    </span>
                   </p>
                 </div>
               )}

@@ -939,7 +939,6 @@ export default function OnboardingFlow({
             preload="metadata"
             onCanPlayThrough={() => setInitialVideoReady(true)}
             onLoadedData={() => setInitialVideoReady(true)}
-            onEnded={handleContinue}
             onError={(e) => {
               console.warn('Video load error:', e);
               setInitialVideoReady(true); // Continue anyway
@@ -988,7 +987,6 @@ export default function OnboardingFlow({
             preload="metadata"
             onCanPlayThrough={() => setInitialVideoReady(true)}
             onLoadedData={() => setInitialVideoReady(true)}
-            onEnded={handleContinue}
             onError={(e) => {
               console.warn('Video load error:', e);
               setInitialVideoReady(true);
@@ -1037,7 +1035,6 @@ export default function OnboardingFlow({
             preload="metadata"
             onCanPlayThrough={() => setInitialVideoReady(true)}
             onLoadedData={() => setInitialVideoReady(true)}
-            onEnded={handleContinue}
             onError={(e) => {
               console.warn('Video load error:', e);
               setInitialVideoReady(true);
@@ -1084,7 +1081,6 @@ export default function OnboardingFlow({
           preload="metadata"
           onCanPlayThrough={() => setInitialVideoReady(true)}
           onLoadedData={() => setInitialVideoReady(true)}
-          onEnded={handleContinue}
           onError={(e) => {
             console.warn('Video load error:', e);
             setInitialVideoReady(true);
