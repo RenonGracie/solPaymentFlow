@@ -9,6 +9,7 @@ import { checkEligibility } from "../app/api/eligibility.js";
 import { PAYER_ID_BY_PROVIDER, NPI, getSessionCostForPayer } from "@/api/eligibilityConfig";
 import { useInputFocus } from "@/hooks/useInputFocus";
 import { useAvailableStates } from "@/api/hooks/useAvailableStates";
+import { journeyTracker } from "@/services/journeyTracker";
 
 // Meta pixel type declaration
 declare global {
@@ -454,8 +455,35 @@ export default function OnboardingFlow({
   const handleStateConfirm = () => {
     if (selectedState) {
       if (!featuredStates.includes(selectedState)) {
+        // Log incomplete user information for unsupported states
+        const selectedStateName = allStates.find(s => s.code === selectedState)?.name || selectedState;
+        
+        // Generate unique response_id for incomplete user
+        const responseId = `incomplete_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Prepare user data for incomplete logging
+        const incompleteUserData = {
+          response_id: responseId,
+          email: formData.email,
+          preferred_name: formData.preferredName,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          state: selectedState,
+          selected_state_name: selectedStateName,
+          payment_type: 'cash_pay',
+          utm_source: '', // UTM parameters not available in this form data structure
+          utm_medium: '',
+          utm_campaign: '',
+          what_brings_you: formData.whatBringsYou,
+          phone: '', // Phone not collected at this stage
+          date_of_birth: formData.dateOfBirth
+        };
+
+        // Track incomplete user asynchronously
+        journeyTracker.trackIncompleteUser(incompleteUserData, 'unsupported_state');
+        
         // Show waitlist popup for unsupported states
-        setWaitlistState(allStates.find(s => s.code === selectedState)?.name || selectedState);
+        setWaitlistState(selectedStateName);
         setShowWaitlistPopup(true);
       } else {
         // Proceed with supported state
