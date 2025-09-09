@@ -579,7 +579,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
             {/* Navigation (no brand) */}
             <div className="flex items-center justify-between px-4 py-3 sm:py-4 flex-shrink-0">
-              <button onClick={onBack} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
+              <button onClick={() => setCurrentStep('video')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
               <div className="w-10"></div>
