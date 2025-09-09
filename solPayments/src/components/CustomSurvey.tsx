@@ -1048,9 +1048,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                   <div className="fixed bottom-4 left-1/2 -translate-x-1/2 transform z-20">
                     <Button
                       onClick={() => setCurrentStep('alcohol_drugs')}
-                      disabled={!canContinue()}
+                      disabled={surveyData.therapist_gender_preference === ''}
                       className={`pointer-events-auto rounded-full text-sm md:text-base font-medium transition-colors px-5 md:px-6 py-2 md:py-2.5 shadow-[1px_1px_0_#5C3106] border border-[#5C3106] ${
-                        canContinue() 
+                        surveyData.therapist_gender_preference !== '' 
                           ? 'bg-yellow-100 hover:bg-yellow-200 text-gray-800' 
                           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       }`}
