@@ -2020,38 +2020,28 @@ export default function MatchedTherapist({
                         );
                       })
                     ) : (
-                      ['1:00pm', '2:00pm', '5:00pm', '6:00pm', '7:00pm', '8:00pm'].map((time) => {
-                        const normalized = time.replace(/\s/g, '').toLowerCase();
-                        return (
-                          <button
-                            key={`time-${time}`}
-                            onClick={() => {
-                              setSelectedTimeSlot(normalized);
-                              // Track time slot selection
-                              if (clientData?.response_id) {
-                                journeyTracker.trackInteraction(clientData.response_id, 'time_slot_selection', {
-                                  selected_time: time,
-                                  selected_date: selectedDateObj?.toISOString().split('T')[0],
-                                  therapist_id: therapist?.id,
-                                  therapist_name: therapist?.intern_name,
-                                  source: 'fallback_static',
-                                  timezone: timezoneDisplay
-                                }).catch(console.error);
-                              }
-                            }}
-                            className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
-                              selectedTimeSlot === normalized
-                                ? 'border-yellow-400 bg-yellow-50'
-                                : 'border-[#5C3106] bg-white hover:bg-yellow-50'
-                            }`}
-                            style={{ fontFamily: 'var(--font-inter)' }}
-                          >
-                            {time}
-                          </button>
-                        );
-                      })
+                      // Loading state with graceful shimmer animation
+                      Array.from({ length: 6 }, (_, index) => (
+                        <div
+                          key={`loading-slot-${index}`}
+                          className="p-3 rounded-full border border-gray-200 bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 bg-[length:200%_100%] animate-[shimmer_2s_ease-in-out_infinite] shadow-[1px_1px_0_#E5E7EB]"
+                          style={{ 
+                            animation: `shimmer 2s ease-in-out infinite ${index * 0.1}s`,
+                            fontFamily: 'var(--font-inter)'
+                          }}
+                        >
+                          <div className="h-6 bg-transparent"></div>
+                        </div>
+                      ))
                     )}
                   </div>
+                  
+                  <style jsx>{`
+                    @keyframes shimmer {
+                      0% { background-position: -200% 0; }
+                      100% { background-position: 200% 0; }
+                    }
+                  `}</style>
 
                   <Button
                     className="w-full bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full border border-[#5C3106] shadow-[1px_1px_0_#5C3106] mb-6"
