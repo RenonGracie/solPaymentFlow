@@ -446,9 +446,16 @@ export default function OnboardingFlow({
 
   const handleStateSelection = (stateCode: string) => {
     setSelectedState(stateCode);
-    // Clear the other state input when selecting any state
-    setShowOtherStateInput(false);
-    setOtherStateSearch('');
+    
+    // If selecting a featured state, clear the other state input
+    if (featuredStates.includes(stateCode)) {
+      setShowOtherStateInput(false);
+      setOtherStateSearch('');
+    } else {
+      // If selecting an "other" state, keep the other state input visible but collapse the search
+      setOtherStateSearch('');
+    }
+    
     setFormData(prev => ({ ...prev, state: stateCode }));
   };
 
@@ -1835,8 +1842,10 @@ export default function OnboardingFlow({
                       }
                     }}
                     className={`w-full py-3 px-4 rounded-xl border-2 transition-all duration-300 flex items-center justify-center transform hover:scale-[1.02] min-h-[60px] animate-in fade-in slide-in-from-top-2 ${
-                      showOtherStateInput
-                        ? 'border-[#5C3106] bg-[#5C3106] text-white shadow-lg' 
+                      selectedState && !featuredStates.includes(selectedState)
+                        ? 'border-[#5C3106] bg-[#5C3106] text-white shadow-lg'
+                        : showOtherStateInput
+                        ? 'border-[#5C3106] text-[#5C3106] shadow-lg' 
                         : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
                     }`}
                     style={{
@@ -1845,22 +1854,41 @@ export default function OnboardingFlow({
                       animationFillMode: 'both'
                     } as React.CSSProperties}
                   >
-                    <div className={`mr-3 ${showOtherStateInput ? 'text-white' : 'text-gray-600'}`}>
-                      <svg 
-                        className="w-5 h-5" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
+                    <div className={`mr-3 ${
+                      selectedState && !featuredStates.includes(selectedState) 
+                        ? 'text-white' 
+                        : showOtherStateInput 
+                        ? 'text-[#5C3106]' 
+                        : 'text-gray-600'
+                    }`}>
+                      {selectedState && !featuredStates.includes(selectedState) ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <svg 
+                          className="w-5 h-5" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                      )}
                     </div>
                     
-                    <span className={`text-sm font-medium ${showOtherStateInput ? 'text-white' : 'text-gray-800'}`}>
-                      Other State
+                    <span className={`text-sm font-medium ${
+                      selectedState && !featuredStates.includes(selectedState)
+                        ? 'text-white'
+                        : showOtherStateInput 
+                        ? 'text-[#5C3106]' 
+                        : 'text-gray-800'
+                    }`}>
+                      {selectedState && !featuredStates.includes(selectedState) 
+                        ? (allStates.find(s => s.code === selectedState)?.name || selectedState)
+                        : 'Other State'
+                      }
                     </span>
                     
-                    {showOtherStateInput && (
+                    {selectedState && !featuredStates.includes(selectedState) && (
                       <div className="ml-auto">
                         <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
                           <Check className="w-3 h-3" style={{ color: '#5C3106' }} />
@@ -1896,7 +1924,7 @@ export default function OnboardingFlow({
                           selectedState === state.code ? 'bg-blue-100 text-blue-800' : 'text-gray-700'
                         }`}
                       >
-                        {state.code}
+                        {state.name}
                       </button>
                     ))}
                   </div>
