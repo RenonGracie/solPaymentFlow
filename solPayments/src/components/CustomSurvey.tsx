@@ -827,22 +827,22 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <button onClick={() => setCurrentStep('therapist_matching')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
+              <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
+                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                Therapist Preferences
+              </h1>
               <div className="w-10"></div>
             </div>
 
             {/* Content */}
             <div className="flex-1 px-4 sm:px-6 pb-10 sm:pb-14 min-h-0">
-              <div className="flow-narrow mx-auto -mt-4">
-                <div className="text-center mb-4 sm:mb-6 mt-2 flow-narrow mx-auto">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl mb-3 sm:mb-4 text-gray-800" 
-                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                    Therapist Preferences
-                  </h1>
+              <div className="flow-narrow mx-auto">
+                <div className="mb-4 sm:mb-6 mt-2 flow-narrow mx-auto">
                 </div>
 
                 {/* Therapist Specializations */}
                 <div className="mb-6 sm:mb-8">
-                  <h3 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that specializes in:
                   </h3>
                   <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 items-center">
@@ -897,7 +897,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
                 {/* Gender Preference */}
                 <div className="mb-6 sm:mb-8">
-                  <h3 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     I would like a therapist that identifies as <span className="text-red-500">*</span>
                   </h3>
                   <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
@@ -928,7 +928,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
                 {/* Lived Experiences */}
                 <div className="mb-6 sm:mb-8">
-                  <h3 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
                     Are there any lived experiences you identify with that you feel are important to your match?
                   </h3>
                   
@@ -1048,7 +1048,12 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                   <div className="fixed bottom-4 left-1/2 -translate-x-1/2 transform z-20">
                     <Button
                       onClick={() => setCurrentStep('alcohol_drugs')}
-                      className="pointer-events-auto bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-sm md:text-base font-medium transition-colors px-5 md:px-6 py-2 md:py-2.5 shadow-[1px_1px_0_#5C3106] border border-[#5C3106]"
+                      disabled={!canContinue()}
+                      className={`pointer-events-auto rounded-full text-sm md:text-base font-medium transition-colors px-5 md:px-6 py-2 md:py-2.5 shadow-[1px_1px_0_#5C3106] border border-[#5C3106] ${
+                        canContinue() 
+                          ? 'bg-yellow-100 hover:bg-yellow-200 text-gray-800' 
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      }`}
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       Continue →
