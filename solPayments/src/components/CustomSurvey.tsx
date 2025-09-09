@@ -1361,8 +1361,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                     </h1>
                   </div>
 
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] w-full max-w-md mx-auto">
-                    <div key={phq9CarouselIndex} className={`text-center mb-6 sm:mb-8 ${phq9IsTransitioning ? 'animate-question-exit' : 'animate-question'}`}>
+                  <div key={phq9CarouselIndex} className={`bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] w-full max-w-md mx-auto ${phq9IsTransitioning ? 'animate-card-exit' : 'animate-card-enter'}`}>
+                    <div className="text-center mb-6 sm:mb-8">
                       {/* Question */}
                       <div className="mb-4 sm:mb-5">
                         <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -1601,8 +1601,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                    )}
                  </div>
 
-                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] w-full max-w-md mx-auto">
-                   <div key={gad7CarouselIndex} className={`text-center mb-6 sm:mb-8 ${gad7IsTransitioning ? 'animate-question-exit' : 'animate-question'}`}>
+                 <div key={gad7CarouselIndex} className={`bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] w-full max-w-md mx-auto ${gad7IsTransitioning ? 'animate-card-exit' : 'animate-card-enter'}`}>
+                   <div className="text-center mb-6 sm:mb-8">
                      {/* Question */}
                      <div className="mb-4 sm:mb-5">
                        <p className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2" style={{ fontFamily: 'var(--font-inter)' }}>
@@ -2152,54 +2152,56 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
          </DialogContent>
        </Dialog>
 
-       {/* Enhanced style for smooth, bubbly transitions */}
+       {/* Enhanced style for smooth, unified card transitions */}
        <style>{`
-         .animate-question { 
-           animation: appleSpringIn 850ms cubic-bezier(0.175, 0.885, 0.32, 1.4) both;
+         /* Smooth card entrance with gentle swipe from right */
+         .animate-card-enter { 
+           animation: cardSwipeIn 600ms cubic-bezier(0.23, 1, 0.32, 1) both;
          }
          
-         .animate-question-exit {
-           animation: appleSpringOut 320ms cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
+         /* Card exit with subtle swipe to left */
+         .animate-card-exit {
+           animation: cardSwipeOut 350ms cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
          }
          
-         @keyframes appleSpringIn {
+         @keyframes cardSwipeIn {
            0% { 
              opacity: 0; 
-             transform: scale(0.7) translateY(60px) rotateX(15deg); 
-             filter: blur(6px);
+             transform: translateX(40px) scale(0.96);
+             filter: blur(2px);
            }
-           30% {
-             opacity: 0.3;
-             transform: scale(0.9) translateY(20px) rotateX(8deg);
-             filter: blur(3px);
+           40% {
+             opacity: 0.6;
+             transform: translateX(8px) scale(0.98);
+             filter: blur(1px);
            }
-           60% {
-             opacity: 0.8;
-             transform: scale(1.12) translateY(-12px) rotateX(-2deg);
+           70% {
+             opacity: 0.9;
+             transform: translateX(-3px) scale(1.01);
              filter: blur(0px);
            }
            100% { 
              opacity: 1; 
-             transform: scale(1) translateY(0px); 
+             transform: translateX(0px) scale(1);
              filter: blur(0px);
            }
          }
          
-         @keyframes appleSpringOut {
+         @keyframes cardSwipeOut {
            0% { 
              opacity: 1; 
-             transform: scale(1) translateY(0px) rotateX(0deg); 
+             transform: translateX(0px) scale(1);
              filter: blur(0px);
            }
-           50% {
-             opacity: 0.6;
-             transform: scale(0.95) translateY(-8px) rotateX(5deg);
-             filter: blur(1px);
+           30% {
+             opacity: 0.7;
+             transform: translateX(-8px) scale(0.99);
+             filter: blur(0.5px);
            }
            100% {
              opacity: 0;
-             transform: scale(0.8) translateY(-20px) rotateX(10deg);
-             filter: blur(3px);
+             transform: translateX(-30px) scale(0.95);
+             filter: blur(2px);
            }
          }
          
@@ -2217,82 +2219,73 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
          }
          
          /* Delightful bounce for buttons when they appear */
-         .animate-question .space-y-3 > button,
-         .animate-question .space-y-4 > button {
-           animation: appleButtonBounce 950ms cubic-bezier(0.175, 0.885, 0.32, 1.4) both;
-           animation-delay: 450ms;
+         .animate-card-enter .space-y-3 > button,
+         .animate-card-enter .space-y-4 > button {
+           animation: buttonFadeIn 650ms cubic-bezier(0.23, 1, 0.32, 1) both;
            transform-origin: center bottom;
          }
          
-         @keyframes appleButtonBounce {
+         @keyframes buttonFadeIn {
            0% {
              opacity: 0;
-             transform: scale(0.8) translateY(25px) rotate(-1deg);
+             transform: translateY(10px) scale(0.95);
            }
-           50% {
-             opacity: 0.7;
-             transform: scale(1.08) translateY(-5px) rotate(0.5deg);
-           }
-           75% {
-             opacity: 0.95;
-             transform: scale(0.98) translateY(2px) rotate(-0.2deg);
+           60% {
+             opacity: 0.8;
+             transform: translateY(-2px) scale(1.01);
            }
            100% {
              opacity: 1;
-             transform: scale(1) translateY(0px) rotate(0deg);
+             transform: translateY(0px) scale(1);
            }
          }
          
          /* Stagger the button animations for a beautiful cascading effect */
-         .animate-question .space-y-3 > button:nth-child(1),
-         .animate-question .space-y-4 > button:nth-child(1) { animation-delay: 350ms; }
-         .animate-question .space-y-3 > button:nth-child(2),
-         .animate-question .space-y-4 > button:nth-child(2) { animation-delay: 400ms; }
-         .animate-question .space-y-3 > button:nth-child(3),
-         .animate-question .space-y-4 > button:nth-child(3) { animation-delay: 450ms; }
-         .animate-question .space-y-3 > button:nth-child(4),
-         .animate-question .space-y-4 > button:nth-child(4) { animation-delay: 500ms; }
+         .animate-card-enter .space-y-3 > button:nth-child(1),
+         .animate-card-enter .space-y-4 > button:nth-child(1) { animation-delay: 250ms; }
+         .animate-card-enter .space-y-3 > button:nth-child(2),
+         .animate-card-enter .space-y-4 > button:nth-child(2) { animation-delay: 300ms; }
+         .animate-card-enter .space-y-3 > button:nth-child(3),
+         .animate-card-enter .space-y-4 > button:nth-child(3) { animation-delay: 350ms; }
+         .animate-card-enter .space-y-3 > button:nth-child(4),
+         .animate-card-enter .space-y-4 > button:nth-child(4) { animation-delay: 400ms; }
          
          /* Enhanced hover animations with gentle spring */
-         .animate-question button:hover {
+         .animate-card-enter button:hover {
            transform: scale(1.03) translateY(-1px);
            transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
            box-shadow: 0 4px 8px rgba(92, 49, 6, 0.15);
          }
          
          /* Active state with satisfying squish */
-         .animate-question button:active {
+         .animate-card-enter button:active {
            transform: scale(0.98) translateY(1px);
            transition: transform 100ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
          }
          
-         /* Enhanced progress dots animation */
-         .animate-question + * .h-0\\.5 {
-           animation: progressDotPulse 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-           animation-delay: 550ms;
+         /* Enhanced progress dots animation - synced with card animation */
+         .animate-card-enter .h-0\\.5 {
+           animation: progressDotPulse 400ms cubic-bezier(0.23, 1, 0.32, 1) both;
+           animation-delay: 450ms;
          }
          
          @keyframes progressDotPulse {
            0% {
              opacity: 0;
-             transform: scale(0.3) translateY(10px);
+             transform: scale(0.7) translateX(10px);
            }
-           30% {
-             opacity: 0.4;
-             transform: scale(0.8) translateY(-2px);
-           }
-           60% {
-             opacity: 0.8;
-             transform: scale(1.3) translateY(-1px);
+           50% {
+             opacity: 0.7;
+             transform: scale(1.1) translateX(-2px);
            }
            100% {
              opacity: 1;
-             transform: scale(1) translateY(0px);
+             transform: scale(1) translateX(0px);
            }
          }
          
          /* Add a subtle glow effect when buttons are selected */
-         .animate-question button[class*="bg-[#5C3106]"] {
+         .animate-card-enter button[class*="bg-[#5C3106]"] {
            box-shadow: 0 0 20px rgba(92, 49, 6, 0.3);
            animation: selectedGlow 300ms ease-out both;
          }
@@ -2312,25 +2305,25 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
            }
          }
          
-         /* Add subtle entrance animation for the question container */
-         .animate-question > div:first-child {
-           animation: questionTextFloat 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-           animation-delay: 100ms;
+         /* Add subtle entrance animation for the question text */
+         .animate-card-enter > div:first-child {
+           animation: questionTextFloat 500ms cubic-bezier(0.23, 1, 0.32, 1) both;
+           animation-delay: 150ms;
          }
          
          @keyframes questionTextFloat {
            0% {
              opacity: 0;
-             transform: translateY(15px);
+             transform: translateX(20px) scale(0.98);
            }
            100% {
              opacity: 1;
-             transform: translateY(0px);
+             transform: translateX(0px) scale(1);
            }
          }
          
         /* Extra Apple-style warm glow for the whole question card */
-        .animate-question::before {
+        .animate-card-enter::before {
           content: '';
           position: absolute;
           inset: -8px;
@@ -2358,7 +2351,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
         }
 
         /* Enhanced selected button celebration */
-        .animate-question button[class*="bg-[#5C3106]"] {
+        .animate-card-enter button[class*="bg-[#5C3106]"] {
           animation: selectedCelebration 500ms cubic-bezier(0.175, 0.885, 0.32, 1.4) both !important;
         }
         

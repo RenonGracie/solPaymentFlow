@@ -1961,6 +1961,8 @@ export default function MainPageComponent() {
                         send_client_email_notification: true,
                         reminder_type: 'email',
                         status: 'scheduled',
+                        // Add browser timezone for validation
+                        browser_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                       };
                       
                       console.log('📡 [MAIN COMPONENT] API REQUEST TO BACKEND:');

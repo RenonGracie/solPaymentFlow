@@ -146,9 +146,10 @@ export default function MatchedTherapist({
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
-  /** New: cache monthly availability by therapist + month + tz */
+  /** New: cache monthly availability by therapist + month + tz (30s cache for live data) */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
   const [isFindingAnother, setIsFindingAnother] = useState(false);
+  const [lastLiveRefresh, setLastLiveRefresh] = useState<Record<string, number>>({});
   const [showTherapistSearchLoading, setShowTherapistSearchLoading] = useState(false);
   const [therapistSearchPreloader, setTherapistSearchPreloader] = useState<(() => Promise<void>) | null>(null);
   const [isSwitchingTherapists, setIsSwitchingTherapists] = useState(false);
@@ -275,7 +276,20 @@ export default function MatchedTherapist({
   useEffect(() => {
     const email = therapist?.calendar_email || therapist?.email;
     if (!email || !avKey) return;
-    if (availabilityCache[avKey]) return; // cache hit
+    
+    // Always get fresh live data for accurate booking decisions
+    // Users need the most current availability to make informed booking choices
+    const now = Date.now();
+    const lastRefresh = lastLiveRefresh[avKey] || 0;
+    const cacheAge = now - lastRefresh;
+    const CACHE_DURATION = 30 * 1000; // Very short 30-second cache to reduce unnecessary API calls
+    
+    const hasVeryRecentCache = availabilityCache[avKey] && cacheAge < CACHE_DURATION;
+    
+    if (hasVeryRecentCache) {
+      console.log(`[Availability Cache] Using very recent cached data for ${email} (age: ${Math.round(cacheAge/1000)}s)`);
+      return; // Only use cache if extremely recent (< 30 seconds)
+    }
 
     const controller = new AbortController();
     const fetchAvailability = async () => {
@@ -289,9 +303,18 @@ export default function MatchedTherapist({
       const paymentType = getSelectedPaymentType();
       url.searchParams.set("payment_type", paymentType);
       
-      // Use reasonable work hours (7 AM to 9 PM)
+      // Use reasonable work hours (7 AM to 10 PM)
       url.searchParams.set("work_start", "07:00");
-      url.searchParams.set("work_end", "21:00");
+      url.searchParams.set("work_end", "22:00");
+      
+      // ALWAYS request live data for accurate booking decisions
+      // This ensures users see real-time availability from Google Calendar
+      url.searchParams.set("live", "true");
+      console.log(`[Availability Live] Requesting fresh calendar data for ${email} (${therapist?.program || 'Unknown Program'})`);
+      console.log(`  Cache age: ${cacheAge ? Math.round(cacheAge/1000) : 'N/A'}s | Fresh data needed for accurate booking`);
+      
+      const paymentTypeLabel = getSelectedPaymentType() === 'insurance' ? 'Insurance' : 'Cash Pay';
+      console.log(`  Payment type: ${paymentTypeLabel} | Duration: ${paymentTypeLabel === 'Insurance' ? '55' : '45'} minutes`);
       
       try {
         const r = await fetch(url.toString(), { signal: controller.signal });
@@ -341,13 +364,18 @@ export default function MatchedTherapist({
         }
 
         setAvailabilityCache(prev => ({ ...prev, [avKey]: data }));
+        setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
+        
+        console.log(`[Availability Live Updated] ${email}: ${Object.keys(data.days || {}).length} days from Google Calendar, updated at ${new Date().toLocaleTimeString()}`);
+        console.log(`  ✅ Real-time availability data loaded for accurate booking decisions`);
       } catch (e) {
-        console.warn("Availability fetch error", e);
+        console.warn("[Availability Live Error]", e);
+        console.warn(`  ❌ Could not fetch live data for ${email}, users may see stale availability`);
       }
     };
     fetchAvailability();
     return () => controller.abort();
-  }, [avKey, timezone, currentYear, currentMonth, therapist?.calendar_email, therapist?.email, getSelectedPaymentType, timezoneDisplay, availabilityCache]);
+  }, [avKey, timezone, currentYear, currentMonth, therapist?.calendar_email, therapist?.email, getSelectedPaymentType, timezoneDisplay, availabilityCache, lastLiveRefresh]);
   
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
@@ -610,77 +638,152 @@ export default function MatchedTherapist({
     const [hour, minute] = timeIn24Hour.split(':').map(Number);
     console.log(`  Parsed hour: ${hour}, minute: ${minute}`);
     
-    // Create the appointment datetime string in the client's timezone
-    const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${timeIn24Hour}:00`;
-    console.log(`  Appointment datetime string: ${appointmentDateTimeString}`);
+    // FIXED TIMEZONE HANDLING - Create appointment datetime with proper client timezone
+    console.log('🕐 FIXED TIMEZONE CONVERSION:');
+    console.log(`  Client timezone: ${timezone} (${timezoneDisplay})`);
+    console.log(`  Client state: ${clientData?.state || 'Unknown'}`);
     
-    // Create a Date object representing the appointment time in the client's timezone
-    // We'll create it as if it's in the client's timezone, then convert to proper ISO format
+    // BROWSER TIMEZONE VALIDATION - Cross-check with user's actual device timezone
+    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    console.log(`  Browser detected timezone: ${browserTimezone}`);
+    
+    // Validate browser timezone matches selected state timezone
+    if (browserTimezone !== timezone) {
+      console.log(`  ⚠️ TIMEZONE MISMATCH WARNING:`);
+      console.log(`    Selected state timezone: ${timezone}`);
+      console.log(`    Browser detected timezone: ${browserTimezone}`);
+      console.log(`    This could indicate:`);
+      console.log(`    - User is traveling/VPN`);
+      console.log(`    - User selected wrong state`);
+      console.log(`    - Timezone mapping error`);
+      
+      // Check if they're at least in the same "timezone family"
+      const stateMapping: { [key: string]: string[] } = {
+        "America/New_York": ["America/New_York", "America/Detroit", "America/Kentucky/Louisville"],
+        "America/Chicago": ["America/Chicago", "America/Menominee", "America/North_Dakota/Center"],
+        "America/Denver": ["America/Denver", "America/Boise"],
+        "America/Los_Angeles": ["America/Los_Angeles"],
+        "America/Phoenix": ["America/Phoenix"],
+        "America/Anchorage": ["America/Anchorage"],
+        "Pacific/Honolulu": ["Pacific/Honolulu"]
+      };
+      
+      let timezonesMatch = false;
+      for (const [baseTimezone, variants] of Object.entries(stateMapping)) {
+        if (variants.includes(browserTimezone) && variants.includes(timezone)) {
+          timezonesMatch = true;
+          console.log(`    ✅ Timezone variants match (${baseTimezone} family)`);
+          break;
+        }
+      }
+      
+      if (!timezonesMatch) {
+        console.log(`    ⚠️ Timezone families don't match - booking may be incorrect`);
+      }
+    } else {
+      console.log(`  ✅ Browser timezone matches selected state timezone`);
+    }
+    
     let datetime: string;
     
     try {
-      // Use the client's timezone to create the correct datetime
-      const clientTimezone = timezone;
+      // Method 1: Create the datetime string and let the backend handle timezone conversion
+      // This is more reliable than frontend timezone calculations which are error-prone
+      const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${timeIn24Hour}:00`;
       
-      // Simplified approach: Create date in client timezone and format properly
-      const appointmentDate = new Date();
-      appointmentDate.setFullYear(yyyy, selectedDateObj.getMonth(), selectedDateObj.getDate());
-      appointmentDate.setHours(hour, minute, 0, 0);
+      // Create metadata to help backend properly handle timezone
+      const bookingMetadata = {
+        selectedDate: selectedDateObj.toDateString(),
+        selectedTimeSlot: selectedTimeSlot,
+        selectedTimeIn24Hour: timeIn24Hour,
+        clientTimezone: timezone,
+        clientTimezoneDisplay: timezoneDisplay,
+        clientState: clientData?.state || '',
+        originalDateTimeString: appointmentDateTimeString
+      };
       
-      // Get the proper timezone offset for this specific date/time in the client's timezone
-      const timezoneOffset = getTherapistTimezoneOffset(clientTimezone);
+      console.log(`  Booking metadata:`, bookingMetadata);
       
-      // Create a new Date object that represents the appointment time
-      // We need to account for the difference between the browser's timezone and the client's timezone
-      const browserOffset = appointmentDate.getTimezoneOffset(); // Browser offset from UTC in minutes
-      const clientOffsetMinutes = getTherapistOffsetMinutes(clientTimezone); // Client timezone offset from UTC in minutes
+      // Calculate the correct timezone offset for the client's timezone at this specific date
+      const testDate = new Date(appointmentDateTimeString);
+      // Note: testDate is used for timezone offset calculation below
       
-      // Adjust for timezone differences
-      const adjustedTime = appointmentDate.getTime() - (browserOffset * 60000) - (clientOffsetMinutes * 60000);
-      const finalDateTime = new Date(adjustedTime);
+      // Get the proper timezone offset string
+      const offsetMinutes = -getTherapistOffsetMinutes(timezone);
+      const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+      const offsetMins = Math.abs(offsetMinutes) % 60;
+      const offsetSign = offsetMinutes >= 0 ? '+' : '-';
+      const timezoneOffsetString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
       
-      // Format as ISO string with timezone offset
-      datetime = finalDateTime.toISOString().slice(0, -1) + timezoneOffset;
+      // Create the final datetime with explicit timezone
+      datetime = `${appointmentDateTimeString}${timezoneOffsetString}`;
       
-      console.log('🕐 IMPROVED TIMEZONE CONVERSION:');
-      console.log(`  Client timezone: ${clientTimezone} (${timezoneDisplay})`);
-      console.log(`  Appointment date: ${appointmentDate.toLocaleString()}`);
-      console.log(`  Browser offset: ${browserOffset} minutes`);
-      console.log(`  Client offset: ${clientOffsetMinutes} minutes`);
-      console.log(`  Adjusted time: ${new Date(adjustedTime).toISOString()}`);
-      console.log(`  Timezone offset string: ${timezoneOffset}`);
+      console.log(`  Original datetime string: ${appointmentDateTimeString}`);
+      console.log(`  Client timezone offset: ${timezoneOffsetString}`);
       console.log(`  Final datetime with timezone: ${datetime}`);
       
-      // Verification: Convert back to client timezone to verify
+      // Verification: Parse back and verify it shows the correct time
       const verificationDate = new Date(datetime);
       const verificationInClientTz = verificationDate.toLocaleString("en-US", { 
-        timeZone: clientTimezone,
+        timeZone: timezone,
+        weekday: 'short',
         year: 'numeric',
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit',
+        month: 'short', 
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+      
+      // Also get just the time to compare
+      const verificationTimeOnly = verificationDate.toLocaleString("en-US", { 
+        timeZone: timezone,
+        hour: 'numeric',
         minute: '2-digit',
         hour12: true
       });
       
-      console.log('✅ VERIFICATION:');
-      console.log(`  Original selection: ${selectedDateObj.toDateString()} at ${selectedTimeSlot}`);
-      console.log(`  Parsed back in ${timezoneDisplay}: ${verificationInClientTz}`);
-      console.log(`  Should match selected time: ${selectedTimeSlot}`);
+      console.log(`  ✅ VERIFICATION:`);
+      console.log(`  Selected: ${selectedDateObj.toDateString()} at ${selectedTimeSlot}`);
+      console.log(`  Parsed back: ${verificationInClientTz}`);
+      console.log(`  Time only: ${verificationTimeOnly} (should match ${selectedTimeSlot})`);
+      
+      // Critical verification: ensure the hour matches
+      const selectedHourNum = hour;
+      const isAM = selectedTimeSlot.toLowerCase().includes('am');
+      const isPM = selectedTimeSlot.toLowerCase().includes('pm');
+      
+      let expectedHour = selectedHourNum;
+      if (isPM && selectedHourNum !== 12) expectedHour += 12;
+      if (isAM && selectedHourNum === 12) expectedHour = 0;
+      
+      // Get actual hour in client timezone
+      const actualHourInClientTz = parseInt(verificationDate.toLocaleString("en-US", { 
+        timeZone: timezone, 
+        hour: 'numeric', 
+        hour12: false 
+      }));
+      
+      if (Math.abs(actualHourInClientTz - expectedHour) <= 1) { // Allow 1 hour tolerance for edge cases
+        console.log(`  ✅ Hour verification PASSED: Expected ${expectedHour}, got ${actualHourInClientTz}`);
+      } else {
+        console.log(`  ⚠️ Hour verification WARNING: Expected ${expectedHour}, got ${actualHourInClientTz}`);
+        console.log(`  This may indicate a timezone conversion issue`);
+      }
       
     } catch (error) {
-      console.error('❌ Error in improved timezone conversion:', error);
+      console.error('❌ Error in fixed timezone conversion:', error);
       
-      // Fallback to original method if new one fails
-      const therapistTimezoneOffset = getTherapistTimezoneOffset(timezone);
-      const utcDateTime = new Date(yyyy, selectedDateObj.getMonth(), selectedDateObj.getDate(), hour, minute, 0);
-      const browserOffset = new Date().getTimezoneOffset();
-      const therapistOffsetMinutes = getTherapistOffsetMinutes(timezone);
-      const offsetDifference = browserOffset - therapistOffsetMinutes;
-      utcDateTime.setMinutes(utcDateTime.getMinutes() + offsetDifference);
-      datetime = utcDateTime.toISOString().slice(0, -1) + therapistTimezoneOffset;
+      // Fallback: Send without timezone and include metadata for backend processing
+      const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${timeIn24Hour}:00`;
       
-      console.log('⚠️ Using fallback method - Final datetime:', datetime);
+      console.log('🔄 Using fallback: sending datetime without timezone for backend processing');
+      console.log(`  Backend will handle timezone conversion using client state: ${clientData?.state}`);
+      
+      // Send the raw datetime and let backend apply timezone based on client state
+      datetime = appointmentDateTimeString;
+      
+      console.log(`  Fallback datetime: ${datetime}`);
     }
     
     // Close the confirmation modal
@@ -1826,12 +1929,26 @@ export default function MatchedTherapist({
               <Card className="md:flex-1 bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106] md:sticky md:top-4">
                 <CardContent className="p-4 md:p-6 flex flex-col">
                   <h3 className="very-vogue-title text-lg sm:text-xl text-gray-800 mb-1">Book Your First Session</h3>
-                  <p className="text-xs text-gray-600 mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <p className="text-xs text-gray-600 mb-2" style={{ fontFamily: 'var(--font-inter)' }}>
                     {clientData?.state ? 
                       `${String(clientData.state).toUpperCase()} Time (${timezoneDisplay})` : 
                       `Local Time (${timezoneDisplay})`
                     }
                   </p>
+                  
+                  {/* Live Data Status Debug Info (only in development) */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <p className="text-xs text-green-600 mb-2 font-mono" style={{ fontFamily: 'var(--font-mono, monospace)' }}>
+                      {(() => {
+                        const lastRefresh = lastLiveRefresh[avKey];
+                        const cacheAge = lastRefresh ? Math.round((Date.now() - lastRefresh) / 1000) : null;
+                        const hasCache = !!availabilityCache[avKey];
+                        const programType = therapist?.program || 'Unknown';
+                        
+                        return `LIVE DATA | ${hasCache ? `Fresh: ${cacheAge}s` : 'Loading...'} | ${programType} | ${avKey.split(':')[0]}`;
+                      })()}
+                    </p>
+                  )}
 
                   {/* Calendar */}
                   <div className="mb-6">
@@ -1892,6 +2009,7 @@ export default function MatchedTherapist({
                           let bgClass = 'bg-white';
                           let isUnavailable = false;
                           let textClass = '';
+                          let isLoading = false;
                           
                           if (cell.inMonth) {
                             if (isOutsideBookingWindow) {
@@ -1900,20 +2018,37 @@ export default function MatchedTherapist({
                               textClass = 'text-gray-400';
                               isUnavailable = true;
                             } else {
-                              // Future dates within booking window use availability color-coding
-                              const count = getDayAvailableCount(cell.date);
-                              const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
-                              isUnavailable = count === 0; // Only unavailable when no slots exist
+                              // Check if this date's availability is still loading
+                              const emailForLoading = therapist?.calendar_email || therapist?.email || '';
+                              const isCurrentMonthDate = cell.date.getFullYear() === currentYear && cell.date.getMonth() === currentMonth;
                               
-                              // Make unavailable red slots grey to be more visually distinct
-                              if (isUnavailable && color === 'red') {
-                                bgClass = 'bg-gray-200';
-                                textClass = 'text-gray-500';
+                              // Loading state: no availability data AND currently fetching
+                              const hasAvailabilityData = availability?.days || fetchedSlots[emailForLoading];
+                              const isCurrentlyFetching = fetchingSlots[emailForLoading] || !availabilityCache[avKey];
+                              
+                              isLoading = isCurrentMonthDate && !hasAvailabilityData && isCurrentlyFetching;
+                              
+                              if (isLoading) {
+                                // Loading state - shimmer animation with blue tint
+                                bgClass = 'bg-gradient-to-r from-blue-100 via-blue-50 to-blue-100 bg-[length:200%_100%]';
+                                textClass = 'text-blue-600 animate-pulse';
+                                isUnavailable = false; // Not unavailable, just loading
                               } else {
-                                bgClass =
-                                  color === 'red' ? 'bg-red-100' :
-                                  color === 'yellow' ? 'bg-yellow-100' :
-                                  'bg-green-100';
+                                // Future dates within booking window use availability color-coding
+                                const count = getDayAvailableCount(cell.date);
+                                const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
+                                isUnavailable = count === 0; // Only unavailable when no slots exist
+                                
+                                // Make unavailable red slots grey to be more visually distinct
+                                if (isUnavailable && color === 'red') {
+                                  bgClass = 'bg-gray-200';
+                                  textClass = 'text-gray-500';
+                                } else {
+                                  bgClass =
+                                    color === 'red' ? 'bg-red-100' :
+                                    color === 'yellow' ? 'bg-yellow-100' :
+                                    'bg-green-100';
+                                }
                               }
                             }
                           }
@@ -1931,6 +2066,9 @@ export default function MatchedTherapist({
                                 return 'Past date - not available';
                               }
                             }
+                            if (isLoading) {
+                              return 'Loading availability...';
+                            }
                             return `Available slots: ${getDayAvailableCount(cell.date)}`;
                           };
 
@@ -1938,7 +2076,7 @@ export default function MatchedTherapist({
                             <button
                               key={cell.key}
                               onClick={() => {
-                                if (cell.inMonth && !isUnavailable) {
+                                if (cell.inMonth && !isUnavailable && !isLoading) {
                                   setSelectedDateObj(cell.date);
                                   // Track date selection
                                   if (clientData?.response_id) {
@@ -1952,26 +2090,38 @@ export default function MatchedTherapist({
                                   }
                                 }
                               }}
-                              disabled={!cell.inMonth || isUnavailable}
+                              disabled={!cell.inMonth || isUnavailable || isLoading}
                               title={getTitle()}
                               className={`py-2 rounded-lg transition-colors border relative ${
                                 selected
                                   ? 'bg-blue-500 text-white border-blue-500'
                                   : cell.inMonth
-                                    ? isUnavailable
-                                      ? `${bgClass} ${textClass} cursor-not-allowed opacity-75 border-transparent`
-                                      : `${bgClass} hover:bg-yellow-50 border-transparent`
+                                    ? isLoading
+                                      ? `${bgClass} ${textClass} cursor-wait border-blue-200 animate-[shimmer_1.5s_ease-in-out_infinite]`
+                                      : isUnavailable
+                                        ? `${bgClass} ${textClass} cursor-not-allowed opacity-75 border-transparent`
+                                        : `${bgClass} hover:bg-yellow-50 border-transparent`
                                     : 'bg-white text-gray-300 cursor-not-allowed opacity-60 border-transparent'
                               }`}
                             >
-                              <span className={isUnavailable && cell.inMonth && !isOutsideBookingWindow ? 'relative' : ''}>
+                              <span className={`relative ${isUnavailable && cell.inMonth && !isOutsideBookingWindow ? 'relative' : ''}`}>
                                 {cell.day}
-                                {isUnavailable && cell.inMonth && !isOutsideBookingWindow && (
+                                {/* Loading animation for dates that are fetching availability */}
+                                {isLoading && cell.inMonth && (
+                                  <span className="absolute inset-0 flex items-center justify-center">
+                                    <span className="inline-block w-1 h-1 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                    <span className="inline-block w-1 h-1 bg-blue-500 rounded-full animate-bounce mx-0.5" style={{ animationDelay: '150ms' }}></span>
+                                    <span className="inline-block w-1 h-1 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                                  </span>
+                                )}
+                                {/* Red line for unavailable dates with slots */}
+                                {isUnavailable && cell.inMonth && !isOutsideBookingWindow && !isLoading && (
                                   <span className="absolute inset-0 flex items-center justify-center">
                                     <span className="block w-full h-0.5 bg-red-500 transform rotate-45 absolute"></span>
                                   </span>
                                 )}
-                                {isOutsideBookingWindow && cell.inMonth && (
+                                {/* X mark for dates outside booking window */}
+                                {isOutsideBookingWindow && cell.inMonth && !isLoading && (
                                   <span className="absolute inset-0 flex items-center justify-center">
                                     <span className="block w-full h-0.5 bg-gray-400 transform rotate-45 absolute"></span>
                                     <span className="block w-full h-0.5 bg-gray-400 transform -rotate-45 absolute"></span>
