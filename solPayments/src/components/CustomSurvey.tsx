@@ -635,10 +635,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               backgroundColor: '#FFFBF3',
               backgroundImage: 'url("/beige texture 2048.svg")',
               backgroundRepeat: 'repeat',
-              backgroundSize: '200px 200px',
-              backgroundImage:
-                "radial-gradient(rgba(0,0,0,0.04) 1px, transparent 1px)",
-              backgroundSize: '16px 16px'
+              backgroundSize: '200px 200px'
             }}
           >
             {/* Header with sunset image */}
