@@ -2,7 +2,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Play, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import Image from "next/image";
 import { TMatchedTherapistData } from "@/api/types/therapist.types";
 import type { SlotsResponse } from "@/api/services";
@@ -145,6 +146,7 @@ export default function MatchedTherapist({
   const [hasRecordedSelection, setHasRecordedSelection] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [showNoMatchesModal, setShowNoMatchesModal] = useState(false);
 
   /** New: cache monthly availability by therapist + month + tz (30s cache for live data) */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
@@ -484,6 +486,14 @@ export default function MatchedTherapist({
       
       const nextIndex = (currentIndex + 1) % therapistsList.length;
       const nextTherapist = therapistsList[nextIndex]?.therapist;
+      
+      // Check if we've seen all therapists (about to cycle back to first one)
+      if (nextIndex === 0 && viewedTherapistIds.size >= therapistsList.length) {
+        console.log(`[Find Another] All ${therapistsList.length} therapists have been viewed, showing no matches modal`);
+        setShowNoMatchesModal(true);
+        setIsSwitchingTherapists(false);
+        return;
+      }
       
       console.log(`[Find Another] Fallback - Moving to: ${nextTherapist?.intern_name} (index ${nextIndex})`);
       
@@ -1169,7 +1179,6 @@ export default function MatchedTherapist({
 
   const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
   
-  
   const goPrevMonth = () => {
     const next = new Date(currentYear, currentMonth - 1, 1);
     setCalendarDate(next);
@@ -1319,7 +1328,11 @@ export default function MatchedTherapist({
       normalizedMaxBookingTime.setHours(23, 59, 59, 999);
       availableSessions = availableSessions.filter(session => {
         const sessionTime = new Date(session.start);
-        return sessionTime.getTime() >= minimumBookingTime.getTime() && sessionTime.getTime() <= normalizedMaxBookingTime.getTime();
+        const hour = sessionTime.getHours();
+        // Filter for business hours (7 AM - 10 PM) AND booking window
+        return sessionTime.getTime() >= minimumBookingTime.getTime() && 
+               sessionTime.getTime() <= normalizedMaxBookingTime.getTime() &&
+               hour >= 7 && hour < 22;
       });
       
       // Apply hourly restriction for Associate Therapists
@@ -1349,9 +1362,13 @@ export default function MatchedTherapist({
         const normalizedMaxBookingTimeLegacy = new Date(now);
         normalizedMaxBookingTimeLegacy.setDate(normalizedMaxBookingTimeLegacy.getDate() + 14);
         normalizedMaxBookingTimeLegacy.setHours(23, 59, 59, 999);
-        let filteredSlots = daySlots.filter(dt => 
-          dt.getTime() >= minimumBookingTime.getTime() && dt.getTime() <= normalizedMaxBookingTimeLegacy.getTime()
-        );
+        let filteredSlots = daySlots.filter(dt => {
+          const hour = dt.getHours();
+          // Filter for business hours (7 AM - 10 PM) AND booking window
+          return dt.getTime() >= minimumBookingTime.getTime() && 
+                 dt.getTime() <= normalizedMaxBookingTimeLegacy.getTime() &&
+                 hour >= 7 && hour < 22;
+        });
         
         const therapistCategory = getTherapistCategory(therapist);
         if (therapistCategory === 'Associate Therapist') {
@@ -1958,7 +1975,18 @@ export default function MatchedTherapist({
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium" style={{ fontFamily: 'var(--font-inter)' }}>{monthLabel}</h4>
                       <div className="flex gap-2">
-                        <button onClick={goPrevMonth} className="p-1 hover:bg-gray-100 rounded border border-gray-200" aria-label="Previous month">
+                        <button 
+                          onClick={goPrevMonth} 
+                          className="p-1 hover:bg-gray-100 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+                          aria-label="Previous month"
+                          disabled={(() => {
+                            const now = new Date();
+                            const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                            const calendarMonthStart = new Date(currentYear, currentMonth, 1);
+                            // Only allow going back if we're viewing a future month (not the current month)
+                            return calendarMonthStart.getTime() <= currentMonthStart.getTime();
+                          })()}
+                        >
                           <ChevronLeft className="w-4 h-4" />
                         </button>
                         <button 
@@ -2172,8 +2200,23 @@ export default function MatchedTherapist({
                           </button>
                         );
                       })
+                    ) : selectedDateObj ? (
+                      // No slots available for selected date
+                      <div className="col-span-2 flex flex-col items-center justify-center py-8 text-center">
+                        <div className="text-gray-400 mb-2">
+                          <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <p className="text-gray-500 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                          No available time slots
+                        </p>
+                        <p className="text-gray-400 text-xs mt-1" style={{ fontFamily: 'var(--font-inter)' }}>
+                          Try selecting a different date
+                        </p>
+                      </div>
                     ) : (
-                      // Loading state with graceful shimmer animation
+                      // Loading state - show while fetching slots
                       Array.from({ length: 6 }, (_, index) => (
                         <div
                           key={`loading-slot-${index}`}
@@ -2407,6 +2450,61 @@ export default function MatchedTherapist({
         timezoneDisplay={timezoneDisplay}
         sessionDuration={getSessionDuration()}
       />
+      
+      {/* No Additional Matches Modal */}
+      <Dialog open={showNoMatchesModal} onOpenChange={setShowNoMatchesModal}>
+        <DialogContent className="max-w-md mx-auto bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
+          <DialogHeader className="text-center pb-2">
+            <DialogTitle className="flex items-center justify-center gap-2 text-xl sm:text-2xl text-gray-800" 
+                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+              <Info className="w-5 h-5 text-blue-600" />
+              No Additional Matches Available
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 text-center px-2">
+            <p className="text-base sm:text-lg text-gray-800 font-medium" 
+               style={{ fontFamily: 'var(--font-inter)' }}>
+              We couldn't find any more therapists that match your preferences
+            </p>
+            
+            <p className="text-sm text-gray-600" 
+               style={{ fontFamily: 'var(--font-inter)' }}>
+              We're actively expanding our clinical team quickly to cover a wider range of preferences
+            </p>
+            
+            <div className="flex flex-col gap-3 pt-4">
+              <Button
+                onClick={() => {
+                  setShowNoMatchesModal(false);
+                  // Option A: Return to preference selection (implementation needed)
+                  console.log('Change Preferences clicked - returning to preferences page');
+                }}
+                className="w-full py-3 px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base font-medium hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106]"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Change Preferences
+              </Button>
+              
+              <Button
+                onClick={() => {
+                  setShowNoMatchesModal(false);
+                  // Option B: Keep all preferences but set gender to "No Preference" and re-search
+                  console.log('View All Genders clicked - setting gender preference to no preference and re-searching');
+                  if (onFindAnother) {
+                    // This would need to pass updated preferences to the parent
+                    onFindAnother();
+                  }
+                }}
+                className="w-full py-3 px-6 bg-yellow-100 border border-[#5C3106] rounded-2xl text-gray-800 text-base font-medium hover:bg-yellow-200 transition-colors shadow-[1px_1px_0_#5C3106]"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                View All Genders
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

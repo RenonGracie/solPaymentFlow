@@ -939,6 +939,10 @@ export default function OnboardingFlow({
             preload="metadata"
             onCanPlayThrough={() => setInitialVideoReady(true)}
             onLoadedData={() => setInitialVideoReady(true)}
+            onEnded={() => {
+              // Auto-advance to next step when video finishes
+              setTimeout(() => handleContinue(), 1000); // 1 second delay for smooth transition
+            }}
             onError={(e) => {
               console.warn('Video load error:', e);
               setInitialVideoReady(true); // Continue anyway
@@ -987,6 +991,10 @@ export default function OnboardingFlow({
             preload="metadata"
             onCanPlayThrough={() => setInitialVideoReady(true)}
             onLoadedData={() => setInitialVideoReady(true)}
+            onEnded={() => {
+              // Auto-advance to next step when video finishes
+              setTimeout(() => handleContinue(), 1000); // 1 second delay for smooth transition
+            }}
             onError={(e) => {
               console.warn('Video load error:', e);
               setInitialVideoReady(true);
@@ -1035,6 +1043,10 @@ export default function OnboardingFlow({
             preload="metadata"
             onCanPlayThrough={() => setInitialVideoReady(true)}
             onLoadedData={() => setInitialVideoReady(true)}
+            onEnded={() => {
+              // Auto-advance to next step when video finishes
+              setTimeout(() => handleContinue(), 1000); // 1 second delay for smooth transition
+            }}
             onError={(e) => {
               console.warn('Video load error:', e);
               setInitialVideoReady(true);
@@ -1081,6 +1093,10 @@ export default function OnboardingFlow({
           preload="metadata"
           onCanPlayThrough={() => setInitialVideoReady(true)}
           onLoadedData={() => setInitialVideoReady(true)}
+          onEnded={() => {
+            // Auto-advance to next step when video finishes
+            setTimeout(() => handleContinue(), 1000); // 1 second delay for smooth transition
+          }}
           onError={(e) => {
             console.warn('Video load error:', e);
             setInitialVideoReady(true);

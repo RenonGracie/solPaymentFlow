@@ -399,9 +399,13 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                 className="absolute inset-0 w-full h-full object-cover object-bottom"
                 autoPlay 
                 muted 
-                loop 
                 playsInline
                 preload="auto"
+                onEnded={(e) => {
+                  // Freeze on last frame by seeking to the end
+                  const video = e.currentTarget;
+                  video.currentTime = video.duration;
+                }}
               >
                 <source src={VIDEOS.howItWorks9x16} type="video/mp4" />
                 Your browser does not support the video tag.
@@ -429,9 +433,13 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                   className="absolute inset-0 w-full h-full object-cover"
                   autoPlay 
                   muted 
-                  loop 
                   playsInline
                   preload="auto"
+                  onEnded={(e) => {
+                    // Freeze on last frame by seeking to the end
+                    const video = e.currentTarget;
+                    video.currentTime = video.duration;
+                  }}
                 >
                   <source src={VIDEOS.howItWorks9x16} type="video/mp4" />
                   Your browser does not support the video tag.
@@ -473,9 +481,13 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                   className="w-full h-full object-cover"
                   autoPlay 
                   muted 
-                  loop 
                   playsInline
                   preload="auto"
+                  onEnded={(e) => {
+                    // Freeze on last frame by seeking to the end
+                    const video = e.currentTarget;
+                    video.currentTime = video.duration;
+                  }}
                 >
                   <source src={VIDEOS.howItWorks16x9} type="video/mp4" />
                   Your browser does not support the video tag.
@@ -519,9 +531,13 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                 className="absolute inset-0 w-full h-full object-cover"
                 autoPlay 
                 muted 
-                loop 
                 playsInline
                 preload="auto"
+                onEnded={(e) => {
+                  // Freeze on last frame by seeking to the end
+                  const video = e.currentTarget;
+                  video.currentTime = video.duration;
+                }}
               >
                 <source src={VIDEOS.howItWorks16x9} type="video/mp4" />
                 Your browser does not support the video tag.
@@ -2168,22 +2184,18 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
            0% { 
              opacity: 0; 
              transform: translateX(40px) scale(0.96);
-             filter: blur(2px);
            }
            40% {
              opacity: 0.6;
              transform: translateX(8px) scale(0.98);
-             filter: blur(1px);
            }
            70% {
              opacity: 0.9;
              transform: translateX(-3px) scale(1.01);
-             filter: blur(0px);
            }
            100% { 
              opacity: 1; 
              transform: translateX(0px) scale(1);
-             filter: blur(0px);
            }
          }
          
@@ -2191,17 +2203,14 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
            0% { 
              opacity: 1; 
              transform: translateX(0px) scale(1);
-             filter: blur(0px);
            }
            30% {
              opacity: 0.7;
              transform: translateX(-8px) scale(0.99);
-             filter: blur(0.5px);
            }
            100% {
              opacity: 0;
              transform: translateX(-30px) scale(0.95);
-             filter: blur(2px);
            }
          }
          
@@ -2209,30 +2218,32 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
            0% {
              opacity: 1;
              transform: scale(1) translateY(0px);
-             filter: blur(0px);
            }
            100% {
              opacity: 0;
              transform: scale(0.9) translateY(-15px);
-             filter: blur(2px);
            }
          }
          
-         /* Delightful bounce for buttons when they appear */
+         /* Smooth bounce for buttons when they appear */
          .animate-card-enter .space-y-3 > button,
          .animate-card-enter .space-y-4 > button {
-           animation: buttonFadeIn 650ms cubic-bezier(0.23, 1, 0.32, 1) both;
-           transform-origin: center bottom;
+           animation: buttonFadeIn 550ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+           transform-origin: center;
          }
          
          @keyframes buttonFadeIn {
            0% {
              opacity: 0;
-             transform: translateY(10px) scale(0.95);
+             transform: translateY(8px) scale(0.97);
            }
-           60% {
-             opacity: 0.8;
-             transform: translateY(-2px) scale(1.01);
+           50% {
+             opacity: 0.7;
+             transform: translateY(-1px) scale(1.005);
+           }
+           80% {
+             opacity: 0.95;
+             transform: translateY(0.5px) scale(0.998);
            }
            100% {
              opacity: 1;
@@ -2360,21 +2371,21 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             transform: scale(1);
             box-shadow: 0 0 0px rgba(92, 49, 6, 0);
           }
-          25% {
-            transform: scale(1.15) rotate(2deg);
-            box-shadow: 0 0 25px rgba(92, 49, 6, 0.5), 0 5px 20px rgba(255, 193, 7, 0.3);
+          30% {
+            transform: scale(1.05) rotate(0.5deg);
+            box-shadow: 0 0 15px rgba(92, 49, 6, 0.4), 0 3px 12px rgba(255, 193, 7, 0.2);
           }
-          50% {
-            transform: scale(0.92) rotate(-1deg);
-            box-shadow: 0 0 30px rgba(92, 49, 6, 0.6);
+          60% {
+            transform: scale(0.98) rotate(-0.3deg);
+            box-shadow: 0 0 18px rgba(92, 49, 6, 0.5);
           }
-          75% {
-            transform: scale(1.08) rotate(0.5deg);
-            box-shadow: 0 0 22px rgba(92, 49, 6, 0.45);
+          80% {
+            transform: scale(1.02) rotate(0.1deg);
+            box-shadow: 0 0 16px rgba(92, 49, 6, 0.4);
           }
           100% {
             transform: scale(1) rotate(0deg);
-            box-shadow: 0 0 20px rgba(92, 49, 6, 0.35), 0 3px 12px rgba(92, 49, 6, 0.25);
+            box-shadow: 0 0 12px rgba(92, 49, 6, 0.3), 0 2px 8px rgba(92, 49, 6, 0.2);
           }
         }
       `}</style>
