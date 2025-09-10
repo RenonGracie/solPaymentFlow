@@ -13,7 +13,7 @@ export type MatchResponse = {
   therapists: TMatchedTherapistData[];
 };
 
-export async function fetchMatches(responseId: string, limit = 10, excludeTherapistIds?: string[]) {
+export async function fetchMatches(responseId: string, limit = 50, excludeTherapistIds?: string[]) {
   const url = new URL(`${API_BASE}/therapists/match`);
   url.searchParams.set('response_id', responseId);
   url.searchParams.set('limit', String(limit));

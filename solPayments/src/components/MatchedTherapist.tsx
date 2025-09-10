@@ -2269,8 +2269,8 @@ export default function MatchedTherapist({
           {previouslyViewed.length > 0 && (
             <div className="mt-6">
               <h3 className="very-vogue-title text-lg sm:text-xl text-gray-800 mb-4">Previously Viewed Therapists</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {previouslyViewed.slice(0, 4).map((therapistData) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {previouslyViewed.map((therapistData) => (
                   <button
                     key={`prev-${therapistData.therapist.id}`}
                     onClick={() => handleSelectPreviousTherapist(therapistData.therapist.id)}
