@@ -9,7 +9,6 @@ import { TMatchedTherapistData } from "@/api/types/therapist.types";
 import type { SlotsResponse } from "@/api/services";
 import { useTherapistsService } from "@/api/services";
 import axios from "@/api/axios"; // Import axios for API calls
-import { TherapistSearchModal } from "@/components/TherapistSearchModal";
 import { TherapistConfirmationModal } from "@/components/TherapistConfirmationModal";
 import { journeyTracker } from "@/services/journeyTracker";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -29,7 +28,7 @@ type AvDay = {
   slots: AvSlot[];
   sessions?: { start: string; end: string }[];
 };
-type Availability = {
+type AvailabilityMonth = {
   meta: {
     calendar_id: string;
     year: number;
@@ -40,6 +39,23 @@ type Availability = {
     slot_minutes: number;
   };
   days: Record<number, AvDay>;
+};
+
+// New unified availability response structure
+type Availability = {
+  months: AvailabilityMonth[];
+  therapist_info: {
+    email: string;
+    name: string;
+    program: string;
+    accepting_new_clients: boolean;
+  };
+  booking_info: {
+    session_duration_minutes: number;
+    payment_type: string;
+    supported_payment_types: string[];
+    timezone: string;
+  };
 };
 
 // State to timezone mapping (IANA format for internal use)
@@ -144,13 +160,11 @@ export default function MatchedTherapist({
   const [fetchingSlots, setFetchingSlots] = useState<Record<string, boolean>>({});
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
   const [hasRecordedSelection, setHasRecordedSelection] = useState(false);
-  const [showSearchModal, setShowSearchModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showNoMatchesModal, setShowNoMatchesModal] = useState(false);
 
   /** New: cache monthly availability by therapist + month + tz (30s cache for live data) */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
-  const [isFindingAnother, setIsFindingAnother] = useState(false);
   const [lastLiveRefresh, setLastLiveRefresh] = useState<Record<string, number>>({});
   const [showTherapistSearchLoading, setShowTherapistSearchLoading] = useState(false);
   const [therapistSearchPreloader, setTherapistSearchPreloader] = useState<(() => Promise<void>) | null>(null);
@@ -330,27 +344,34 @@ export default function MatchedTherapist({
         const byDay: Record<string, string[]> = {};
         const timeAnalysis: Record<string, { before7am: number; after10pm: number; validHours: number; totalSlots: number }> = {};
         
-        Object.entries(data.days || {}).forEach(([dayStr, payload]) => {
-          const sessions = (payload.sessions ?? payload.slots.filter(s => s.is_free).map(s => ({ start: s.start, end: s.end })));
-          byDay[dayStr] = sessions.map(s => s.start);
-          
-          // Analyze time distribution for backend improvements
-          let before7am = 0, after10pm = 0, validHours = 0;
-          sessions.forEach(session => {
-            const sessionDate = new Date(session.start);
-            const hour = sessionDate.getHours();
-            if (hour < 7) before7am++;
-            else if (hour >= 22) after10pm++;
-            else validHours++;
+        // Process availability data from the new unified structure
+        const currentMonthData = data.months?.find(m => 
+          m.meta?.year === currentYear && m.meta?.month === (currentMonth + 1)
+        );
+        
+        if (currentMonthData?.days) {
+          Object.entries(currentMonthData.days).forEach(([dayStr, payload]) => {
+            const sessions = (payload.sessions ?? payload.slots.filter(s => s.is_free).map(s => ({ start: s.start, end: s.end })));
+            byDay[dayStr] = sessions.map(s => s.start);
+            
+            // Analyze time distribution for backend improvements
+            let before7am = 0, after10pm = 0, validHours = 0;
+            sessions.forEach(session => {
+              const sessionDate = new Date(session.start);
+              const hour = sessionDate.getHours();
+              if (hour < 7) before7am++;
+              else if (hour >= 22) after10pm++;
+              else validHours++;
+            });
+            
+            timeAnalysis[dayStr] = {
+              before7am,
+              after10pm,
+              validHours,
+              totalSlots: sessions.length
+            };
           });
-          
-          timeAnalysis[dayStr] = {
-            before7am,
-            after10pm,
-            validHours,
-            totalSlots: sessions.length
-          };
-        });
+        }
         
         console.log(`[Availability] ${email} ${currentYear}-${String(currentMonth+1).padStart(2,"0")} (${timezoneDisplay}/${timezone}):`, {
           byDay,
@@ -371,8 +392,17 @@ export default function MatchedTherapist({
         setAvailabilityCache(prev => ({ ...prev, [avKey]: data }));
         setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
         
-        console.log(`[Availability Live Updated] ${email}: ${Object.keys(data.days || {}).length} days from Google Calendar, updated at ${new Date().toLocaleTimeString()}`);
+        const daysCount = currentMonthData?.days ? Object.keys(currentMonthData.days).length : 0;
+        console.log(`[Availability Live Updated] ${email}: ${daysCount} days from Google Calendar, updated at ${new Date().toLocaleTimeString()}`);
         console.log(`  ✅ Real-time availability data loaded for accurate booking decisions`);
+        
+        // Log therapist and booking info from unified response
+        if (data.therapist_info) {
+          console.log(`  👩‍⚕️ Therapist: ${data.therapist_info.name} (${data.therapist_info.program})`);
+        }
+        if (data.booking_info) {
+          console.log(`  📅 Session: ${data.booking_info.session_duration_minutes}min | ${data.booking_info.payment_type} | ${data.booking_info.timezone}`);
+        }
       } catch (e) {
         console.warn("[Availability Live Error]", e);
         console.warn(`  ❌ Could not fetch live data for ${email}, users may see stale availability`);
@@ -390,6 +420,8 @@ export default function MatchedTherapist({
   const handleFindAnother = async () => {
     console.log(`[Find Another] Current therapist: ${therapist?.intern_name} (index ${currentIndex})`);
     console.log(`[Find Another] Total therapists available: ${therapistsList.length}`);
+    
+    // UNIFIED APPROACH: Always use LoadingScreen for consistent UX
     
     // If we have multiple therapists already loaded, cycle through them with preloading
     if (therapistsList.length > 1) {
@@ -413,14 +445,16 @@ export default function MatchedTherapist({
       return;
     }
     
-    // Show the search modal first for new therapist search
-    setShowSearchModal(true);
+    // If we need new therapists, still use LoadingScreen for consistency
+    console.log(`[Find Another] Need new therapists - using LoadingScreen for consistent UX`);
     
-    // Wait for 2 seconds (modal duration) before proceeding
+    // Show loading screen immediately for consistent experience
+    setShowTherapistSearchLoading(true);
+    
+    // Start the backend fetch in the background
     setTimeout(() => {
-      setShowSearchModal(false);
       handleFindAnotherFallback();
-    }, 2000);
+    }, 1000); // Small delay to show loading screen
   };
   
   const handleTherapistSearchComplete = useCallback(() => {
@@ -461,7 +495,6 @@ export default function MatchedTherapist({
     // If we only have 1 therapist or want fresh matches, fetch new ones
     if (onFindAnother) {
       console.log(`[Find Another] Fetching new therapists from backend...`);
-      setIsFindingAnother(true);
       
       try {
         await onFindAnother();
@@ -470,10 +503,15 @@ export default function MatchedTherapist({
         setSelectedDateObj(null);
         setImageError({});
         setHasRecordedSelection(false);
+        
+        console.log(`[Find Another] ✅ Successfully fetched new therapists`);
       } catch (error) {
-        console.error('[Find Another] Failed to fetch new therapists:', error);
+        console.error('[Find Another] ❌ Failed to fetch new therapists:', error);
       } finally {
-        setIsFindingAnother(false);
+        // Hide loading screen after backend fetch completes
+        setShowTherapistSearchLoading(false);
+        setTherapistSearchPreloader(null);
+        console.log(`[Find Another] Loading screen hidden after backend fetch`);
       }
     } else {
       // Fallback: cycle through existing list (original behavior)
@@ -503,7 +541,10 @@ export default function MatchedTherapist({
       setImageError({});
       setHasRecordedSelection(false);
       
-      // Re-enable auto-selection after a brief delay and preserve calendar month
+      // Hide loading screen and re-enable auto-selection
+      setShowTherapistSearchLoading(false);
+      setTherapistSearchPreloader(null);
+      
       setTimeout(() => {
         console.log(`[Find Another] Fallback - Re-enabling auto-selection and ensuring calendar month is preserved`);
         // Explicitly preserve the calendar month in case it got changed
@@ -1232,8 +1273,46 @@ export default function MatchedTherapist({
   };
 
   // Pull availability for this therapist + month (if fetched)
-  const availability = availabilityCache[avKey];
+  const availabilityResponse = availabilityCache[avKey];
   const emailForSlots = therapist?.calendar_email || therapist?.email || '';
+
+  // Helper function to extract current month's availability data from the new structure
+  const getCurrentMonthAvailability = () => {
+    if (!availabilityResponse?.months) return null;
+    
+    // Find the month that matches current year and month
+    const targetMonth = availabilityResponse.months.find(m => 
+      m.meta?.year === currentYear && m.meta?.month === (currentMonth + 1)
+    );
+    
+    return targetMonth || null;
+  };
+
+  // Extract current month's availability (maintains backward compatibility)
+  const availability = getCurrentMonthAvailability();
+
+  // Enhanced therapist data with availability API response (if available)
+  const enhancedTherapistData = useMemo(() => {
+    const base = therapist || {};
+    const apiTherapistInfo = availabilityResponse?.therapist_info;
+    const apiBookingInfo = availabilityResponse?.booking_info;
+    
+    if (apiTherapistInfo && apiBookingInfo) {
+      return {
+        ...base,
+        // Merge API data with existing therapist data
+        program: apiTherapistInfo.program || base.program,
+        accepting_new_clients: apiTherapistInfo.accepting_new_clients ?? base.accepting_new_clients,
+        // Add session info from API response
+        session_duration_minutes: apiBookingInfo.session_duration_minutes,
+        supported_payment_types: apiBookingInfo.supported_payment_types,
+        api_payment_type: apiBookingInfo.payment_type,
+        api_timezone: apiBookingInfo.timezone
+      };
+    }
+    
+    return base;
+  }, [therapist, availabilityResponse]);
 
   // Fallback: derive per-day available slot counts from legacy ISO slots with logging
   const legacyDayCount = useMemo(() => {
@@ -1786,10 +1865,15 @@ export default function MatchedTherapist({
                     
                     <div className="w-full mt-4">
                       <h2 className="very-vogue-title text-xl sm:text-2xl text-gray-800">{therapist.intern_name}</h2>
-                      {/* Therapist category */}
-                      <p className="text-sm text-gray-600 mt-1 mb-3" style={{ fontFamily: 'var(--font-inter)' }}>
-                        {getTherapistCategory(therapist)}
-                      </p>
+                      {/* Therapist category and session info */}
+                      <div className="text-sm text-gray-600 mt-1 mb-3" style={{ fontFamily: 'var(--font-inter)' }}>
+                        <p>{getTherapistCategory(enhancedTherapistData)}</p>
+                        {enhancedTherapistData && 'session_duration_minutes' in enhancedTherapistData && enhancedTherapistData.session_duration_minutes && (
+                          <p className="text-xs mt-1 text-gray-500">
+                            {enhancedTherapistData.session_duration_minutes}-minute sessions • {getSelectedPaymentType() === 'insurance' ? 'Insurance' : 'Cash Pay'}
+                          </p>
+                        )}
+                      </div>
                       {/* Matched specialties */}
                       <div className="flex flex-wrap gap-2 mt-3">
                         {matchedSpecialties.slice(0, 3).map((specialty, i) => (
@@ -2255,9 +2339,9 @@ export default function MatchedTherapist({
                       variant="outline"
                       className="w-full rounded-full border-2 border-[#5C3106]"
                       onClick={handleFindAnother}
-                      disabled={isFindingAnother}
+                      disabled={showTherapistSearchLoading}
                     >
-                      {isFindingAnother ? 'Finding New Therapist...' : 'Find Another Therapist →'}
+                      {showTherapistSearchLoading ? 'Finding New Therapist...' : 'Find Another Therapist →'}
                     </Button>
                   </div>
                 </CardContent>
@@ -2432,11 +2516,6 @@ export default function MatchedTherapist({
         </div>
       )}
       
-      {/* Therapist Search Modal */}
-      <TherapistSearchModal
-        isVisible={showSearchModal}
-        onComplete={() => setShowSearchModal(false)}
-      />
       
       {/* Therapist Confirmation Modal */}
       <TherapistConfirmationModal
@@ -2449,6 +2528,8 @@ export default function MatchedTherapist({
         clientTimezone={timezone}
         timezoneDisplay={timezoneDisplay}
         sessionDuration={getSessionDuration()}
+        bookingInfo={availabilityResponse?.booking_info}
+        therapistInfo={availabilityResponse?.therapist_info}
       />
       
       {/* No Additional Matches Modal */}

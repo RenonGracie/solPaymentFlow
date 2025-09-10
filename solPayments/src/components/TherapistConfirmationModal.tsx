@@ -14,6 +14,19 @@ interface TherapistConfirmationModalProps {
   clientTimezone?: string;
   timezoneDisplay?: string;
   sessionDuration?: number;
+  // Enhanced booking info from unified availability API
+  bookingInfo?: {
+    session_duration_minutes: number;
+    payment_type: string;
+    supported_payment_types: string[];
+    timezone: string;
+  };
+  therapistInfo?: {
+    email: string;
+    name: string;
+    program: string;
+    accepting_new_clients: boolean;
+  };
 }
 
 export const TherapistConfirmationModal = ({ 
@@ -25,7 +38,9 @@ export const TherapistConfirmationModal = ({
   onCancel,
   clientTimezone = 'America/New_York',
   timezoneDisplay = 'EST',
-  sessionDuration = 55
+  sessionDuration = 55,
+  bookingInfo,
+  therapistInfo
 }: TherapistConfirmationModalProps) => {
   if (!therapist) return null;
 
@@ -74,12 +89,19 @@ export const TherapistConfirmationModal = ({
   };
 
   const getTherapistCategory = (therapist: TMatchedTherapistData['therapist']): string => {
-    const program = (therapist?.program ?? '').trim();
+    // Use enhanced therapist info if available
+    const program = therapistInfo?.program || (therapist?.program ?? '').trim();
     if (program === 'Limited Permit') return 'Associate Therapist';
     return 'Graduate Therapist';
   };
 
   const getSessionDuration = (therapist: TMatchedTherapistData['therapist']): number => {
+    // Prefer booking info from availability API if available
+    if (bookingInfo?.session_duration_minutes) {
+      return bookingInfo.session_duration_minutes;
+    }
+    
+    // Fallback to program-based logic
     const category = getTherapistCategory(therapist);
     if (category === 'Graduate Therapist') return 45;
     if (category === 'Associate Therapist') return 55;
@@ -87,6 +109,11 @@ export const TherapistConfirmationModal = ({
   };
 
   const actualSessionDuration = therapist ? getSessionDuration(therapist.therapist) : sessionDuration;
+  
+  // Enhanced therapist name and info display
+  const displayName = therapistInfo?.name || therapist?.therapist?.intern_name || 'Unknown Therapist';
+  const displayProgram = therapistInfo?.program || therapist?.therapist?.program || 'Unknown';
+  const paymentTypeDisplay = bookingInfo?.payment_type === 'insurance' ? 'Insurance' : 'Cash Pay';
 
   return (
     <Dialog open={isVisible} onOpenChange={onCancel}>
@@ -129,10 +156,15 @@ export const TherapistConfirmationModal = ({
               {/* Therapist Info */}
               <div className="flex-1">
                 <h3 className="very-vogue-title text-xl sm:text-2xl text-gray-800 mb-1">
-                  {therapist.therapist.intern_name}
+                  {displayName}
                 </h3>
                 <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
                   {getTherapistCategory(therapist.therapist)}
+                  {bookingInfo && (
+                    <span className="ml-2 text-xs text-gray-500">
+                      • {paymentTypeDisplay}
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -182,6 +214,9 @@ export const TherapistConfirmationModal = ({
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     {actualSessionDuration} minute session
+                    {bookingInfo && (
+                      <span> • {paymentTypeDisplay}</span>
+                    )}
                   </p>
                 </div>
               </div>

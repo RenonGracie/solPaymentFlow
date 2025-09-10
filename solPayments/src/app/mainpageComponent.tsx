@@ -455,6 +455,9 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
                 <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
                   {getTherapistCategory()}
                 </p>
+                <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'var(--font-inter)' }}>
+                  {getSessionDuration()}-minute sessions
+                </p>
               </div>
             </div>
 
