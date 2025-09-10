@@ -289,128 +289,120 @@ export default function MatchedTherapist({
     return `${email}:${currentYear}:${currentMonth + 1}:${timezone}`;
   }, [therapist?.calendar_email, therapist?.email, currentYear, currentMonth, timezone]);
 
+  // Per-day availability loading - eliminates phantom requests and improves performance
   useEffect(() => {
     const email = therapist?.calendar_email || therapist?.email;
     if (!email || !avKey) return;
-    
-    // Always get fresh live data for accurate booking decisions
-    // Users need the most current availability to make informed booking choices
-    const now = Date.now();
-    const lastRefresh = lastLiveRefresh[avKey] || 0;
-    const cacheAge = now - lastRefresh;
-    const CACHE_DURATION = 30 * 1000; // Very short 30-second cache to reduce unnecessary API calls
-    
-    const hasVeryRecentCache = availabilityCache[avKey] && cacheAge < CACHE_DURATION;
-    
-    if (hasVeryRecentCache) {
-      console.log(`[Availability Cache] Using very recent cached data for ${email} (age: ${Math.round(cacheAge/1000)}s)`);
-      return; // Only use cache if extremely recent (< 30 seconds)
-    }
 
-    const controller = new AbortController();
-    const fetchAvailability = async () => {
+    console.log(`[Daily Availability] Starting per-day loading for ${email} (${therapist?.program || 'Unknown Program'})`);
+    
+    // Generate next 14 days
+    const generateNext14Days = () => {
+      const days = [];
+      const today = new Date();
+      for (let i = 0; i < 14; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        days.push(date.toISOString().split('T')[0]); // YYYY-MM-DD format
+      }
+      return days;
+    };
+
+    const daysToFetch = generateNext14Days();
+    const paymentType = getSelectedPaymentType();
+    const paymentTypeLabel = paymentType === 'insurance' ? 'Insurance' : 'Cash Pay';
+    
+    console.log(`  📅 Loading ${daysToFetch.length} days | ${paymentTypeLabel} | ${timezoneDisplay}`);
+
+    // Clear previous data for this therapist
+    setAvailabilityCache(prev => {
+      const updated = { ...prev };
+      delete updated[avKey];
+      return updated;
+    });
+
+    // Fetch each day individually and asynchronously
+    const fetchDayAvailability = async (dateStr: string, dayIndex: number) => {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, API_BASE);
-      url.searchParams.set("year", String(currentYear));
-      url.searchParams.set("month", String(currentMonth + 1));
-      // Use user's timezone for display purposes, but business hours remain 7am-10pm EST
-      // Backend will calculate availability using EST business hours and convert to user's timezone
+      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability/daily`, API_BASE);
+      url.searchParams.set("date", dateStr);
       url.searchParams.set("timezone", timezone);
-      
-      // Pass the actual payment type
-      const paymentType = getSelectedPaymentType();
       url.searchParams.set("payment_type", paymentType);
-      
-      // Business hours are fixed at 7am-10pm EST, but displayed in user's local timezone
-      // Backend will automatically convert EST business hours to user's timezone for display
-      url.searchParams.set("work_start", "07:00");
-      url.searchParams.set("work_end", "22:00");
-      
-      // ALWAYS request live data for accurate booking decisions
-      // This ensures users see real-time availability from Google Calendar
-      url.searchParams.set("live", "true");
-      console.log(`[Availability Live] Requesting fresh calendar data for ${email} (${therapist?.program || 'Unknown Program'})`);
-      console.log(`  Cache age: ${cacheAge ? Math.round(cacheAge/1000) : 'N/A'}s | Fresh data needed for accurate booking`);
-      
-      const paymentTypeLabel = getSelectedPaymentType() === 'insurance' ? 'Insurance' : 'Cash Pay';
-      console.log(`  Payment type: ${paymentTypeLabel} | Duration: ${paymentTypeLabel === 'Insurance' ? '55' : '45'} minutes`);
-      
+      url.searchParams.set("live", "true"); // Always get fresh data
+
       try {
-        const r = await fetch(url.toString(), { signal: controller.signal });
-        if (!r.ok) throw new Error(`Availability fetch failed: ${r.status}`);
-        const data: Availability = await r.json();
-
-        // Log available sessions with time analysis
-        const byDay: Record<string, string[]> = {};
-        const timeAnalysis: Record<string, { before7am: number; after10pm: number; validHours: number; totalSlots: number }> = {};
+        const response = await fetch(url.toString());
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        // Process availability data from the new unified structure
-        const currentMonthData = data.months?.find(m => 
-          m.meta?.year === currentYear && m.meta?.month === (currentMonth + 1)
-        );
+        const dayData = await response.json();
+        const slotsCount = dayData.available_slots?.length || 0;
         
-        if (currentMonthData?.days) {
-          Object.entries(currentMonthData.days).forEach(([dayStr, payload]) => {
-            const sessions = (payload.sessions ?? payload.slots.filter(s => s.is_free).map(s => ({ start: s.start, end: s.end })));
-            byDay[dayStr] = sessions.map(s => s.start);
-            
-            // Analyze time distribution for backend improvements
-            let before7am = 0, after10pm = 0, validHours = 0;
-            sessions.forEach(session => {
-              const sessionDate = new Date(session.start);
-              const hour = sessionDate.getHours();
-              if (hour < 7) before7am++;
-              else if (hour >= 22) after10pm++;
-              else validHours++;
-            });
-            
-            timeAnalysis[dayStr] = {
-              before7am,
-              after10pm,
-              validHours,
-              totalSlots: sessions.length
+        console.log(`  ✅ Day ${dayIndex + 1}/14: ${dateStr} (${dayData.day_of_week}) - ${slotsCount} slots`);
+        
+        // Store this day's data in cache
+        setAvailabilityCache(prev => {
+          const current = prev[avKey] || { months: [{ days: {} }] };
+          // Convert date to day number for compatibility
+          const dayNum = parseInt(dateStr.split('-')[2]);
+          
+          if (!current.months[0]?.days) {
+            current.months[0] = { 
+              days: {}, 
+              meta: { 
+                calendar_id: email,
+                timezone, 
+                year: parseInt(dateStr.split('-')[0]), 
+                month: parseInt(dateStr.split('-')[1]),
+                work_start: "07:00",
+                work_end: "22:00", 
+                slot_minutes: 60
+              } 
             };
-          });
-        }
-        
-        console.log(`[Availability] ${email} ${currentYear}-${String(currentMonth+1).padStart(2,"0")} (${timezoneDisplay}/${timezone}):`, {
-          byDay,
-          timeAnalysis,
-          summary: {
-            totalDays: Object.keys(byDay).length,
-            daysWithInvalidTimes: Object.values(timeAnalysis).filter(day => day.before7am > 0 || day.after10pm > 0).length,
-            totalInvalidSlots: Object.values(timeAnalysis).reduce((sum, day) => sum + day.before7am + day.after10pm, 0)
           }
+          
+          current.months[0].days[dayNum] = {
+            summary: {
+              free_ratio: 1,
+              free_secs: 3600,
+              busy_secs: 0,
+              day_start: `${dateStr}T07:00:00`,
+              day_end: `${dateStr}T22:00:00`,
+              segments: []
+            },
+            slots: [],
+            sessions: dayData.available_slots?.map((time: string) => ({
+              start: `${dateStr}T${time}:00`,
+              end: `${dateStr}T${time}:00` // Simplified for now
+            })) || []
+          };
+          
+          return { ...prev, [avKey]: current };
         });
-        
-        // Log summary of out-of-hours slots (only if significant)
-        const totalOutOfHours = Object.values(timeAnalysis).reduce((sum, analysis) => sum + analysis.before7am + analysis.after10pm, 0);
-        if (totalOutOfHours > 10) {
-          console.warn(`[Calendar] ${email}: ${totalOutOfHours} out-of-hours slots filtered (backend should filter to 7AM-10PM)`);
-        }
 
-        setAvailabilityCache(prev => ({ ...prev, [avKey]: data }));
-        setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
-        
-        const daysCount = currentMonthData?.days ? Object.keys(currentMonthData.days).length : 0;
-        console.log(`[Availability Live Updated] ${email}: ${daysCount} days from Google Calendar, updated at ${new Date().toLocaleTimeString()}`);
-        console.log(`  ✅ Real-time availability data loaded for accurate booking decisions`);
-        
-        // Log therapist and booking info from unified response
-        if (data.therapist_info) {
-          console.log(`  👩‍⚕️ Therapist: ${data.therapist_info.name} (${data.therapist_info.program})`);
-        }
-        if (data.booking_info) {
-          console.log(`  📅 Session: ${data.booking_info.session_duration_minutes}min | ${data.booking_info.payment_type} | ${data.booking_info.timezone}`);
-        }
-      } catch (e) {
-        console.warn("[Availability Live Error]", e);
-        console.warn(`  ❌ Could not fetch live data for ${email}, users may see stale availability`);
+      } catch (error) {
+        console.warn(`  ❌ Day ${dayIndex + 1}/14: ${dateStr} - Failed:`, error);
       }
     };
-    fetchAvailability();
-    return () => controller.abort();
-  }, [avKey, timezone, currentYear, currentMonth, therapist?.calendar_email, therapist?.email, getSelectedPaymentType, timezoneDisplay, availabilityCache, lastLiveRefresh]);
+
+    // Fetch first 3 days immediately (visible days)
+    const priorityDays = daysToFetch.slice(0, 3);
+    const backgroundDays = daysToFetch.slice(3);
+
+    // Load priority days first
+    Promise.all(priorityDays.map((date, index) => fetchDayAvailability(date, index)))
+      .then(() => {
+        console.log(`  🎯 Priority days loaded (1-3)`);
+        setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
+        
+        // Load background days with slight delays
+        backgroundDays.forEach((date, index) => {
+          setTimeout(() => {
+            fetchDayAvailability(date, index + 3);
+          }, index * 200); // Stagger by 200ms each
+        });
+      });
+
+  }, [avKey, timezone, therapist?.calendar_email, therapist?.email, getSelectedPaymentType, timezoneDisplay]);
   
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
@@ -1644,7 +1636,6 @@ export default function MatchedTherapist({
 
   const formatTimeLabel = (date: Date) => {
     const timeString = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-    console.log(`[Format Time] ${date.toISOString()} -> "${timeString}"`);
     return timeString;
   };
 
@@ -2049,7 +2040,7 @@ export default function MatchedTherapist({
                         const hasCache = !!availabilityCache[avKey];
                         const programType = therapist?.program || 'Unknown';
                         
-                        return `LIVE DATA | ${hasCache ? `Fresh: ${cacheAge}s` : 'Loading...'} | ${programType} | ${avKey.split(':')[0]}`;
+                        return `LIVE DATA | ${hasCache ? `Fresh: ${cacheAge !== null ? cacheAge + 's' : 'N/A'}` : 'Loading...'} | ${programType} | ${avKey.split(':')[0]}`;
                       })()}
                     </p>
                   )}

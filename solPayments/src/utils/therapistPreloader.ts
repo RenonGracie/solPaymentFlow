@@ -94,95 +94,7 @@ const preloadVideo = (videoUrl: string, timeout: number = 5000): Promise<void> =
   });
 };
 
-/**
- * Preload calendar availability for a therapist
- */
-const preloadCalendarAvailability = async (
-  therapist: TMatchedTherapistData['therapist'], 
-  clientState?: string,
-  paymentType?: string,
-  timeout: number = 15000
-): Promise<void> => {
-  return new Promise((resolve) => {
-    const email = therapist.calendar_email || therapist.email;
-    if (!email) {
-      resolve();
-      return;
-    }
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      controller.abort();
-      console.warn(`[Preloader] Calendar timeout: ${email}`);
-      resolve();
-    }, timeout);
-
-    const fetchAvailability = async () => {
-      try {
-        // Get current date info for availability fetch
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth() + 1; // 1-based month
-        
-        // Determine timezone from client state
-        const STATE_TIMEZONE_MAP: Record<string, string> = {
-          'CT': 'America/New_York', 'DE': 'America/New_York', 'DC': 'America/New_York', 'FL': 'America/New_York',
-          'GA': 'America/New_York', 'ME': 'America/New_York', 'MD': 'America/New_York', 'MA': 'America/New_York',
-          'NH': 'America/New_York', 'NJ': 'America/New_York', 'NY': 'America/New_York', 'NC': 'America/New_York',
-          'OH': 'America/New_York', 'PA': 'America/New_York', 'RI': 'America/New_York', 'SC': 'America/New_York',
-          'VT': 'America/New_York', 'VA': 'America/New_York', 'WV': 'America/New_York', 'MI': 'America/New_York',
-          'IN': 'America/New_York', 'KY': 'America/New_York',
-          'AL': 'America/Chicago', 'AR': 'America/Chicago', 'IL': 'America/Chicago', 'IA': 'America/Chicago',
-          'LA': 'America/Chicago', 'MN': 'America/Chicago', 'MS': 'America/Chicago', 'MO': 'America/Chicago',
-          'OK': 'America/Chicago', 'WI': 'America/Chicago', 'TX': 'America/Chicago', 'TN': 'America/Chicago',
-          'KS': 'America/Chicago', 'NE': 'America/Chicago', 'SD': 'America/Chicago', 'ND': 'America/Chicago',
-          'AZ': 'America/Phoenix', 'CO': 'America/Denver', 'ID': 'America/Denver', 'MT': 'America/Denver',
-          'NM': 'America/Denver', 'UT': 'America/Denver', 'WY': 'America/Denver',
-          'CA': 'America/Los_Angeles', 'NV': 'America/Los_Angeles', 'OR': 'America/Los_Angeles', 'WA': 'America/Los_Angeles',
-          'AK': 'America/Anchorage', 'HI': 'Pacific/Honolulu',
-        };
-        
-        const timezone = clientState ? STATE_TIMEZONE_MAP[clientState.toUpperCase()] || 'America/New_York' : 'America/New_York';
-        
-        // Build availability API URL
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-        const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, API_BASE);
-        url.searchParams.set("year", String(currentYear));
-        url.searchParams.set("month", String(currentMonth));
-        url.searchParams.set("timezone", timezone);
-        url.searchParams.set("payment_type", paymentType || 'insurance');
-        url.searchParams.set("work_start", "07:00");
-        url.searchParams.set("work_end", "21:00");
-
-        const response = await fetch(url.toString(), { 
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log(`[Preloader] ✅ Calendar loaded: ${email} (${Object.keys(data.days || {}).length} days)`);
-        clearTimeout(timer);
-        resolve();
-      } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
-          console.warn(`[Preloader] Calendar aborted: ${email}`);
-        } else {
-          console.warn(`[Preloader] Calendar failed: ${email}`, error);
-        }
-        clearTimeout(timer);
-        resolve();
-      }
-    };
-
-    fetchAvailability();
-  });
-};
+// Calendar availability preloading removed - now loaded on-demand per day for better performance
 
 /**
  * Preload all data for a single therapist
@@ -206,11 +118,8 @@ export const preloadTherapistData = async (
     {
       name: 'Welcome Video',
       task: () => preloadVideo(therapist.welcome_video || therapist.welcome_video_link || therapist.greetings_video_link || '', timeout)
-    },
-    {
-      name: 'Calendar Availability',
-      task: () => preloadCalendarAvailability(therapist, clientState, paymentType, timeout * 1.5)
     }
+    // Calendar availability removed - will be loaded on-demand per day
   ];
 
   let completed = 0;
