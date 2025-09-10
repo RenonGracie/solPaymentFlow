@@ -273,7 +273,7 @@ export const LoadingScreen = ({
   const state = loadingStates[currentStateIndex];
 
   return (
-    <div className="relative min-h-screen min-w-screen bg-[#F5F5DC]">
+    <div className="relative min-h-screen min-w-screen" style={{ backgroundColor: '#fffaee', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
       <div className="absolute top-[40px] left-0 right-0 flex items-center justify-center gap-2 lg:top-[32px] lg:left-[32px] lg:justify-start z-10">
         <div className="relative">
           <Image

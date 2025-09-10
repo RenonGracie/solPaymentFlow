@@ -6,8 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ArrowLeft, Play, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import Image from "next/image";
 import { TMatchedTherapistData } from "@/api/types/therapist.types";
-import type { SlotsResponse } from "@/api/services";
-import { useTherapistsService } from "@/api/services";
 import axios from "@/api/axios"; // Import axios for API calls
 import { TherapistConfirmationModal } from "@/components/TherapistConfirmationModal";
 import { journeyTracker } from "@/services/journeyTracker";
@@ -156,8 +154,6 @@ export default function MatchedTherapist({
   const [viewedTherapistIds, setViewedTherapistIds] = useState<Set<string>>(new Set());
   const [showVideo, setShowVideo] = useState(false);
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
-  const [fetchedSlots, setFetchedSlots] = useState<Record<string, string[]>>({});
-  const [fetchingSlots, setFetchingSlots] = useState<Record<string, boolean>>({});
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
   const [hasRecordedSelection, setHasRecordedSelection] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -174,7 +170,6 @@ export default function MatchedTherapist({
   const therapist = currentTherapistData?.therapist;
   const matchedSpecialtiesRaw = currentTherapistData?.matched_diagnoses_specialities || [];
   
-  const { slots: slotsRequest } = useTherapistsService();
 
   // Get payment type from client data, localStorage, or query param
   const getSelectedPaymentType = useCallback((): 'insurance' | 'cash_pay' => {
@@ -258,27 +253,6 @@ export default function MatchedTherapist({
     }
   }, [therapist?.id]);
   
-  // Legacy: Fetch Google Calendar-backed slots (ISO strings) if service is available
-  useEffect(() => {
-    const email = therapist?.calendar_email || therapist?.email;
-    if (!email) return;
-    if (fetchedSlots[email] || fetchingSlots[email]) return;
-    setFetchingSlots(prev => ({ ...prev, [email]: true }));
-    slotsRequest
-      .makeRequest({ params: {
-        email,
-        response_id: (clientData?.response_id as string) || undefined,
-        state: clientData?.state || undefined,
-      } })
-      .then((res: SlotsResponse) => {
-        const avail = res?.available_slots || [];
-        setFetchedSlots(prev => ({ ...prev, [email]: avail }));
-      })
-      .catch(() => {
-        // Swallow errors; fallback occurs to availability endpoint below
-      })
-      .finally(() => setFetchingSlots(prev => ({ ...prev, [email]: false })));
-  }, [therapist?.calendar_email, therapist?.email, clientData?.response_id, clientData?.state, slotsRequest, fetchedSlots, fetchingSlots]);
 
   /** New: Fetch monthly availability JSON when therapist or month changes */
   const currentYear = calendarDate.getFullYear();
@@ -289,30 +263,17 @@ export default function MatchedTherapist({
     return `${email}:${currentYear}:${currentMonth + 1}:${timezone}`;
   }, [therapist?.calendar_email, therapist?.email, currentYear, currentMonth, timezone]);
 
-  // Per-day availability loading - eliminates phantom requests and improves performance
+  // Unified availability loading - uses same API as curl example for consistency
   useEffect(() => {
     const email = therapist?.calendar_email || therapist?.email;
     if (!email || !avKey) return;
 
-    console.log(`[Daily Availability] Starting per-day loading for ${email} (${therapist?.program || 'Unknown Program'})`);
+    console.log(`[Unified Availability] Loading for ${email} (${therapist?.program || 'Unknown Program'})`);
     
-    // Generate next 14 days
-    const generateNext14Days = () => {
-      const days = [];
-      const today = new Date();
-      for (let i = 0; i < 14; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        days.push(date.toISOString().split('T')[0]); // YYYY-MM-DD format
-      }
-      return days;
-    };
-
-    const daysToFetch = generateNext14Days();
     const paymentType = getSelectedPaymentType();
     const paymentTypeLabel = paymentType === 'insurance' ? 'Insurance' : 'Cash Pay';
     
-    console.log(`  📅 Loading ${daysToFetch.length} days | ${paymentTypeLabel} | ${timezoneDisplay}`);
+    console.log(`  📅 Loading monthly availability | ${paymentTypeLabel} | ${timezoneDisplay}`);
 
     // Clear previous data for this therapist
     setAvailabilityCache(prev => {
@@ -321,88 +282,56 @@ export default function MatchedTherapist({
       return updated;
     });
 
-    // Fetch each day individually and asynchronously
-    const fetchDayAvailability = async (dateStr: string, dayIndex: number) => {
+    // Fetch unified availability (same endpoint as curl example)
+    const fetchUnifiedAvailability = async () => {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability/daily`, API_BASE);
-      url.searchParams.set("date", dateStr);
+      const url = new URL(`/therapists/availability`, API_BASE);
+      url.searchParams.set("calendar_id", email);
+      url.searchParams.set("year", currentYear.toString());
+      url.searchParams.set("month", (currentMonth + 1).toString());
       url.searchParams.set("timezone", timezone);
       url.searchParams.set("payment_type", paymentType);
-      url.searchParams.set("live", "true"); // Always get fresh data
+      url.searchParams.set("live_check", "true"); // Always get fresh data
+      url.searchParams.set("slot_minutes", "60");
 
       try {
         const response = await fetch(url.toString());
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        const dayData = await response.json();
-        const slotsCount = dayData.available_slots?.length || 0;
+        const data = await response.json();
         
-        console.log(`  ✅ Day ${dayIndex + 1}/14: ${dateStr} (${dayData.day_of_week}) - ${slotsCount} slots`);
+        console.log(`  ✅ Unified API: ${Object.keys(data.days || {}).length} days loaded for ${email}`);
         
-        // Store this day's data in cache
+        // Store the complete response in cache
         setAvailabilityCache(prev => {
-          const current = prev[avKey] || { months: [{ days: {} }] };
-          // Convert date to day number for compatibility
-          const dayNum = parseInt(dateStr.split('-')[2]);
-          
-          if (!current.months[0]?.days) {
-            current.months[0] = { 
-              days: {}, 
-              meta: { 
+          return { ...prev, [avKey]: {
+            months: [{
+              days: data.days || {},
+              meta: {
                 calendar_id: email,
-                timezone, 
-                year: parseInt(dateStr.split('-')[0]), 
-                month: parseInt(dateStr.split('-')[1]),
-                work_start: "07:00",
-                work_end: "22:00", 
+                timezone,
+                year: currentYear,
+                month: currentMonth + 1,
+                work_start: data.work_start || "07:00",
+                work_end: data.work_end || "22:00",
                 slot_minutes: 60
-              } 
-            };
-          }
-          
-          current.months[0].days[dayNum] = {
-            summary: {
-              free_ratio: 1,
-              free_secs: 3600,
-              busy_secs: 0,
-              day_start: `${dateStr}T07:00:00`,
-              day_end: `${dateStr}T22:00:00`,
-              segments: []
-            },
-            slots: [],
-            sessions: dayData.available_slots?.map((time: string) => ({
-              start: `${dateStr}T${time}:00`,
-              end: `${dateStr}T${time}:00` // Simplified for now
-            })) || []
-          };
-          
-          return { ...prev, [avKey]: current };
+              }
+            }],
+            therapist_info: data.therapist_info,
+            booking_info: data.booking_info
+          }};
         });
-
+        
+        setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
+        
       } catch (error) {
-        console.warn(`  ❌ Day ${dayIndex + 1}/14: ${dateStr} - Failed:`, error);
+        console.warn(`  ❌ Unified API failed for ${email}:`, error);
       }
     };
 
-    // Fetch first 3 days immediately (visible days)
-    const priorityDays = daysToFetch.slice(0, 3);
-    const backgroundDays = daysToFetch.slice(3);
+    fetchUnifiedAvailability();
 
-    // Load priority days first
-    Promise.all(priorityDays.map((date, index) => fetchDayAvailability(date, index)))
-      .then(() => {
-        console.log(`  🎯 Priority days loaded (1-3)`);
-        setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
-        
-        // Load background days with slight delays
-        backgroundDays.forEach((date, index) => {
-          setTimeout(() => {
-            fetchDayAvailability(date, index + 3);
-          }, index * 200); // Stagger by 200ms each
-        });
-      });
-
-  }, [avKey, timezone, therapist?.calendar_email, therapist?.email, getSelectedPaymentType, timezoneDisplay]);
+  }, [avKey, timezone, therapist?.calendar_email, therapist?.email, currentYear, currentMonth, getSelectedPaymentType, timezoneDisplay]);
   
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
@@ -1306,49 +1235,6 @@ export default function MatchedTherapist({
     return base;
   }, [therapist, availabilityResponse]);
 
-  // Fallback: derive per-day available slot counts from legacy ISO slots with logging
-  const legacyDayCount = useMemo(() => {
-    const map: Record<number, number> = {};
-    const isoList = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
-    let invalidTimeSlots = 0;
-    let validTimeSlots = 0;
-    
-    for (const iso of isoList) {
-      const dt = new Date(iso);
-      if (dt.getFullYear() === currentYear && dt.getMonth() === currentMonth) {
-        const day = dt.getDate();
-        const hour = dt.getHours();
-        
-        // Count valid vs invalid time slots for logging
-        if (hour >= 7 && hour < 22) {
-          validTimeSlots++;
-          map[day] = (map[day] ?? 0) + 1;
-        } else {
-          invalidTimeSlots++;
-          console.warn(`[Legacy Slots] Invalid time slot from legacy API:`, {
-            therapist: therapist?.intern_name,
-            isoString: iso,
-            parsedTime: dt.toLocaleString(),
-            hour: hour,
-            reason: hour < 7 ? 'before-7am' : 'after-10pm',
-            timezone: timezoneDisplay
-          });
-        }
-      }
-    }
-    
-    if (isoList.length > 0) {
-      console.log(`[Legacy Slots] ${therapist?.intern_name} - ${currentYear}-${String(currentMonth+1).padStart(2,"0")}:`, {
-        totalLegacySlots: isoList.length,
-        validTimeSlots,
-        invalidTimeSlots,
-        filteredDayCount: Object.keys(map).length,
-        timezone: timezoneDisplay
-      });
-    }
-    
-    return map;
-  }, [fetchedSlots, therapist?.available_slots, emailForSlots, currentYear, currentMonth, therapist?.intern_name, timezoneDisplay]);
 
   // Count available slots for a particular day
   const getDayAvailableCount = useCallback((date: Date): number => {
@@ -1418,47 +1304,13 @@ export default function MatchedTherapist({
       return availableSessions.length;
     }
     
-    // For legacy fallback, only use if it's the same month
-    if (isSameMonth) {
-      const legacyCount = legacyDayCount[dayNum] ?? 0;
-      
-      // For legacy slots, we need to check each slot individually for lead time
-      if (legacyCount > 0) {
-        const calendarAvailableSlotsLegacy = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
-        const daySlots = calendarAvailableSlotsLegacy
-          .map((iso: string) => new Date(iso))
-          .filter((dt: Date) => dt.toDateString() === date.toDateString());
-        
-        // Apply filters - use normalized maximumBookingTime
-        const normalizedMaxBookingTimeLegacy = new Date(now);
-        normalizedMaxBookingTimeLegacy.setDate(normalizedMaxBookingTimeLegacy.getDate() + 14);
-        normalizedMaxBookingTimeLegacy.setHours(23, 59, 59, 999);
-        let filteredSlots = daySlots.filter(dt => {
-          const hour = dt.getHours();
-          // Filter for business hours (7 AM - 10 PM) AND booking window
-          return dt.getTime() >= minimumBookingTime.getTime() && 
-                 dt.getTime() <= normalizedMaxBookingTimeLegacy.getTime() &&
-                 hour >= 7 && hour < 22;
-        });
-        
-        const therapistCategory = getTherapistCategory(therapist);
-        if (therapistCategory === 'Associate Therapist') {
-          filteredSlots = filteredSlots.filter(dt => dt.getMinutes() === 0);
-        }
-        
-        return filteredSlots.length;
-      }
-      
-      return legacyCount;
-    }
-    
     // For dates in different months, return 0 (will need to fetch availability when calendar changes)
     return 0;
-  }, [availability?.days, currentYear, currentMonth, legacyDayCount, therapist, fetchedSlots, emailForSlots, getTherapistCategory]);
+  }, [availability?.days, currentYear, currentMonth, therapist, getTherapistCategory]);
 
   // Auto-select first available date in current month only (never navigate calendar)
   useEffect(() => {
-    if (!selectedDateObj && (availability?.days || Object.keys(fetchedSlots).length > 0) && !isSwitchingTherapists) {
+    if (!selectedDateObj && availability?.days && !isSwitchingTherapists) {
       const now = new Date();
       // Normalize to day after tomorrow at start of day
       const tomorrow = new Date(now);
@@ -1501,7 +1353,7 @@ export default function MatchedTherapist({
         console.log(`[Calendar] No availability found in current month - user must manually navigate`);
       }
     }
-  }, [availability?.days, fetchedSlots, selectedDateObj, currentYear, currentMonth, getDayAvailableCount, isSwitchingTherapists]);
+  }, [availability?.days, selectedDateObj, currentYear, currentMonth, getDayAvailableCount, isSwitchingTherapists]);
 
   // Validate selected date when month changes or availability updates
   useEffect(() => {
@@ -1548,14 +1400,6 @@ export default function MatchedTherapist({
       }
     }
 
-    // Fallback to legacy ISO list
-    if (rawSlots.length === 0) {
-      dataSource = 'legacy-iso-slots';
-      const calendarAvailableSlotsLegacy = (fetchedSlots[emailForSlots] || therapist?.available_slots || []) as string[];
-      rawSlots = (calendarAvailableSlotsLegacy || [])
-        .map((iso: string) => new Date(iso))
-        .filter((dt: Date) => isSameDay(dt, selectedDateObj));
-    }
 
     // Extensive logging for debugging
     console.log(`[Calendar Debug] ${therapist?.intern_name} - ${selectedDateObj.toDateString()}:`, {
@@ -1632,7 +1476,7 @@ export default function MatchedTherapist({
     }
 
     return filteredSlots.sort((a, b) => a.getTime() - b.getTime());
-  }, [availability?.days, selectedDateObj, emailForSlots, fetchedSlots, timezoneDisplay, timezone, therapist, getTherapistCategory]);
+  }, [availability?.days, selectedDateObj, emailForSlots, timezoneDisplay, timezone, therapist, getTherapistCategory]);
 
   const formatTimeLabel = (date: Date) => {
     const timeString = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -2125,12 +1969,11 @@ export default function MatchedTherapist({
                               isUnavailable = true;
                             } else {
                               // Check if this date's availability is still loading
-                              const emailForLoading = therapist?.calendar_email || therapist?.email || '';
                               const isCurrentMonthDate = cell.date.getFullYear() === currentYear && cell.date.getMonth() === currentMonth;
                               
                               // Loading state: no availability data AND currently fetching
-                              const hasAvailabilityData = availability?.days || fetchedSlots[emailForLoading];
-                              const isCurrentlyFetching = fetchingSlots[emailForLoading] || !availabilityCache[avKey];
+                              const hasAvailabilityData = availability?.days;
+                              const isCurrentlyFetching = !availabilityCache[avKey];
                               
                               isLoading = isCurrentMonthDate && !hasAvailabilityData && isCurrentlyFetching;
                               

@@ -16,7 +16,7 @@ interface PreloadOptions {
  * Preload therapist image with timeout and error handling
  */
 const preloadImage = (src: string, timeout: number = 10000): Promise<void> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (!src || typeof src !== 'string') {
       resolve(); // Skip invalid URLs
       return;
@@ -94,21 +94,65 @@ const preloadVideo = (videoUrl: string, timeout: number = 5000): Promise<void> =
   });
 };
 
-// Calendar availability preloading removed - now loaded on-demand per day for better performance
+/**
+ * Warm-up calendar availability for primary therapist during loading screen
+ * This is a targeted preload to eliminate cold start without phantom requests
+ */
+const warmupCalendarAvailability = async (
+  therapistEmail: string,
+  timezone: string = "America/New_York",
+  paymentType: string = "cash_pay",
+  timeout: number = 8000
+): Promise<void> => {
+  console.log(`[Preloader] 🗓️ Warming up calendar for: ${therapistEmail}`);
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    // Get current month for immediate display
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    
+    const response = await fetch(`/api/therapists/availability?calendar_id=${encodeURIComponent(therapistEmail)}&year=${year}&month=${month}&timezone=${encodeURIComponent(timezone)}&payment_type=${paymentType}&live_check=true&slot_minutes=60`, {
+      method: 'GET',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`[Preloader] ✅ Calendar warmed up for ${therapistEmail} - found ${Object.keys(data.days || {}).length} days`);
+    } else {
+      console.warn(`[Preloader] ⚠️ Calendar warmup response not OK: ${response.status} for ${therapistEmail}`);
+    }
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.warn(`[Preloader] ⏱️ Calendar warmup timeout for ${therapistEmail}`);
+    } else {
+      console.warn(`[Preloader] ❌ Calendar warmup failed for ${therapistEmail}:`, error);
+    }
+  }
+};
 
 /**
  * Preload all data for a single therapist
  */
 export const preloadTherapistData = async (
   therapistData: TMatchedTherapistData,
-  clientState?: string,
+  _clientState?: string, // Prefix with underscore to indicate intentionally unused
   paymentType?: string,
-  options: PreloadOptions = {}
+  options: PreloadOptions & { isPrimary?: boolean; userTimezone?: string } = {}
 ): Promise<void> => {
-  const { onProgress, timeout = 10000 } = options;
+  const { onProgress, timeout = 10000, isPrimary = false, userTimezone } = options;
   const therapist = therapistData.therapist;
   
-  console.log(`[Preloader] 🔄 Starting preload for: ${therapist.intern_name}`);
+  console.log(`[Preloader] 🔄 Starting preload for: ${therapist.intern_name}${isPrimary ? ' (PRIMARY)' : ''}`);
   
   const tasks = [
     {
@@ -119,8 +163,21 @@ export const preloadTherapistData = async (
       name: 'Welcome Video',
       task: () => preloadVideo(therapist.welcome_video || therapist.welcome_video_link || therapist.greetings_video_link || '', timeout)
     }
-    // Calendar availability removed - will be loaded on-demand per day
   ];
+
+  // Add calendar warmup ONLY for the primary therapist to eliminate cold start
+  if (isPrimary && therapist.email) {
+    const emailAddress = therapist.email; // TypeScript assertion for non-null
+    tasks.push({
+      name: 'Calendar Availability',
+      task: () => warmupCalendarAvailability(
+        emailAddress,
+        userTimezone || "America/New_York",
+        paymentType || "cash_pay",
+        timeout
+      )
+    });
+  }
 
   let completed = 0;
   const total = tasks.length;
@@ -149,21 +206,25 @@ export const preloadMultipleTherapists = async (
   therapistsList: TMatchedTherapistData[],
   clientState?: string,
   paymentType?: string,
-  options: PreloadOptions = {}
+  options: PreloadOptions & { userTimezone?: string } = {}
 ): Promise<void> => {
   console.log(`[Preloader] 🚀 Starting batch preload for ${therapistsList.length} therapists`);
   
-  // Preload the first therapist completely, then preload others in parallel
+  // Preload the first therapist completely with calendar warmup
   if (therapistsList.length > 0) {
-    await preloadTherapistData(therapistsList[0], clientState, paymentType, options);
+    await preloadTherapistData(therapistsList[0], clientState, paymentType, { 
+      ...options,
+      isPrimary: true // This will trigger calendar warmup
+    });
   }
 
-  // Preload remaining therapists in parallel (but with lower priority)
+  // Preload remaining therapists in parallel (no calendar warmup, lower priority)
   if (therapistsList.length > 1) {
     const remainingTherapists = therapistsList.slice(1);
     const parallelPreloads = remainingTherapists.map(therapist => 
       preloadTherapistData(therapist, clientState, paymentType, { 
         ...options, 
+        isPrimary: false,
         timeout: (options.timeout || 10000) * 0.5 // Shorter timeout for background preloading
       })
     );
@@ -181,14 +242,19 @@ export const preloadMultipleTherapists = async (
 export const createTherapistPreloader = (
   therapistsList: TMatchedTherapistData[],
   clientState?: string,
-  paymentType?: string
+  paymentType?: string,
+  userTimezone?: string
 ) => {
   return async () => {
     try {
       console.log(`[Preloader] 🔄 Creating preloader for ${therapistsList.length} therapists`);
+      console.log(`[Preloader] 🌍 User timezone: ${userTimezone || 'America/New_York (default)'}`);
+      console.log(`[Preloader] 💳 Payment type: ${paymentType || 'cash_pay (default)'}`);
       
       // Add a global timeout for the entire preload process
-      const preloadPromise = preloadMultipleTherapists(therapistsList, clientState, paymentType);
+      const preloadPromise = preloadMultipleTherapists(therapistsList, clientState, paymentType, {
+        userTimezone
+      });
       const timeoutPromise = new Promise<void>((_, reject) => {
         setTimeout(() => {
           reject(new Error('Preloader global timeout (15 seconds)'));
@@ -203,3 +269,9 @@ export const createTherapistPreloader = (
     }
   };
 };
+
+/**
+ * Standalone function to warm up a specific therapist's calendar
+ * Can be used independently during loading screens or user interactions
+ */
+export const warmupTherapistCalendar = warmupCalendarAvailability;
