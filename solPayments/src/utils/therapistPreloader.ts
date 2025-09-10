@@ -115,7 +115,7 @@ const warmupCalendarAvailability = async (
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
     
-    const response = await fetch(`/api/therapists/availability?calendar_id=${encodeURIComponent(therapistEmail)}&year=${year}&month=${month}&timezone=${encodeURIComponent(timezone)}&payment_type=${paymentType}&live_check=true&slot_minutes=60`, {
+    const response = await fetch(`/api/therapists/${encodeURIComponent(therapistEmail)}/availability?year=${year}&month=${month}&timezone=${encodeURIComponent(timezone)}&payment_type=${paymentType}&live_check=true&slot_minutes=60`, {
       method: 'GET',
       signal: controller.signal,
       headers: {
