@@ -95,56 +95,41 @@ const preloadVideo = (videoUrl: string, timeout: number = 5000): Promise<void> =
 };
 
 /**
- * Warm-up calendar availability for primary therapist during loading screen
- * This is a targeted preload to eliminate cold start without phantom requests
+ * Simplified calendar warmup - just check if the endpoint is responsive
+ * No heavy data loading during preload phase
  */
 const warmupCalendarAvailability = async (
   therapistEmail: string,
-  timezone: string = "America/New_York",
-  paymentType: string = "cash_pay",
-  timeout: number = 8000
+  timeout: number = 3000
 ): Promise<void> => {
-  console.log(`[Preloader] 🗓️ Warming up calendar for: ${therapistEmail}`);
+  console.log(`[Preloader] 🗓️ Pinging calendar endpoint for: ${therapistEmail}`);
   
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
     
-    // Get current month for immediate display
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    
     const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
     const url = new URL(`/therapists/${encodeURIComponent(therapistEmail)}/availability`, API_BASE);
-    url.searchParams.set("year", year.toString());
-    url.searchParams.set("month", month.toString());
-    url.searchParams.set("timezone", timezone);
-    url.searchParams.set("payment_type", paymentType);
-    url.searchParams.set("live_check", "true");
-    url.searchParams.set("slot_minutes", "60");
+    url.searchParams.set("live_check", "false"); // Just ping, don't do live checks
+    url.searchParams.set("quick_check", "true"); // Quick health check only
     
     const response = await fetch(url.toString(), {
-      method: 'GET',
+      method: 'HEAD', // Just check if endpoint exists
       signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
     
     clearTimeout(timeoutId);
     
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`[Preloader] ✅ Calendar warmed up for ${therapistEmail} - found ${Object.keys(data.days || {}).length} days`);
+    if (response.ok || response.status === 405) { // 405 = Method Not Allowed, but endpoint exists
+      console.log(`[Preloader] ✅ Calendar endpoint responsive for ${therapistEmail}`);
     } else {
-      console.warn(`[Preloader] ⚠️ Calendar warmup response not OK: ${response.status} for ${therapistEmail}`);
+      console.warn(`[Preloader] ⚠️ Calendar endpoint status ${response.status} for ${therapistEmail}`);
     }
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      console.warn(`[Preloader] ⏱️ Calendar warmup timeout for ${therapistEmail}`);
+      console.warn(`[Preloader] ⏱️ Calendar ping timeout for ${therapistEmail}`);
     } else {
-      console.warn(`[Preloader] ❌ Calendar warmup failed for ${therapistEmail}:`, error);
+      console.warn(`[Preloader] ❌ Calendar ping failed for ${therapistEmail}:`, error);
     }
   }
 };
@@ -155,13 +140,13 @@ const warmupCalendarAvailability = async (
 export const preloadTherapistData = async (
   therapistData: TMatchedTherapistData,
   _clientState?: string, // Prefix with underscore to indicate intentionally unused
-  paymentType?: string,
-  options: PreloadOptions & { isPrimary?: boolean; userTimezone?: string } = {}
+  _paymentType?: string, // Simplified - not needed for lightweight preload
+  options: PreloadOptions & { isPrimary?: boolean } = {}
 ): Promise<void> => {
-  const { onProgress, timeout = 10000, isPrimary = false, userTimezone } = options;
+  const { onProgress, timeout = 5000, isPrimary = false } = options; // Reduced default timeout
   const therapist = therapistData.therapist;
   
-  console.log(`[Preloader] 🔄 Starting preload for: ${therapist.intern_name}${isPrimary ? ' (PRIMARY)' : ''}`);
+  console.log(`[Preloader] 🔄 Starting lightweight preload for: ${therapist.intern_name}${isPrimary ? ' (PRIMARY)' : ''}`);
   
   const tasks = [
     {
@@ -174,17 +159,12 @@ export const preloadTherapistData = async (
     }
   ];
 
-  // Add calendar warmup ONLY for the primary therapist to eliminate cold start
+  // Add lightweight calendar ping ONLY for the primary therapist
   if (isPrimary && therapist.email) {
-    const emailAddress = therapist.email; // TypeScript assertion for non-null
+    const emailAddress = therapist.email;
     tasks.push({
-      name: 'Calendar Availability',
-      task: () => warmupCalendarAvailability(
-        emailAddress,
-        userTimezone || "America/New_York",
-        paymentType || "cash_pay",
-        timeout
-      )
+      name: 'Calendar Ping',
+      task: () => warmupCalendarAvailability(emailAddress, 2000) // Short 2s timeout for ping
     });
   }
 
@@ -215,26 +195,27 @@ export const preloadMultipleTherapists = async (
   therapistsList: TMatchedTherapistData[],
   clientState?: string,
   paymentType?: string,
-  options: PreloadOptions & { userTimezone?: string } = {}
+  options: PreloadOptions = {}
 ): Promise<void> => {
-  console.log(`[Preloader] 🚀 Starting batch preload for ${therapistsList.length} therapists`);
+  console.log(`[Preloader] 🚀 Starting lightweight batch preload for ${therapistsList.length} therapists`);
   
-  // Preload the first therapist completely with calendar warmup
+  // Only preload the first therapist with calendar ping
   if (therapistsList.length > 0) {
     await preloadTherapistData(therapistsList[0], clientState, paymentType, { 
       ...options,
-      isPrimary: true // This will trigger calendar warmup
+      isPrimary: true,
+      timeout: 3000 // Fast timeout for primary
     });
   }
 
-  // Preload remaining therapists in parallel (no calendar warmup, lower priority)
+  // Preload remaining therapists in parallel (images/videos only, no calendar)
   if (therapistsList.length > 1) {
-    const remainingTherapists = therapistsList.slice(1);
+    const remainingTherapists = therapistsList.slice(1, 4); // Limit to first 4 total to avoid overload
     const parallelPreloads = remainingTherapists.map(therapist => 
       preloadTherapistData(therapist, clientState, paymentType, { 
         ...options, 
         isPrimary: false,
-        timeout: (options.timeout || 10000) * 0.5 // Shorter timeout for background preloading
+        timeout: 2000 // Very short timeout for background
       })
     );
 
@@ -256,22 +237,11 @@ export const createTherapistPreloader = (
 ) => {
   return async () => {
     try {
-      console.log(`[Preloader] 🔄 Creating preloader for ${therapistsList.length} therapists`);
-      console.log(`[Preloader] 🌍 User timezone: ${userTimezone || 'America/New_York (default)'}`);
-      console.log(`[Preloader] 💳 Payment type: ${paymentType || 'cash_pay (default)'}`);
+      console.log(`[Preloader] 🔄 Creating lightweight preloader for ${therapistsList.length} therapists`);
       
-      // Add a global timeout for the entire preload process
-      const preloadPromise = preloadMultipleTherapists(therapistsList, clientState, paymentType, {
-        userTimezone
-      });
-      const timeoutPromise = new Promise<void>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('Preloader global timeout (15 seconds)'));
-        }, 15000);
-      });
-      
-      await Promise.race([preloadPromise, timeoutPromise]);
-      console.log(`[Preloader] ✅ Preloader completed successfully`);
+      // Simplified - no global timeout, just let individual timeouts handle it
+      await preloadMultipleTherapists(therapistsList, clientState, paymentType);
+      console.log(`[Preloader] ✅ Lightweight preloader completed successfully`);
     } catch (error) {
       console.error(`[Preloader] ❌ Preloader failed:`, error);
       // Don't throw - let the loading screen proceed anyway

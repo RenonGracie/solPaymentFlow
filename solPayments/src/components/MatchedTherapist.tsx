@@ -268,12 +268,9 @@ export default function MatchedTherapist({
     const email = therapist?.calendar_email || therapist?.email;
     if (!email || !avKey) return;
 
-    console.log(`[Unified Availability] Loading for ${email} (${therapist?.program || 'Unknown Program'})`);
+    console.log(`[Fast Calendar] Loading for ${email}`);
     
     const paymentType = getSelectedPaymentType();
-    const paymentTypeLabel = paymentType === 'insurance' ? 'Insurance' : 'Cash Pay';
-    
-    console.log(`  📅 Loading monthly availability | ${paymentTypeLabel} | ${timezoneDisplay}`);
 
     // Clear previous data for this therapist
     setAvailabilityCache(prev => {
@@ -290,16 +287,26 @@ export default function MatchedTherapist({
       url.searchParams.set("month", (currentMonth + 1).toString());
       url.searchParams.set("timezone", timezone);
       url.searchParams.set("payment_type", paymentType);
-      url.searchParams.set("live_check", "true"); // Always get fresh data
+      url.searchParams.set("live_check", "false"); // Skip live checks for speed
       url.searchParams.set("slot_minutes", "60");
 
       try {
-        const response = await fetch(url.toString());
+        // Add 5-second timeout for faster response
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch(url.toString(), {
+          signal: controller.signal,
+          cache: "no-store"
+        });
+        
+        clearTimeout(timeoutId);
+        
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const data = await response.json();
         
-        console.log(`  ✅ Unified API: ${Object.keys(data.days || {}).length} days loaded for ${email}`);
+        console.log(`✅ Fast Calendar: ${Object.keys(data.days || {}).length} days loaded for ${email}`);
         
         // Store the complete response in cache
         setAvailabilityCache(prev => {
@@ -324,13 +331,36 @@ export default function MatchedTherapist({
         setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
         
       } catch (error) {
-        console.warn(`  ❌ Unified API failed for ${email}:`, error);
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn(`⏱️ Fast Calendar timeout for ${email}`);
+        } else {
+          console.warn(`❌ Fast Calendar failed for ${email}:`, error);
+        }
+        // Set empty cache to prevent infinite loading
+        setAvailabilityCache(prev => ({ 
+          ...prev, 
+          [avKey]: { 
+            months: [], 
+            therapist_info: {
+              email: email,
+              name: therapist?.intern_name || '',
+              program: therapist?.program || '',
+              accepting_new_clients: false
+            }, 
+            booking_info: {
+              session_duration_minutes: 60,
+              payment_type: paymentType,
+              supported_payment_types: ['cash_pay'],
+              timezone: timezone
+            }
+          } 
+        }));
       }
     };
 
     fetchUnifiedAvailability();
 
-  }, [avKey, timezone, therapist?.calendar_email, therapist?.email, currentYear, currentMonth, getSelectedPaymentType, timezoneDisplay]);
+  }, [avKey, timezone, therapist?.calendar_email, therapist?.email, currentYear, currentMonth, getSelectedPaymentType]);
   
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
@@ -417,7 +447,7 @@ export default function MatchedTherapist({
       console.log(`[Find Another] Fetching new therapists from backend...`);
       
       try {
-        await onFindAnother();
+        onFindAnother?.();
         // Reset selection state for new therapist
         setSelectedTimeSlot(null);
         setSelectedDateObj(null);
@@ -678,9 +708,7 @@ export default function MatchedTherapist({
       
       console.log(`  Booking metadata:`, bookingMetadata);
       
-      // Calculate the correct timezone offset for the client's timezone at this specific date
-      const testDate = new Date(appointmentDateTimeString);
-      // Note: testDate is used for timezone offset calculation below
+      // Calculate timezone offset for the client's timezone
       
       // Get the proper timezone offset string
       const offsetMinutes = -getTherapistOffsetMinutes(timezone);
@@ -770,48 +798,6 @@ export default function MatchedTherapist({
     }
   };
   
-  const getTherapistTimezoneOffset = (timezone: string) => {
-    // Get timezone offset using proper Intl.DateTimeFormat method
-    try {
-      const now = new Date();
-      console.log(`[Timezone Debug] Getting offset for timezone: ${timezone}`);
-      
-      // Use Intl.DateTimeFormat to get accurate timezone offset
-      const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: timezone,
-        timeZoneName: 'longOffset'
-      });
-      
-      const parts = formatter.formatToParts(now);
-      const offsetPart = parts.find(part => part.type === 'timeZoneName');
-      
-      if (offsetPart && offsetPart.value !== timezone) {
-        // Extract offset from format like "GMT-05:00"
-        const offsetMatch = offsetPart.value.match(/GMT([+-]\d{2}:\d{2})/);
-        if (offsetMatch) {
-          const offset = offsetMatch[1];
-          console.log(`[Timezone Debug] Extracted offset from Intl: ${offset}`);
-          return offset;
-        }
-      }
-      
-      // Fallback method using Date constructor
-      const utcDate = new Date(now.getTime() + (now.getTimezoneOffset() * 60000));
-      const targetDate = new Date(utcDate.toLocaleString("en-US", { timeZone: timezone }));
-      const offsetMinutes = Math.round((targetDate.getTime() - utcDate.getTime()) / (1000 * 60));
-      
-      const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
-      const offsetMins = Math.abs(offsetMinutes) % 60;
-      const sign = offsetMinutes >= 0 ? '+' : '-';
-      const offset = `${sign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
-      
-      console.log(`[Timezone Debug] Calculated offset via fallback: ${offset}`);
-      return offset;
-    } catch (error) {
-      console.error('[Timezone Debug] Error calculating therapist timezone offset:', error);
-      return '-05:00'; // Default to EST
-    }
-  };
 
   const getTherapistOffsetMinutes = (timezone: string): number => {
     // Get the therapist's timezone offset in minutes from UTC using proper method

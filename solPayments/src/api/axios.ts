@@ -26,7 +26,7 @@ const axiosInstance: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 20000,
+  timeout: 30000, // Increased from 10s to 30s for slower operations like therapist matching
 });
 
 // Request interceptor for debugging

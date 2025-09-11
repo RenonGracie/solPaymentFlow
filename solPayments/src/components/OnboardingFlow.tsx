@@ -1632,7 +1632,7 @@ export default function OnboardingFlow({
                       setExpandedCard('insurance');
                     }
                   }}
-                  className={`w-full text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors duration-700 ease-in-out ${
+                  className={`w-full text-left bg-blue-100 hover:bg-blue-150 border border-blue-300 transition-colors duration-700 ease-in-out ${
                     expandedCard === 'insurance' 
                       ? 'rounded-t-2xl border-b-0' 
                       : 'rounded-2xl'
@@ -1662,7 +1662,7 @@ export default function OnboardingFlow({
                 </button>
                 
                 {/* Expanded Insurance Content */}
-                <div className={`bg-white border-l border-r border-b border-blue-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
+                <div className={`bg-white border-l border-r border-b border-blue-300 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
                   expandedCard === 'insurance' 
                     ? 'max-h-[1000px] opacity-100' 
                     : 'max-h-0 opacity-0'
@@ -1685,7 +1685,7 @@ export default function OnboardingFlow({
                      
                      <Button
                        onClick={() => handlePaymentSelection("insurance")}
-                       className="w-full bg-blue-200 hover:bg-blue-300 text-gray-800 py-3"
+                       className="w-full bg-blue-300 hover:bg-blue-400 text-gray-800 py-3"
                      >
                        Select Insurance Option
                      </Button>
