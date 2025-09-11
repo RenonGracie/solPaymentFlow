@@ -160,11 +160,6 @@ export const TherapistConfirmationModal = ({
                 </h3>
                 <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-inter)' }}>
                   {getTherapistCategory(therapist.therapist)}
-                  {bookingInfo && (
-                    <span className="ml-2 text-xs text-gray-500">
-                      • {paymentTypeDisplay}
-                    </span>
-                  )}
                 </p>
               </div>
             </div>
@@ -214,9 +209,6 @@ export const TherapistConfirmationModal = ({
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     {actualSessionDuration} minute session
-                    {bookingInfo && (
-                      <span> • {paymentTypeDisplay}</span>
-                    )}
                   </p>
                 </div>
               </div>
