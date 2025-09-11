@@ -2606,7 +2606,7 @@ export default function MatchedTherapist({
             <DialogTitle className="flex items-center justify-center gap-2 text-xl sm:text-2xl text-gray-800" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
               <Info className="w-5 h-5 text-blue-600" />
-              Find Other Therapists
+              No Additional Matches
             </DialogTitle>
           </DialogHeader>
           
@@ -2618,7 +2618,7 @@ export default function MatchedTherapist({
             
             <p className="text-sm text-gray-600" 
                style={{ fontFamily: 'var(--font-inter)' }}>
-              You'll be taken to set your preferences and we'll match you with therapists based on what you're looking for.
+              We need you to answer a couple questions about what you're looking for in a therapist, and we'll match you with new options.
             </p>
             
             <div className="flex flex-col gap-3 pt-4">
