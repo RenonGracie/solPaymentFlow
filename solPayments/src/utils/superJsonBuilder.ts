@@ -129,7 +129,9 @@ export interface SurveyData {
     therapist_identifies_as?: string;
     lived_experiences: string[];
     matching_preference?: string;
-    selected_therapist?: {
+    selected_therapist?: string; // For database compatibility
+    selected_therapist_email?: string; // For database compatibility
+    selected_therapist_data?: { // For IntakeQ compatibility
       name: string;
       email: string;
     };
@@ -176,22 +178,7 @@ export interface SurveyData {
       score?: number;
       matched_diagnoses_specialities?: string[];
     }>;
-    
-    selected_therapist_data?: {
-      id: string;
-      name?: string;
-      intern_name?: string;
-      email?: string;
-      biography?: string;
-      specialties?: string[];
-      image_link?: string;
-      states_array?: string[];
-      therapeutic_orientation?: string[];
-      program?: string;
-      score?: number;
-      matched_specializations?: string[];
-    };
-    
+        
     // === APPOINTMENT BOOKING DATA ===
     appointment_booking?: {
       selected_date?: string;
@@ -698,11 +685,13 @@ export interface SurveyData {
       lived_experiences: surveyData.therapist_lived_experiences || [],
       matching_preference: surveyData.matching_preference,
       
-      // Selected therapist - send as object for backend compatibility
-      selected_therapist: (surveyData.selected_therapist && surveyData.selected_therapist_email) ? {
+      // Selected therapist - keep both formats for compatibility
+      selected_therapist: surveyData.selected_therapist, // String for database
+      selected_therapist_email: surveyData.selected_therapist_email, // String for database
+      selected_therapist_data: (surveyData.selected_therapist && surveyData.selected_therapist_email) ? {
         name: surveyData.selected_therapist,
         email: surveyData.selected_therapist_email
-      } : undefined,
+      } : undefined, // Object for IntakeQ
       
       // === EXTENDED DEMOGRAPHICS ===
       race_ethnicity: surveyData.race_ethnicity || [],
@@ -859,13 +848,15 @@ export interface SurveyData {
     return {
       ...existingSuperJson,
       
-      // Update selected therapist info
-      selected_therapist: {
-        name: selectedTherapist.name || selectedTherapist.intern_name || '',
-        email: selectedTherapist.email || ''
-      },
+      // Update selected therapist info - dual format for compatibility
+      selected_therapist: selectedTherapist.name || selectedTherapist.intern_name || '', // String for database
+      selected_therapist_email: selectedTherapist.email || '', // String for database
       selected_therapist_id: selectedTherapist.id,
-      selected_therapist_data: selectedTherapist,
+      selected_therapist_data: { // Object for IntakeQ
+        name: selectedTherapist.name || selectedTherapist.intern_name || '',
+        email: selectedTherapist.email || '',
+        ...selectedTherapist // Include full therapist data
+      },
       
       // Update journey milestones
       journey_milestones: {
