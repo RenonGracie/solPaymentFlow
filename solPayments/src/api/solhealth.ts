@@ -25,7 +25,10 @@ export async function fetchMatches(responseId: string, limit = 50, excludeTherap
     });
   }
   
-  const res = await fetch(url.toString(), { cache: "no-store" });
+  const res = await fetch(url.toString(), { 
+    cache: "no-store",
+    signal: AbortSignal.timeout(30000) // 30 second timeout for therapist matching
+  });
   const data: MatchResponse = await res.json();
   if (!res.ok) {
     throw new Error((data as unknown as string) || "Failed to fetch matches");
