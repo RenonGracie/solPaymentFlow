@@ -1534,78 +1534,7 @@ export default function OnboardingFlow({
 
             {/* Option Cards */}
             <div className="space-y-3 md:space-y-4">
-              {/* Insurance Card */}
-              <div className="w-full overflow-hidden">
-                <button
-                  onClick={() => {
-                    if (expandedCard === 'insurance') {
-                      setExpandedCard(null);
-                    } else {
-                      setExpandedCard('insurance');
-                    }
-                  }}
-                  className={`w-full text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors duration-700 ease-in-out ${
-                    expandedCard === 'insurance' 
-                      ? 'rounded-t-2xl border-b-0' 
-                      : 'rounded-2xl'
-                  }`}
-                  style={{
-                    padding: expandedCard === 'insurance' ? '16px 20px 12px 20px' : '16px 20px'
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-base md:text-lg font-semibold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Use My Insurance (NJ Only)
-                    </h3>
-                    <span className="text-xs md:text-sm text-gray-600 font-medium flex items-center transition-transform" 
-                          style={{ fontFamily: 'var(--font-inter)' }}>
-                      {expandedCard === 'insurance' ? 'Show Less' : 'Learn More'}
-                      <ChevronRight className={`inline w-3 md:w-4 h-3 md:h-4 ml-1 transition-transform duration-300 ${expandedCard === 'insurance' ? 'rotate-90' : ''}`} />
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Associate Therapists
-                    </p>
-                    <span className="inline-block rounded-full bg-blue-100 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
-                      ~$20-40 average session cost
-                    </span>
-                  </div>
-                </button>
-                
-                {/* Expanded Insurance Content */}
-                <div className={`bg-white border-l border-r border-b border-blue-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
-                  expandedCard === 'insurance' 
-                    ? 'max-h-[1000px] opacity-100' 
-                    : 'max-h-0 opacity-0'
-                }`}>
-                  <div className="p-5 space-y-4 pb-6">
-                     
-                     <div>
-                       <p className="text-sm font-medium text-gray-800 mb-2">We currently accept:</p>
-                       <p className="text-sm text-gray-600">Aetna, Amerihealth, Horizon Blue Cross Blue Shield, Meritain Health</p>
-                     </div>
-                     
-                     <div>
-                       <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
-                       <ul className="text-sm text-gray-600 space-y-1">
-                         <li>• 1-1 virtual sessions (55 min)</li>
-                         <li>• We'll automatically verify your benefits and estimate what you'll pay</li>
-                         <li>• You'll be matched with an Associate Therapist. Associate Therapists have graduated from their counseling programs, have a provisional license, and are working towards full licensure.</li>
-                       </ul>
-                     </div>
-                     
-                     <Button
-                       onClick={() => handlePaymentSelection("insurance")}
-                       className="w-full bg-blue-200 hover:bg-blue-300 text-gray-800 py-3"
-                     >
-                       Select Insurance Option
-                     </Button>
-                   </div>
-                 </div>
-               </div>
-
-              {/* Cash Pay Card */}
+              {/* Cash Pay Card - moved to top */}
               <div className="w-full overflow-hidden">
                 <button
                   onClick={() => {
@@ -1640,7 +1569,7 @@ export default function OnboardingFlow({
                     <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
                       Graduate Therapists
                     </p>
-                    <span className="inline-block rounded-full bg-yellow-400 text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium">
+                    <span className="inline-block rounded-full text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium" style={{ backgroundColor: '#fffaee' }}>
                       $30 per session
                     </span>
                   </div>
@@ -1688,6 +1617,77 @@ export default function OnboardingFlow({
                        className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-800 py-3"
                      >
                        Select Cash Pay Option
+                     </Button>
+                   </div>
+                 </div>
+               </div>
+
+              {/* Insurance Card - moved to bottom */}
+              <div className="w-full overflow-hidden">
+                <button
+                  onClick={() => {
+                    if (expandedCard === 'insurance') {
+                      setExpandedCard(null);
+                    } else {
+                      setExpandedCard('insurance');
+                    }
+                  }}
+                  className={`w-full text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors duration-700 ease-in-out ${
+                    expandedCard === 'insurance' 
+                      ? 'rounded-t-2xl border-b-0' 
+                      : 'rounded-2xl'
+                  }`}
+                  style={{
+                    padding: expandedCard === 'insurance' ? '16px 20px 12px 20px' : '16px 20px'
+                  }}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Use My Insurance (NJ Only)
+                    </h3>
+                    <span className="text-xs md:text-sm text-gray-600 font-medium flex items-center transition-transform" 
+                          style={{ fontFamily: 'var(--font-inter)' }}>
+                      {expandedCard === 'insurance' ? 'Show Less' : 'Learn More'}
+                      <ChevronRight className={`inline w-3 md:w-4 h-3 md:h-4 ml-1 transition-transform duration-300 ${expandedCard === 'insurance' ? 'rotate-90' : ''}`} />
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
+                      Associate Therapists
+                    </p>
+                    <span className="inline-block rounded-full text-gray-800 px-2 py-0.5 text-[11px] md:text-xs font-medium" style={{ backgroundColor: '#fffaee' }}>
+                      ~$20-40 average session cost
+                    </span>
+                  </div>
+                </button>
+                
+                {/* Expanded Insurance Content */}
+                <div className={`bg-white border-l border-r border-b border-blue-200 rounded-b-2xl transition-all duration-700 ease-in-out overflow-hidden ${
+                  expandedCard === 'insurance' 
+                    ? 'max-h-[1000px] opacity-100' 
+                    : 'max-h-0 opacity-0'
+                }`}>
+                  <div className="p-5 space-y-4 pb-6">
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">We currently accept:</p>
+                       <p className="text-sm text-gray-600">Aetna, Amerihealth, Horizon Blue Cross Blue Shield, Meritain Health</p>
+                     </div>
+                     
+                     <div>
+                       <p className="text-sm font-medium text-gray-800 mb-2">What to expect:</p>
+                       <ul className="text-sm text-gray-600 space-y-1">
+                         <li>• 1-1 virtual sessions (55 min)</li>
+                         <li>• We'll automatically verify your benefits and estimate what you'll pay</li>
+                         <li>• You'll be matched with an Associate Therapist. Associate Therapists have graduated from their counseling programs, have a provisional license, and are working towards full licensure.</li>
+                       </ul>
+                     </div>
+                     
+                     <Button
+                       onClick={() => handlePaymentSelection("insurance")}
+                       className="w-full bg-blue-200 hover:bg-blue-300 text-gray-800 py-3"
+                     >
+                       Select Insurance Option
                      </Button>
                    </div>
                  </div>

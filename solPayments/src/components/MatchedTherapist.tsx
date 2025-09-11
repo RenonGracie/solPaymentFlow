@@ -285,8 +285,7 @@ export default function MatchedTherapist({
     // Fetch unified availability (same endpoint as curl example)
     const fetchUnifiedAvailability = async () => {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-      const url = new URL(`/therapists/availability`, API_BASE);
-      url.searchParams.set("calendar_id", email);
+      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, API_BASE);
       url.searchParams.set("year", currentYear.toString());
       url.searchParams.set("month", (currentMonth + 1).toString());
       url.searchParams.set("timezone", timezone);
