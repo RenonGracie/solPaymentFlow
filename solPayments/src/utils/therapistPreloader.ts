@@ -115,7 +115,16 @@ const warmupCalendarAvailability = async (
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
     
-    const response = await fetch(`/api/therapists/${encodeURIComponent(therapistEmail)}/availability?year=${year}&month=${month}&timezone=${encodeURIComponent(timezone)}&payment_type=${paymentType}&live_check=true&slot_minutes=60`, {
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
+    const url = new URL(`/therapists/${encodeURIComponent(therapistEmail)}/availability`, API_BASE);
+    url.searchParams.set("year", year.toString());
+    url.searchParams.set("month", month.toString());
+    url.searchParams.set("timezone", timezone);
+    url.searchParams.set("payment_type", paymentType);
+    url.searchParams.set("live_check", "true");
+    url.searchParams.set("slot_minutes", "60");
+    
+    const response = await fetch(url.toString(), {
       method: 'GET',
       signal: controller.signal,
       headers: {

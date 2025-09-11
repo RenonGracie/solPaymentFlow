@@ -1702,11 +1702,6 @@ export default function MatchedTherapist({
                       {/* Therapist category and session info */}
                       <div className="text-sm text-gray-600 mt-1 mb-3" style={{ fontFamily: 'var(--font-inter)' }}>
                         <p>{getTherapistCategory(enhancedTherapistData)}</p>
-                        {enhancedTherapistData && 'session_duration_minutes' in enhancedTherapistData && enhancedTherapistData.session_duration_minutes && (
-                          <p className="text-xs mt-1 text-gray-500">
-                            {enhancedTherapistData.session_duration_minutes}-minute sessions • {getSelectedPaymentType() === 'insurance' ? 'Insurance' : 'Cash Pay'}
-                          </p>
-                        )}
                       </div>
                       {/* Matched specialties */}
                       <div className="flex flex-wrap gap-2 mt-3">
