@@ -263,104 +263,214 @@ export default function MatchedTherapist({
     return `${email}:${currentYear}:${currentMonth + 1}:${timezone}`;
   }, [therapist?.calendar_email, therapist?.email, currentYear, currentMonth, timezone]);
 
-  // Unified availability loading - uses same API as curl example for consistency
-  useEffect(() => {
+  // Lazy calendar loading - only load when user needs to see availability
+  const [isLoadingCalendar, setIsLoadingCalendar] = useState(false);
+  
+  const loadCalendarData = useCallback(async () => {
     const email = therapist?.calendar_email || therapist?.email;
-    if (!email || !avKey) return;
+    if (!email || !avKey || isLoadingCalendar || availabilityCache[avKey]) {
+      console.log(`[Calendar Debug] 🛑 Skipping calendar load:`, {
+        hasEmail: !!email,
+        email: email,
+        hasAvKey: !!avKey,
+        avKey: avKey,
+        isLoadingCalendar,
+        hasCachedData: !!availabilityCache[avKey],
+        cacheKeys: Object.keys(availabilityCache)
+      });
+      return;
+    }
 
-    console.log(`[Fast Calendar] Loading for ${email}`);
+    console.log(`[Calendar Debug] 🚀 Starting calendar load for ${email}`);
+    console.log(`[Calendar Debug] 📊 Request parameters:`, {
+      email,
+      avKey,
+      currentYear,
+      currentMonth: currentMonth + 1,
+      timezone,
+      therapist_name: therapist?.intern_name,
+      therapist_program: therapist?.program
+    });
+    
+    setIsLoadingCalendar(true);
     
     const paymentType = getSelectedPaymentType();
+    console.log(`[Calendar Debug] 💳 Payment type: ${paymentType}`);
 
-    // Clear previous data for this therapist
-    setAvailabilityCache(prev => {
-      const updated = { ...prev };
-      delete updated[avKey];
-      return updated;
-    });
-
-    // Fetch unified availability (same endpoint as curl example)
-    const fetchUnifiedAvailability = async () => {
+    try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
       const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, API_BASE);
       url.searchParams.set("year", currentYear.toString());
       url.searchParams.set("month", (currentMonth + 1).toString());
       url.searchParams.set("timezone", timezone);
       url.searchParams.set("payment_type", paymentType);
-      url.searchParams.set("live_check", "false"); // Skip live checks for speed
+      url.searchParams.set("live_check", "false");
       url.searchParams.set("slot_minutes", "60");
 
-      try {
-        // Add 5-second timeout for faster response
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        
-        const response = await fetch(url.toString(), {
-          signal: controller.signal,
-          cache: "no-store"
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const data = await response.json();
-        
-        console.log(`✅ Fast Calendar: ${Object.keys(data.days || {}).length} days loaded for ${email}`);
-        
-        // Store the complete response in cache
-        setAvailabilityCache(prev => {
-          return { ...prev, [avKey]: {
-            months: [{
-              days: data.days || {},
-              meta: {
-                calendar_id: email,
-                timezone,
-                year: currentYear,
-                month: currentMonth + 1,
-                work_start: data.work_start || "07:00",
-                work_end: data.work_end || "22:00",
-                slot_minutes: 60
-              }
-            }],
-            therapist_info: data.therapist_info,
-            booking_info: data.booking_info
-          }};
-        });
-        
-        setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
-        
-      } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
-          console.warn(`⏱️ Fast Calendar timeout for ${email}`);
-        } else {
-          console.warn(`❌ Fast Calendar failed for ${email}:`, error);
+      const finalUrl = url.toString();
+      console.log(`[Calendar Debug] 🌐 Full API URL:`, finalUrl);
+      console.log(`[Calendar Debug] ⏱️ Starting request at:`, new Date().toISOString());
+
+      // 10-second timeout since user is actively waiting
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.log(`[Calendar Debug] ⏰ Request timeout after 10 seconds for ${email}`);
+        controller.abort();
+      }, 10000);
+      
+      const startTime = performance.now();
+      const response = await fetch(finalUrl, {
+        signal: controller.signal,
+        cache: "no-store"
+      });
+      const endTime = performance.now();
+      
+      clearTimeout(timeoutId);
+      
+      console.log(`[Calendar Debug] 📡 Response received:`, {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        responseTime: `${Math.round(endTime - startTime)}ms`,
+        headers: {
+          'content-type': response.headers.get('content-type'),
+          'content-length': response.headers.get('content-length')
         }
-        // Set empty cache to prevent infinite loading
-        setAvailabilityCache(prev => ({ 
-          ...prev, 
-          [avKey]: { 
-            months: [], 
-            therapist_info: {
-              email: email,
-              name: therapist?.intern_name || '',
-              program: therapist?.program || '',
-              accepting_new_clients: false
-            }, 
-            booking_info: {
-              session_duration_minutes: 60,
-              payment_type: paymentType,
-              supported_payment_types: ['cash_pay'],
-              timezone: timezone
-            }
-          } 
-        }));
+      });
+      
+      if (!response.ok) {
+        console.error(`[Calendar Debug] ❌ HTTP Error:`, {
+          status: response.status,
+          statusText: response.statusText,
+          url: finalUrl
+        });
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-    };
-
-    fetchUnifiedAvailability();
-
-  }, [avKey, timezone, therapist?.calendar_email, therapist?.email, currentYear, currentMonth, getSelectedPaymentType]);
+      
+      const parseStartTime = performance.now();
+      const data = await response.json();
+      const parseEndTime = performance.now();
+      
+      console.log(`[Calendar Debug] 📋 Response data parsed:`, {
+        parseTime: `${Math.round(parseEndTime - parseStartTime)}ms`,
+        dataStructure: {
+          hasDays: !!data.days,
+          daysCount: Object.keys(data.days || {}).length,
+          hasTherapistInfo: !!data.therapist_info,
+          hasBookingInfo: !!data.booking_info,
+          hasWorkHours: !!(data.work_start && data.work_end)
+        },
+        sampleDayKeys: Object.keys(data.days || {}).slice(0, 5),
+        therapistInfo: data.therapist_info,
+        bookingInfo: data.booking_info
+      });
+      
+      if (data.days && Object.keys(data.days).length > 0) {
+        const firstDayKey = Object.keys(data.days)[0];
+        const firstDay = data.days[firstDayKey];
+        console.log(`[Calendar Debug] 🗓️ Sample day data (${firstDayKey}):`, {
+          hasSummary: !!firstDay.summary,
+          summary: firstDay.summary,
+          slotsCount: firstDay.slots?.length || 0,
+          sessionsCount: firstDay.sessions?.length || 0,
+          sampleSlots: firstDay.slots?.slice(0, 3)
+        });
+      }
+      
+      console.log(`✅ [Calendar Debug] 🎉 Calendar successfully loaded: ${Object.keys(data.days || {}).length} days for ${email}`);
+      
+      setAvailabilityCache(prev => ({
+        ...prev,
+        [avKey]: {
+          months: [{
+            days: data.days || {},
+            meta: {
+              calendar_id: email,
+              timezone,
+              year: currentYear,
+              month: currentMonth + 1,
+              work_start: data.work_start || "07:00",
+              work_end: data.work_end || "22:00",
+              slot_minutes: 60
+            }
+          }],
+          therapist_info: data.therapist_info || {},
+          booking_info: data.booking_info || {}
+        }
+      }));
+      
+      setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
+      
+      console.log(`[Calendar Debug] 💾 Cache updated:`, {
+        cacheKey: avKey,
+        cacheSize: Object.keys(availabilityCache).length + 1,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
+      const errorDetails = {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        email: email,
+        avKey: avKey,
+        url: `${API_BASE}/therapists/${encodeURIComponent(email)}/availability`,
+        timestamp: new Date().toISOString()
+      };
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn(`[Calendar Debug] ⏱️ Timeout after 10 seconds:`, errorDetails);
+      } else {
+        console.error(`[Calendar Debug] ❌ Request failed:`, errorDetails);
+      }
+      
+      setAvailabilityCache(prev => ({
+        ...prev,
+        [avKey]: {
+          months: [],
+          therapist_info: {
+            email: email,
+            name: therapist?.intern_name || '',
+            program: therapist?.program || '',
+            accepting_new_clients: false
+          },
+          booking_info: {
+            session_duration_minutes: 60,
+            payment_type: paymentType,
+            supported_payment_types: ['cash_pay'],
+            timezone: timezone
+          }
+        }
+      }));
+    } finally {
+      setIsLoadingCalendar(false);
+    }
+  }, [avKey, timezone, therapist?.calendar_email, therapist?.email, currentYear, currentMonth, getSelectedPaymentType, isLoadingCalendar, availabilityCache]);
+  
+  // Trigger lazy calendar loading when therapist is viewed
+  useEffect(() => {
+    console.log(`[Calendar Debug] 🎯 Lazy loading trigger:`, {
+      hasTherapist: !!therapist,
+      therapistId: therapist?.id,
+      therapistName: therapist?.intern_name,
+      therapistEmail: therapist?.email || therapist?.calendar_email,
+      isSwitchingTherapists,
+      willTriggerLoad: !!(therapist && !isSwitchingTherapists)
+    });
+    
+    if (therapist && !isSwitchingTherapists) {
+      console.log(`[Calendar Debug] ⏰ Setting 100ms timer to load calendar for ${therapist.intern_name}`);
+      // Small delay to let UI render first, then load calendar in background
+      const timer = setTimeout(() => {
+        console.log(`[Calendar Debug] 🚀 Timer fired, calling loadCalendarData for ${therapist.intern_name}`);
+        loadCalendarData();
+      }, 100);
+      return () => {
+        console.log(`[Calendar Debug] 🧹 Cleaning up timer for ${therapist?.intern_name}`);
+        clearTimeout(timer);
+      };
+    }
+  }, [therapist?.id, loadCalendarData, isSwitchingTherapists]);
   
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
@@ -1182,20 +1292,64 @@ export default function MatchedTherapist({
   const availabilityResponse = availabilityCache[avKey];
   const emailForSlots = therapist?.calendar_email || therapist?.email || '';
 
+  console.log(`[Calendar Debug] 📊 Availability cache check:`, {
+    avKey,
+    hasCachedResponse: !!availabilityResponse,
+    cacheKeys: Object.keys(availabilityCache),
+    therapistEmail: emailForSlots,
+    currentYear,
+    currentMonth: currentMonth + 1,
+    isLoadingCalendar
+  });
+
   // Helper function to extract current month's availability data from the new structure
   const getCurrentMonthAvailability = () => {
-    if (!availabilityResponse?.months) return null;
+    if (!availabilityResponse?.months) {
+      console.log(`[Calendar Debug] 🚫 No availability response or months:`, {
+        hasResponse: !!availabilityResponse,
+        hasMonths: !!availabilityResponse?.months,
+        responseStructure: availabilityResponse ? Object.keys(availabilityResponse) : []
+      });
+      return null;
+    }
+    
+    console.log(`[Calendar Debug] 🔍 Searching months:`, {
+      totalMonths: availabilityResponse.months.length,
+      monthsMeta: availabilityResponse.months.map(m => ({
+        year: m.meta?.year,
+        month: m.meta?.month,
+        daysCount: Object.keys(m.days || {}).length
+      })),
+      targetYear: currentYear,
+      targetMonth: currentMonth + 1
+    });
     
     // Find the month that matches current year and month
     const targetMonth = availabilityResponse.months.find(m => 
       m.meta?.year === currentYear && m.meta?.month === (currentMonth + 1)
     );
     
+    console.log(`[Calendar Debug] 🎯 Month search result:`, {
+      foundMatch: !!targetMonth,
+      targetMonth: targetMonth ? {
+        year: targetMonth.meta?.year,
+        month: targetMonth.meta?.month,
+        daysCount: Object.keys(targetMonth.days || {}).length,
+        sampleDays: Object.keys(targetMonth.days || {}).slice(0, 3)
+      } : null
+    });
+    
     return targetMonth || null;
   };
 
   // Extract current month's availability (maintains backward compatibility)
   const availability = getCurrentMonthAvailability();
+  
+  console.log(`[Calendar Debug] ✅ Final availability:`, {
+    hasAvailability: !!availability,
+    daysCount: availability?.days ? Object.keys(availability.days).length : 0,
+    sampleDays: availability?.days ? Object.keys(availability.days).slice(0, 5) : []
+  });
 
   // Enhanced therapist data with availability API response (if available)
   const enhancedTherapistData = useMemo(() => {
@@ -1951,11 +2105,10 @@ export default function MatchedTherapist({
                               // Check if this date's availability is still loading
                               const isCurrentMonthDate = cell.date.getFullYear() === currentYear && cell.date.getMonth() === currentMonth;
                               
-                              // Loading state: no availability data AND currently fetching
+                              // Loading state: using lazy loading state
                               const hasAvailabilityData = availability?.days;
-                              const isCurrentlyFetching = !availabilityCache[avKey];
                               
-                              isLoading = isCurrentMonthDate && !hasAvailabilityData && isCurrentlyFetching;
+                              isLoading = isCurrentMonthDate && (isLoadingCalendar || (!hasAvailabilityData && !availabilityCache[avKey]));
                               
                               if (isLoading) {
                                 // Loading state - shimmer animation with blue tint

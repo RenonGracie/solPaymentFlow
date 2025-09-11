@@ -159,14 +159,7 @@ export const preloadTherapistData = async (
     }
   ];
 
-  // Add lightweight calendar ping ONLY for the primary therapist
-  if (isPrimary && therapist.email) {
-    const emailAddress = therapist.email;
-    tasks.push({
-      name: 'Calendar Ping',
-      task: () => warmupCalendarAvailability(emailAddress, 2000) // Short 2s timeout for ping
-    });
-  }
+  // Skip calendar loading - now handled by lazy loading in MatchedTherapist component
 
   let completed = 0;
   const total = tasks.length;
@@ -233,7 +226,7 @@ export const createTherapistPreloader = (
   therapistsList: TMatchedTherapistData[],
   clientState?: string,
   paymentType?: string,
-  userTimezone?: string
+  _userTimezone?: string // Unused parameter, prefixed with underscore
 ) => {
   return async () => {
     try {
