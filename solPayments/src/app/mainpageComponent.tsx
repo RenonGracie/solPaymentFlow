@@ -1026,7 +1026,8 @@ export default function MainPageComponent() {
       console.log('🎯 SPECIFIC THERAPIST DEBUG:', {
         matching_preference: completeClientData.matching_preference,
         selected_therapist: completeClientData.selected_therapist,
-        selected_therapist_email: completeClientData.selected_therapist_email
+        selected_therapist_name: completeClientData.selected_therapist?.name,
+        selected_therapist_email: completeClientData.selected_therapist?.email
       });
 
       // Store the client response directly in our backend

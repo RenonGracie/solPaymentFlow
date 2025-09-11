@@ -129,8 +129,10 @@ export interface SurveyData {
     therapist_identifies_as?: string;
     lived_experiences: string[];
     matching_preference?: string;
-    selected_therapist?: string;
-    selected_therapist_email?: string;
+    selected_therapist?: {
+      name: string;
+      email: string;
+    };
     
     // === SUBSTANCE SCREENING ===
     alcohol_frequency?: string;
@@ -633,7 +635,7 @@ export interface SurveyData {
     const superJson: SuperJsonData = {
       // === CORE IDENTITY ===
       response_id: responseId,
-      session_id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      session_id: `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       journey_started_at: surveyStartTime || now,
       survey_completed_at: now,
       current_stage: 'survey_completed',
@@ -695,8 +697,12 @@ export interface SurveyData {
       therapist_identifies_as: surveyData.therapist_gender_preference,
       lived_experiences: surveyData.therapist_lived_experiences || [],
       matching_preference: surveyData.matching_preference,
-      selected_therapist: surveyData.selected_therapist,
-      selected_therapist_email: surveyData.selected_therapist_email,
+      
+      // Selected therapist - send as object for backend compatibility
+      selected_therapist: (surveyData.selected_therapist && surveyData.selected_therapist_email) ? {
+        name: surveyData.selected_therapist,
+        email: surveyData.selected_therapist_email
+      } : undefined,
       
       // === EXTENDED DEMOGRAPHICS ===
       race_ethnicity: surveyData.race_ethnicity || [],
@@ -854,9 +860,11 @@ export interface SurveyData {
       ...existingSuperJson,
       
       // Update selected therapist info
-      selected_therapist: selectedTherapist.name || selectedTherapist.intern_name,
+      selected_therapist: {
+        name: selectedTherapist.name || selectedTherapist.intern_name || '',
+        email: selectedTherapist.email || ''
+      },
       selected_therapist_id: selectedTherapist.id,
-      selected_therapist_email: selectedTherapist.email,
       selected_therapist_data: selectedTherapist,
       
       // Update journey milestones
