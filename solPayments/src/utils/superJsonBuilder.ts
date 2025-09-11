@@ -129,6 +129,8 @@ export interface SurveyData {
     therapist_identifies_as?: string;
     lived_experiences: string[];
     matching_preference?: string;
+    selected_therapist?: string;
+    selected_therapist_email?: string;
     
     // === SUBSTANCE SCREENING ===
     alcohol_frequency?: string;
@@ -693,6 +695,8 @@ export interface SurveyData {
       therapist_identifies_as: surveyData.therapist_gender_preference,
       lived_experiences: surveyData.therapist_lived_experiences || [],
       matching_preference: surveyData.matching_preference,
+      selected_therapist: surveyData.selected_therapist,
+      selected_therapist_email: surveyData.selected_therapist_email,
       
       // === EXTENDED DEMOGRAPHICS ===
       race_ethnicity: surveyData.race_ethnicity || [],

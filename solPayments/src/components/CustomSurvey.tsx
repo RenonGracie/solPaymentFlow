@@ -189,6 +189,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
     searchResults: therapistSearchResults,
     isSearching: isSearchingTherapists,
     searchError: therapistSearchError,
+    showInitialResults,
   } = useTherapistSearch({ paymentType, clientState: formData.state || '' });
   
   // Alcohol and drugs section (no carousel)
@@ -776,6 +777,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                     type="text"
                     value={therapistSearchQuery}
                     onChange={(e) => setTherapistSearchQuery(e.target.value)}
+                    onFocus={() => showInitialResults()}
                     placeholder="Start typing therapist name..."
                     className="w-full p-2.5 sm:p-3 border border-[#5C3106] rounded-lg focus:border-gray-600 focus:outline-none bg-white text-base sm:text-lg shadow-[1px_1px_0_#5C3106]"
                     style={{ fontFamily: 'var(--font-inter)' }}
@@ -783,7 +785,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                 </div>
 
                 {/* Search Results */}
-                {therapistSearchQuery && (
+                {(therapistSearchQuery || therapistSearchResults.length > 0) && (
                   <div className="bg-white border-2 border-gray-200 rounded-lg max-h-48 overflow-y-auto">
                     {isSearchingTherapists && (
                       <div className="p-3 text-sm text-gray-500">Searching…</div>

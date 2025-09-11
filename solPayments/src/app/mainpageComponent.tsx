@@ -1025,8 +1025,8 @@ export default function MainPageComponent() {
       // Payment type in client data
       console.log('🎯 SPECIFIC THERAPIST DEBUG:', {
         matching_preference: completeClientData.matching_preference,
-        selected_therapist: completeClientData.selected_therapist_data,
-        selected_therapist_email: 'selected_therapist_email' in completeClientData ? completeClientData.selected_therapist_email : undefined
+        selected_therapist: completeClientData.selected_therapist,
+        selected_therapist_email: completeClientData.selected_therapist_email
       });
 
       // Store the client response directly in our backend

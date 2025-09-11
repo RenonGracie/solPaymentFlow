@@ -158,6 +158,7 @@ export default function MatchedTherapist({
   const [hasRecordedSelection, setHasRecordedSelection] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showNoMatchesModal, setShowNoMatchesModal] = useState(false);
+  const [showSpecificTherapistModal, setShowSpecificTherapistModal] = useState(false);
 
   /** New: cache monthly availability by therapist + month + tz (30s cache for live data) */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
@@ -517,6 +518,13 @@ export default function MatchedTherapist({
   const handleFindAnother = async () => {
     console.log(`[Find Another] Current therapist: ${therapist?.intern_name} (index ${currentIndex})`);
     console.log(`[Find Another] Total therapists available: ${therapistsList.length}`);
+    
+    // Check if this was a specific therapist request
+    if (clientData?.matching_preference === 'requesting_specific') {
+      console.log('[Find Another] This was a specific therapist request - showing modal');
+      setShowSpecificTherapistModal(true);
+      return;
+    }
     
     // UNIFIED APPROACH: Always use LoadingScreen for consistent UX
     
@@ -2585,6 +2593,64 @@ export default function MatchedTherapist({
                 style={{ fontFamily: 'var(--font-inter)' }}
               >
                 View All Genders
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Specific Therapist Redirect Modal */}
+      <Dialog open={showSpecificTherapistModal} onOpenChange={setShowSpecificTherapistModal}>
+        <DialogContent className="max-w-md mx-auto bg-white border border-[#5C3106] rounded-3xl shadow-[1px_1px_0_#5C3106]">
+          <DialogHeader className="text-center pb-2">
+            <DialogTitle className="flex items-center justify-center gap-2 text-xl sm:text-2xl text-gray-800" 
+                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+              <Info className="w-5 h-5 text-blue-600" />
+              Find Other Therapists
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 text-center px-2">
+            <p className="text-base sm:text-lg text-gray-800 font-medium" 
+               style={{ fontFamily: 'var(--font-inter)' }}>
+              We're going to help you find other therapists who might be a good fit
+            </p>
+            
+            <p className="text-sm text-gray-600" 
+               style={{ fontFamily: 'var(--font-inter)' }}>
+              You'll be taken to set your preferences and we'll match you with therapists based on what you're looking for.
+            </p>
+            
+            <div className="flex flex-col gap-3 pt-4">
+              <Button
+                onClick={() => {
+                  setShowSpecificTherapistModal(false);
+                  // Redirect to main flow to restart with match_me preference
+                  // Store current state and payment type for the new flow
+                  const currentState = clientData?.state || '';
+                  const currentPaymentType = clientData?.payment_type || 'cash_pay';
+                  
+                  // Store in localStorage so the new flow can pick up the preferences
+                  localStorage.setItem('redirectFromSpecificTherapist', 'true');
+                  localStorage.setItem('redirectState', currentState);
+                  localStorage.setItem('redirectPaymentType', currentPaymentType);
+                  
+                  console.log('[Specific Therapist Modal] Redirecting to restart flow with match_me');
+                  window.location.href = '/';
+                }}
+                className="w-full py-3 px-6 bg-[#5C3106] text-white rounded-2xl text-base font-medium hover:bg-[#4A2805] transition-colors"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Continue to Find Therapists
+              </Button>
+              
+              <Button
+                onClick={() => setShowSpecificTherapistModal(false)}
+                variant="outline"
+                className="w-full py-3 px-6 bg-white border border-[#5C3106] rounded-2xl text-gray-800 text-base font-medium hover:bg-[#F5E8D1] transition-colors shadow-[1px_1px_0_#5C3106]"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Stay with Current Therapist
               </Button>
             </div>
           </div>

@@ -88,6 +88,10 @@ export const useTherapistSearch = ({ paymentType, clientState }: UseTherapistSea
     const timer = setTimeout(() => {
       if (searchQuery) {
         searchTherapists(searchQuery);
+      } else if (hasInitialLoad) {
+        // If no search query but we have initial results, show them
+        // This allows showing therapists on focus without typing
+        // Don't clear results if we have initial therapists loaded
       } else {
         setSearchResults([]);
         setSearchError(null);
@@ -95,7 +99,15 @@ export const useTherapistSearch = ({ paymentType, clientState }: UseTherapistSea
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timer);
-  }, [searchQuery, searchTherapists]);
+  }, [searchQuery, searchTherapists, hasInitialLoad]);
+
+  // Function to show initial results (for when user focuses input)
+  const showInitialResults = useCallback(() => {
+    if (hasInitialLoad) {
+      // If we already have initial results loaded, trigger a re-search with empty query
+      searchTherapists('', true);
+    }
+  }, [hasInitialLoad, searchTherapists]);
 
   return {
     searchQuery,
@@ -103,6 +115,7 @@ export const useTherapistSearch = ({ paymentType, clientState }: UseTherapistSea
     searchResults,
     isSearching,
     searchError,
-    hasInitialLoad
+    hasInitialLoad,
+    showInitialResults
   };
 };
