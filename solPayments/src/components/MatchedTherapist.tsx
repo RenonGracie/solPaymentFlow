@@ -361,43 +361,74 @@ export default function MatchedTherapist({
         parseTime: `${Math.round(parseEndTime - parseStartTime)}ms`,
         dataStructure: {
           hasDays: !!data.days,
-          daysCount: Object.keys(data.days || {}).length,
+          daysCount: Array.isArray(data.days) ? data.days.length : Object.keys(data.days || {}).length,
           hasTherapistInfo: !!data.therapist_info,
           hasBookingInfo: !!data.booking_info,
-          hasWorkHours: !!(data.work_start && data.work_end)
+          hasWorkHours: !!(data.meta?.work_start || data.work_start),
+          format: data.format || 'unknown',
+          mode: data.mode || 'unknown'
         },
-        sampleDayKeys: Object.keys(data.days || {}).slice(0, 5),
+        sampleDayKeys: Array.isArray(data.days) ? data.days.slice(0, 5).map((d: any) => d.date) : Object.keys(data.days || {}).slice(0, 5),
         therapistInfo: data.therapist_info,
         bookingInfo: data.booking_info
       });
       
-      if (data.days && Object.keys(data.days).length > 0) {
-        const firstDayKey = Object.keys(data.days)[0];
-        const firstDay = data.days[firstDayKey];
-        console.log(`[Calendar Debug] 🗓️ Sample day data (${firstDayKey}):`, {
+      if (data.days && data.days.length > 0) {
+        const firstDay = Array.isArray(data.days) ? data.days[0] : data.days[Object.keys(data.days)[0]];
+        console.log(`[Calendar Debug] 🗓️ Sample day data (0):`, {
           hasSummary: !!firstDay.summary,
           summary: firstDay.summary,
           slotsCount: firstDay.slots?.length || 0,
           sessionsCount: firstDay.sessions?.length || 0,
-          sampleSlots: firstDay.slots?.slice(0, 3)
+          sampleSlots: Array.isArray(firstDay.slots) ? firstDay.slots.slice(0, 2) : firstDay.slots?.slice(0, 2)
         });
       }
       
-      console.log(`✅ [Calendar Debug] 🎉 Calendar successfully loaded: ${Object.keys(data.days || {}).length} days for ${email}`);
+      // Transform array-based days to object format expected by UI
+      const transformedDays: { [key: number]: any } = {};
+      if (data.days && Array.isArray(data.days)) {
+        data.days.forEach((day: any) => {
+          if (day.date && day.slots !== undefined) {
+            const dayNumber = new Date(day.date).getDate();
+            // Convert slot time ranges like "19:00-20:00" to datetime objects
+            const dayDate = new Date(day.date);
+            const transformedSlots = day.slots.map((slot: string) => {
+              const [startTime] = slot.split('-'); // Get start time like "19:00"
+              const [hours, minutes] = startTime.split(':').map(Number);
+              const slotDateTime = new Date(dayDate);
+              slotDateTime.setHours(hours, minutes, 0, 0);
+              
+              return {
+                start: slotDateTime.toISOString(),
+                end: slot.split('-')[1], // Keep end time for reference
+                is_free: true // Mark all returned slots as available
+              };
+            });
+            
+            transformedDays[dayNumber] = {
+              ...day,
+              slots: transformedSlots,
+              sessions: [] // Initialize sessions array for compatibility
+            };
+          }
+        });
+      }
+      
+      console.log(`✅ [Calendar Debug] 🎉 Calendar successfully loaded: ${Object.keys(transformedDays).length} days for ${email}`);
       
       setAvailabilityCache(prev => ({
         ...prev,
         [avKey]: {
           months: [{
-            days: data.days || {},
+            days: transformedDays,
             meta: {
               calendar_id: email,
               timezone,
               year: currentYear,
               month: currentMonth + 1,
-              work_start: data.work_start || "07:00",
-              work_end: data.work_end || "22:00",
-              slot_minutes: 60
+              work_start: data.meta?.work_start || "07:00",
+              work_end: data.meta?.work_end || "22:00",
+              slot_minutes: data.meta?.slot_minutes || 60
             }
           }],
           therapist_info: data.therapist_info || {},
@@ -451,7 +482,7 @@ export default function MatchedTherapist({
     } finally {
       setIsLoadingCalendar(false);
     }
-  }, [avKey, timezone, therapist?.calendar_email, therapist?.email, currentYear, currentMonth, getSelectedPaymentType, isLoadingCalendar, availabilityCache]);
+  }, [avKey, timezone, therapist?.calendar_email, therapist?.email, therapist?.intern_name, therapist?.program, currentYear, currentMonth, getSelectedPaymentType, isLoadingCalendar, availabilityCache]);
   
   // Trigger lazy calendar loading when therapist is viewed
   useEffect(() => {
@@ -476,7 +507,7 @@ export default function MatchedTherapist({
         clearTimeout(timer);
       };
     }
-  }, [therapist?.id, loadCalendarData, isSwitchingTherapists]);
+  }, [therapist?.id, therapist, loadCalendarData, isSwitchingTherapists]);
   
   // Get previously viewed therapists (excluding current)
   const previouslyViewed = therapistsList.filter(t => 
