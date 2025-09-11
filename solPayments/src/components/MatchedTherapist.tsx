@@ -2105,7 +2105,56 @@ export default function MatchedTherapist({
                         </button>
                       </div>
                     </div>
-                    <div className="border border-[#5C3106] rounded-2xl p-2 shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
+                    <div className="relative border border-[#5C3106] rounded-2xl p-2 shadow-[1px_1px_0_#5C3106]" style={{ fontFamily: 'var(--font-inter)' }}>
+                      {/* Calendar Loading Overlay */}
+                      {isLoadingCalendar && (
+                        <div className="absolute inset-0 bg-yellow-50/90 backdrop-blur-sm rounded-2xl z-10 flex items-center justify-center">
+                          <div className="text-center">
+                            {/* Sun-like radial dial animation */}
+                            <div className="relative w-12 h-12 mx-auto mb-3">
+                              {/* Outer rays */}
+                              <div className="absolute inset-0 animate-spin" style={{ animationDuration: '2s' }}>
+                                {Array.from({ length: 8 }).map((_, i) => (
+                                  <div
+                                    key={i}
+                                    className="absolute w-0.5 h-4 bg-yellow-600/70 rounded-full"
+                                    style={{
+                                      top: '0px',
+                                      left: '50%',
+                                      transformOrigin: '50% 24px',
+                                      transform: `translateX(-50%) rotate(${i * 45}deg)`,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              
+                              {/* Inner rays - counter rotating */}
+                              <div className="absolute inset-0 animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }}>
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                  <div
+                                    key={i}
+                                    className="absolute w-0.5 h-3 bg-yellow-500/50 rounded-full"
+                                    style={{
+                                      top: '2px',
+                                      left: '50%',
+                                      transformOrigin: '50% 22px',
+                                      transform: `translateX(-50%) rotate(${i * 60}deg)`,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              
+                              {/* Central sun core */}
+                              <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-yellow-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
+                            </div>
+                            
+                            <p className="text-xs text-yellow-700/80 font-medium" style={{ fontFamily: 'var(--font-inter)' }}>
+                              Loading availability...
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
                       <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-1" style={{ fontFamily: 'var(--font-inter)' }}>
                         {['m','t','w','t','f','s','s'].map((d, i) => (
                           <div key={`dh-${i}`} className="py-1 uppercase tracking-wide">{d}</div>
