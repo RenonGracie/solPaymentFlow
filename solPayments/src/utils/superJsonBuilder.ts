@@ -116,11 +116,11 @@ export interface SurveyData {
     
     // === MENTAL HEALTH ASSESSMENTS ===
     phq9_responses: Record<string, string>;
-    phq9_total: number;
+    phq9_total_score: number;
     phq9_risk_level: string;
     
     gad7_responses: Record<string, string>;
-    gad7_total: number;
+    gad7_total_score: number;
     gad7_risk_level: string;
     
     // === THERAPY PREFERENCES ===
@@ -134,6 +134,10 @@ export interface SurveyData {
     selected_therapist_data?: { // For IntakeQ compatibility
       name: string;
       email: string;
+      id?: string;
+      biography?: string;
+      specialties?: string[];
+      image_link?: string;
     };
     
     // === SUBSTANCE SCREENING ===
@@ -855,7 +859,10 @@ export interface SurveyData {
       selected_therapist_data: { // Object for IntakeQ
         name: selectedTherapist.name || selectedTherapist.intern_name || '',
         email: selectedTherapist.email || '',
-        ...selectedTherapist // Include full therapist data
+        id: selectedTherapist.id,
+        biography: selectedTherapist.biography,
+        specialties: selectedTherapist.specialties,
+        image_link: selectedTherapist.image_link
       },
       
       // Update journey milestones
