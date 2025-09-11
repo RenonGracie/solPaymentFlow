@@ -304,19 +304,25 @@ export default function MatchedTherapist({
       url.searchParams.set("month", (currentMonth + 1).toString());
       url.searchParams.set("timezone", timezone);
       url.searchParams.set("payment_type", paymentType);
-      url.searchParams.set("live_check", "false");
+      url.searchParams.set("live", "true");
       url.searchParams.set("slot_minutes", "60");
+      url.searchParams.set("months", "1");
+      url.searchParams.set("session_minutes", paymentType === 'insurance' ? "55" : "45");
+      url.searchParams.set("work_start", "07:00");
+      url.searchParams.set("work_end", "22:00");
+      url.searchParams.set("mode", "cmp");
+      url.searchParams.set("view", "compact");
 
       const finalUrl = url.toString();
       console.log(`[Calendar Debug] 🌐 Full API URL:`, finalUrl);
       console.log(`[Calendar Debug] ⏱️ Starting request at:`, new Date().toISOString());
 
-      // 10-second timeout since user is actively waiting
+      // 30-second timeout since API might need more time
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
-        console.log(`[Calendar Debug] ⏰ Request timeout after 10 seconds for ${email}`);
+        console.log(`[Calendar Debug] ⏰ Request timeout after 30 seconds for ${email}`);
         controller.abort();
-      }, 10000);
+      }, 30000);
       
       const startTime = performance.now();
       const response = await fetch(finalUrl, {
@@ -419,7 +425,7 @@ export default function MatchedTherapist({
       };
       
       if (error instanceof Error && error.name === 'AbortError') {
-        console.warn(`[Calendar Debug] ⏱️ Timeout after 10 seconds:`, errorDetails);
+        console.warn(`[Calendar Debug] ⏱️ Timeout after 30 seconds:`, errorDetails);
       } else {
         console.error(`[Calendar Debug] ❌ Request failed:`, errorDetails);
       }
