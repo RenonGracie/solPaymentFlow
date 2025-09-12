@@ -329,11 +329,32 @@ export default function MatchedTherapist({
         url.searchParams.set("date", queryDate.toISOString().split('T')[0]);
         url.searchParams.set("debug", "false");
         
+        // Debug: Log the API call details
+        console.log(`[API Debug] 🚀 Making API call:`, {
+          url: url.toString(),
+          therapistEmail: email,
+          requestedDate: queryDate.toISOString().split('T')[0],
+          dayInMonth: day,
+          debug: false
+        });
+        
         return fetch(url.toString(), {
           cache: "no-store"
         }).then(async (response) => {
           if (response.ok) {
             const data = await response.json();
+            
+            // Debug: Log the API response
+            console.log(`[API Debug] 📥 API Response for day ${day}:`, {
+              requestedDate: queryDate.toISOString().split('T')[0],
+              responseData: data,
+              availableSlots: data.available_slots,
+              responseDateFromAPI: data.date,
+              dayOfWeek: data.day_of_week,
+              timezone: data.timezone,
+              totalSlots: data.total_slots
+            });
+            
             return { day, data, success: true };
           } else {
             console.warn(`[Calendar Debug] ⚠️ Failed to fetch day ${day}: ${response.status}`);
