@@ -1114,7 +1114,10 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               >
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </button>
-              <div></div>
+              <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
+                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                Alcohol and Recreational Drugs
+              </h1>
               <div className="w-8"></div>
             </div>
 
@@ -1122,10 +1125,6 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
             <div className="flex-1 flex flex-col px-4 sm:px-6 pt-8 pb-20 min-h-0">
               <div className="w-full max-w-md mx-auto">
                 <div className="text-center mb-4 sm:mb-6">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 text-gray-800" 
-                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                    Alcohol and Recreational Drugs
-                  </h1>
                   <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
                     Disclaimer: Your information is confidential and used only for assessment and treatment.
                   </p>

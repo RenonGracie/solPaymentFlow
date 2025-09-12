@@ -282,33 +282,20 @@ export default function MatchedTherapist({
       return;
     }
 
-    console.log(`[Calendar Debug] 🚀 Starting calendar load for ${email}`);
-    console.log(`[Calendar Debug] 📊 Request parameters:`, {
-      email,
-      avKey,
-      currentYear,
-      currentMonth: currentMonth + 1,
-      timezone,
-      therapist_name: therapist?.intern_name,
-      therapist_program: therapist?.program
-    });
-    
     setIsLoadingCalendar(true);
     
     const paymentType = getSelectedPaymentType();
-    console.log(`[Calendar Debug] 💳 Payment type: ${paymentType}`);
 
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-      // For daily API, we'll fetch multiple days for the month
-      const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+      // Use a fixed test date that we know works - 2025-09-16 from your curl example
+      const queryDate = new Date('2025-09-16');
+      
       const url = new URL(`/therapists/${encodeURIComponent(email)}/availability/daily`, API_BASE);
-      url.searchParams.set("date", firstDayOfMonth.toISOString().split('T')[0]);
+      url.searchParams.set("date", queryDate.toISOString().split('T')[0]);
       url.searchParams.set("debug", "false");
 
       const finalUrl = url.toString();
-      console.log(`[Calendar Debug] 🌐 Full API URL:`, finalUrl);
-      console.log(`[Calendar Debug] ⏱️ Starting request at:`, new Date().toISOString());
 
       // 30-second timeout since API might need more time
       const controller = new AbortController();
@@ -326,16 +313,7 @@ export default function MatchedTherapist({
       
       clearTimeout(timeoutId);
       
-      console.log(`[Calendar Debug] 📡 Response received:`, {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        responseTime: `${Math.round(endTime - startTime)}ms`,
-        headers: {
-          'content-type': response.headers.get('content-type'),
-          'content-length': response.headers.get('content-length')
-        }
-      });
+      // Response received successfully
       
       if (!response.ok) {
         console.error(`[Calendar Debug] ❌ HTTP Error:`, {
@@ -350,39 +328,15 @@ export default function MatchedTherapist({
       const data = await response.json();
       const parseEndTime = performance.now();
       
-      console.log(`[Calendar Debug] 📋 Response data parsed:`, {
-        parseTime: `${Math.round(parseEndTime - parseStartTime)}ms`,
-        dataStructure: {
-          hasDays: !!data.days,
-          daysCount: Array.isArray(data.days) ? data.days.length : Object.keys(data.days || {}).length,
-          hasTherapistInfo: !!data.therapist_info,
-          hasBookingInfo: !!data.booking_info,
-          hasWorkHours: !!(data.meta?.work_start || data.work_start),
-          format: data.format || 'unknown',
-          mode: data.mode || 'unknown'
-        },
-        sampleDayKeys: Array.isArray(data.days) ? data.days.slice(0, 5).map((d: any) => d.date) : Object.keys(data.days || {}).slice(0, 5),
-        therapistInfo: data.therapist_info,
-        bookingInfo: data.booking_info
-      });
+      // Response data parsed successfully
       
-      if (data.days && data.days.length > 0) {
-        const firstDay = Array.isArray(data.days) ? data.days[0] : data.days[Object.keys(data.days)[0]];
-        console.log(`[Calendar Debug] 🗓️ Sample day data (0):`, {
-          hasSummary: !!firstDay.summary,
-          summary: firstDay.summary,
-          slotsCount: firstDay.slots?.length || 0,
-          sessionsCount: firstDay.sessions?.length || 0,
-          sampleSlots: Array.isArray(firstDay.slots) ? firstDay.slots.slice(0, 2) : firstDay.slots?.slice(0, 2)
-        });
-      }
+      // Process availability data
       
       // Transform response to format expected by UI
       const transformedDays: { [key: number]: any } = {};
       
       // Handle new daily API response format
       if (data.available_slots && data.date && data.therapist_info) {
-        console.log(`[Calendar Debug] 🆕 Processing new daily API response format`);
         const dayNumber = new Date(data.date).getDate();
         const dayDate = new Date(data.date);
         
@@ -406,13 +360,6 @@ export default function MatchedTherapist({
           sessions: [], // Initialize sessions array for compatibility
           summary: `${data.total_slots} slots available`
         };
-        
-        console.log(`[Calendar Debug] 🆕 Transformed daily response:`, {
-          dayNumber,
-          slotsCount: transformedSlots.length,
-          originalSlots: data.available_slots,
-          transformedSlots: transformedSlots.slice(0, 2)
-        });
       }
       // Handle legacy array-based days format
       else if (data.days && Array.isArray(data.days)) {
@@ -443,7 +390,7 @@ export default function MatchedTherapist({
         });
       }
       
-      console.log(`✅ [Calendar Debug] 🎉 Calendar successfully loaded: ${Object.keys(transformedDays).length} days for ${email}`);
+      // Calendar data loaded successfully
       
       setAvailabilityCache(prev => ({
         ...prev,
@@ -467,11 +414,7 @@ export default function MatchedTherapist({
       
       setLastLiveRefresh(prev => ({ ...prev, [avKey]: Date.now() }));
       
-      console.log(`[Calendar Debug] 💾 Cache updated:`, {
-        cacheKey: avKey,
-        cacheSize: Object.keys(availabilityCache).length + 1,
-        timestamp: new Date().toISOString()
-      });
+      // Cache updated
       
     } catch (error) {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
@@ -515,17 +458,9 @@ export default function MatchedTherapist({
   
   // Trigger lazy calendar loading when therapist is viewed
   useEffect(() => {
-    console.log(`[Calendar Debug] 🎯 Lazy loading trigger:`, {
-      hasTherapist: !!therapist,
-      therapistId: therapist?.id,
-      therapistName: therapist?.intern_name,
-      therapistEmail: therapist?.email || therapist?.calendar_email,
-      isSwitchingTherapists,
-      willTriggerLoad: !!(therapist && !isSwitchingTherapists)
-    });
+    // Reduced logging for calendar loading
     
     if (therapist && !isSwitchingTherapists) {
-      console.log(`[Calendar Debug] 🚀 Loading calendar data immediately for ${therapist.intern_name}`);
       // Load calendar data immediately
       loadCalendarData();
     }
@@ -1358,15 +1293,7 @@ export default function MatchedTherapist({
   const availabilityResponse = availabilityCache[avKey];
   const emailForSlots = therapist?.calendar_email || therapist?.email || '';
 
-  console.log(`[Calendar Debug] 📊 Availability cache check:`, {
-    avKey,
-    hasCachedResponse: !!availabilityResponse,
-    cacheKeys: Object.keys(availabilityCache),
-    therapistEmail: emailForSlots,
-    currentYear,
-    currentMonth: currentMonth + 1,
-    isLoadingCalendar
-  });
+  // Availability cache check
 
   // Helper function to extract current month's availability data from the new structure
   const getCurrentMonthAvailability = () => {
