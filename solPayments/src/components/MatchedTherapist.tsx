@@ -288,109 +288,108 @@ export default function MatchedTherapist({
 
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-      // Use a fixed test date that we know works - 2025-09-16 from your curl example
-      const queryDate = new Date('2025-09-16');
-      
-      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability/daily`, API_BASE);
-      url.searchParams.set("date", queryDate.toISOString().split('T')[0]);
-      url.searchParams.set("debug", "false");
-
-      const finalUrl = url.toString();
-
-      // 30-second timeout since API might need more time
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        console.log(`[Calendar Debug] ⏰ Request timeout after 30 seconds for ${email}`);
-        controller.abort();
-      }, 30000);
-      
-      const startTime = performance.now();
-      const response = await fetch(finalUrl, {
-        signal: controller.signal,
-        cache: "no-store"
-      });
-      const endTime = performance.now();
-      
-      clearTimeout(timeoutId);
-      
-      // Response received successfully
-      
-      if (!response.ok) {
-        console.error(`[Calendar Debug] ❌ HTTP Error:`, {
-          status: response.status,
-          statusText: response.statusText,
-          url: finalUrl
-        });
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const parseStartTime = performance.now();
-      const data = await response.json();
-      const parseEndTime = performance.now();
-      
-      // Response data parsed successfully
-      
-      // Process availability data
       
       // Transform response to format expected by UI
       const transformedDays: { [key: number]: any } = {};
       
-      // Handle new daily API response format
-      if (data.available_slots && data.date && data.therapist_info) {
-        const dayNumber = new Date(data.date).getDate();
-        const dayDate = new Date(data.date);
-        
-        // Convert available_slots like ["10:00", "11:00", "12:00"] to slot objects
-        const transformedSlots = data.available_slots.map((timeSlot: string) => {
-          const [hours, minutes] = timeSlot.split(':').map(Number);
-          const slotDateTime = new Date(dayDate);
-          slotDateTime.setHours(hours, minutes, 0, 0);
-          
-          return {
-            start: slotDateTime.toISOString(),
-            end: timeSlot, // Keep original time for reference
-            is_free: true
-          };
-        });
-        
-        transformedDays[dayNumber] = {
-          date: data.date,
-          day_of_week: data.day_of_week,
-          slots: transformedSlots,
-          sessions: [], // Initialize sessions array for compatibility
-          summary: `${data.total_slots} slots available`
-        };
+      // Calculate the 15-day booking window (same logic as calendar rendering)
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      
+      const minimumBookingTime = new Date(tomorrow);
+      minimumBookingTime.setDate(minimumBookingTime.getDate() + 1);
+      minimumBookingTime.setHours(0, 0, 0, 0); // Start of day after tomorrow
+      
+      const maximumBookingTime = new Date(now);
+      maximumBookingTime.setDate(maximumBookingTime.getDate() + 15);
+      maximumBookingTime.setHours(23, 59, 59, 999); // End of 15th day
+      
+      // Get all days in current month that are within the booking window
+      const bookableDays = [];
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+      const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+      
+      for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
+        const date = new Date(currentYear, currentMonth, day);
+        // Only include days within the booking window
+        if (date.getTime() >= minimumBookingTime.getTime() && date.getTime() <= maximumBookingTime.getTime()) {
+          bookableDays.push(day);
+        }
       }
-      // Handle legacy array-based days format
-      else if (data.days && Array.isArray(data.days)) {
-        data.days.forEach((day: any) => {
-          if (day.date && day.slots !== undefined) {
-            const dayNumber = new Date(day.date).getDate();
-            // Convert slot time ranges like "19:00-20:00" to datetime objects
-            const dayDate = new Date(day.date);
-            const transformedSlots = day.slots.map((slot: string) => {
-              const [startTime] = slot.split('-'); // Get start time like "19:00"
-              const [hours, minutes] = startTime.split(':').map(Number);
+      
+      console.log(`[Calendar Debug] 📅 Fetching availability for ${bookableDays.length} bookable days in month ${currentYear}-${currentMonth + 1}: [${bookableDays.join(', ')}]`);
+      
+      // Fetch availability for only the bookable days
+      const dailyRequests = bookableDays.map(day => {
+        const queryDate = new Date(currentYear, currentMonth, day);
+        
+        const url = new URL(`/therapists/${encodeURIComponent(email)}/availability/daily`, API_BASE);
+        url.searchParams.set("date", queryDate.toISOString().split('T')[0]);
+        url.searchParams.set("debug", "false");
+        
+        return fetch(url.toString(), {
+          cache: "no-store"
+        }).then(async (response) => {
+          if (response.ok) {
+            const data = await response.json();
+            return { day, data, success: true };
+          } else {
+            console.warn(`[Calendar Debug] ⚠️ Failed to fetch day ${day}: ${response.status}`);
+            return { day, data: null, success: false };
+          }
+        }).catch((error) => {
+          console.warn(`[Calendar Debug] ⚠️ Error fetching day ${day}:`, error);
+          return { day, data: null, success: false };
+        });
+      });
+      
+      // Wait for all daily requests to complete
+      const startTime = performance.now();
+      const results = await Promise.allSettled(dailyRequests);
+      const endTime = performance.now();
+      
+      console.log(`[Calendar Debug] ⏱️ Fetched ${bookableDays.length} bookable days in ${Math.round(endTime - startTime)}ms`);
+      
+      // Process results
+      let successfulDays = 0;
+      results.forEach((result) => {
+        if (result.status === 'fulfilled' && result.value.success && result.value.data) {
+          const { day, data } = result.value;
+          
+          // Handle new daily API response format
+          if (data.available_slots && data.date && data.therapist_info) {
+            const dayNumber = new Date(data.date).getDate();
+            const dayDate = new Date(data.date);
+            
+            // Convert available_slots like ["10:00", "11:00", "12:00"] to slot objects
+            const transformedSlots = data.available_slots.map((timeSlot: string) => {
+              const [hours, minutes] = timeSlot.split(':').map(Number);
               const slotDateTime = new Date(dayDate);
               slotDateTime.setHours(hours, minutes, 0, 0);
               
               return {
                 start: slotDateTime.toISOString(),
-                end: slot.split('-')[1], // Keep end time for reference
-                is_free: true // Mark all returned slots as available
+                end: timeSlot, // Keep original time for reference
+                is_free: true
               };
             });
             
             transformedDays[dayNumber] = {
-              ...day,
+              date: data.date,
+              day_of_week: data.day_of_week,
               slots: transformedSlots,
-              sessions: [] // Initialize sessions array for compatibility
+              sessions: [], // Initialize sessions array for compatibility
+              summary: `${data.total_slots} slots available`
             };
+            successfulDays++;
           }
-        });
-      }
+        }
+      });
       
       // Calendar data loaded successfully
+      console.log(`[Calendar Debug] ✅ Successfully processed ${successfulDays} days with availability data`);
       
       setAvailabilityCache(prev => ({
         ...prev,
@@ -402,13 +401,23 @@ export default function MatchedTherapist({
               timezone,
               year: currentYear,
               month: currentMonth + 1,
-              work_start: data.meta?.work_start || "07:00",
-              work_end: data.meta?.work_end || "22:00",
-              slot_minutes: data.meta?.slot_minutes || 60
+              work_start: "07:00",
+              work_end: "22:00", 
+              slot_minutes: 60
             }
           }],
-          therapist_info: data.therapist_info || {},
-          booking_info: data.booking_info || {}
+          therapist_info: {
+            email: email,
+            name: therapist?.intern_name || therapist?.program || 'Unknown',
+            program: therapist?.program || 'Unknown',
+            accepting_new_clients: true
+          },
+          booking_info: {
+            session_duration_minutes: 60,
+            payment_type: paymentType,
+            supported_payment_types: ['out-of-pocket', 'insurance'],
+            timezone: timezone
+          }
         }
       }));
       
@@ -1260,14 +1269,14 @@ export default function MatchedTherapist({
   const goNextMonth = () => {
     const next = new Date(currentYear, currentMonth + 1, 1);
     const now = new Date();
-    // Normalize 14-day limit to end of 14th day
+    // Normalize 15-day limit to end of 14th day
     const maximumBookingDate = new Date(now);
-    maximumBookingDate.setDate(maximumBookingDate.getDate() + 14);
-    maximumBookingDate.setHours(23, 59, 59, 999); // End of 14th day
+    maximumBookingDate.setDate(maximumBookingDate.getDate() + 15);
+    maximumBookingDate.setHours(23, 59, 59, 999); // End of 15th day
     
-    // Don't navigate to a month that's entirely beyond the 14-day window
+    // Don't navigate to a month that's entirely beyond the 15-day window
     if (next.getTime() > maximumBookingDate.getTime()) {
-      console.log(`[Calendar Navigation] Cannot navigate beyond 14-day booking window`);
+      console.log(`[Calendar Navigation] Cannot navigate beyond 15-day booking window`);
       return;
     }
     
@@ -1391,14 +1400,14 @@ export default function MatchedTherapist({
     const dateEndOfDay = new Date(date);
     dateEndOfDay.setHours(23, 59, 59, 999); // End of the selected day
     
-    // 14-day advance limit - normalized to 14 days from today at end of day
+    // 15-day advance limit - normalized to 15 days from today at end of day
     const maximumBookingTime = new Date(now);
-    maximumBookingTime.setDate(maximumBookingTime.getDate() + 14);
-    maximumBookingTime.setHours(23, 59, 59, 999); // End of 14th day
+    maximumBookingTime.setDate(maximumBookingTime.getDate() + 15);
+    maximumBookingTime.setHours(23, 59, 59, 999); // End of 15th day
     const dateStartOfDay = new Date(date);
     dateStartOfDay.setHours(0, 0, 0, 0); // Start of the selected day
     
-    // If the entire day is within the 24-hour lead time or beyond 14 days, return 0
+    // If the entire day is within the 24-hour lead time or beyond 15 days, return 0
     if (dateEndOfDay.getTime() < minimumBookingTime.getTime() || dateStartOfDay.getTime() > maximumBookingTime.getTime()) {
       return 0;
     }
@@ -1410,7 +1419,7 @@ export default function MatchedTherapist({
       // Filter sessions to respect 24-hour lead time
       let availableSessions = sessions.length > 0 ? sessions : (payload.slots || []).filter(s => s.is_free).map(s => ({ start: s.start, end: s.end }));
       
-      // Apply 24-hour lead time and 14-day advance limit filter  
+      // Apply 24-hour lead time and 15-day advance limit filter  
       // Use the normalized maximumBookingTime already calculated above
       const normalizedMaxBookingTime = new Date(now);
       normalizedMaxBookingTime.setDate(normalizedMaxBookingTime.getDate() + 14);
@@ -1453,10 +1462,10 @@ export default function MatchedTherapist({
       minimumBookingDate.setDate(minimumBookingDate.getDate() + 1);
       minimumBookingDate.setHours(0, 0, 0, 0); // Start of day after tomorrow
       
-      // Normalize to 14 days from today at end of day  
+      // Normalize to 15 days from today at end of day  
       const maximumBookingDate = new Date(now);
-      maximumBookingDate.setDate(maximumBookingDate.getDate() + 14);
-      maximumBookingDate.setHours(23, 59, 59, 999); // End of 14th day
+      maximumBookingDate.setDate(maximumBookingDate.getDate() + 15);
+      maximumBookingDate.setHours(23, 59, 59, 999); // End of 15th day
       
       console.log(`[Calendar] Simple auto-selection: Looking for available dates in current month only`);
       
@@ -1563,10 +1572,10 @@ export default function MatchedTherapist({
     minimumBookingTime.setDate(minimumBookingTime.getDate() + 1);
     minimumBookingTime.setHours(0, 0, 0, 0); // Start of day after tomorrow
     
-    // Normalize to 14 days from today at end of day for maximum
+    // Normalize to 15 days from today at end of day for maximum
     const maximumBookingTime = new Date(now);
-    maximumBookingTime.setDate(maximumBookingTime.getDate() + 14);
-    maximumBookingTime.setHours(23, 59, 59, 999); // End of 14th day
+    maximumBookingTime.setDate(maximumBookingTime.getDate() + 15);
+    maximumBookingTime.setHours(23, 59, 59, 999); // End of 15th day
     
     const beforeTimeWindowFilter = filteredSlots.length;
     filteredSlots = filteredSlots.filter(dt => {
@@ -2039,9 +2048,9 @@ export default function MatchedTherapist({
                           aria-label="Next month"
                           disabled={(() => {
                             const now = new Date();
-                            // Normalize to 14 days from today at end of day
+                            // Normalize to 15 days from today at end of day
                             const maximumBookingDate = new Date(now);
-                            maximumBookingDate.setDate(maximumBookingDate.getDate() + 14);
+                            maximumBookingDate.setDate(maximumBookingDate.getDate() + 15);
                             maximumBookingDate.setHours(23, 59, 59, 999);
                             const nextMonth = new Date(currentYear, currentMonth + 1, 1);
                             return nextMonth.getTime() > maximumBookingDate.getTime();
@@ -2120,10 +2129,10 @@ export default function MatchedTherapist({
                           minimumBookingTime.setDate(minimumBookingTime.getDate() + 1);
                           minimumBookingTime.setHours(0, 0, 0, 0); // Start of day after tomorrow
                           
-                          // Normalize maximum time to 14 days from today at end of day
+                          // Normalize maximum time to 15 days from today at end of day
                           const maximumBookingTime = new Date(now);
-                          maximumBookingTime.setDate(maximumBookingTime.getDate() + 14);
-                          maximumBookingTime.setHours(23, 59, 59, 999); // End of 14th day
+                          maximumBookingTime.setDate(maximumBookingTime.getDate() + 15);
+                          maximumBookingTime.setHours(23, 59, 59, 999); // End of 15th day
                           
                           const isToday = isSameDay(cell.date, now);
                           const isWithinLeadTime = cell.date.getTime() < minimumBookingTime.getTime();
@@ -2137,7 +2146,7 @@ export default function MatchedTherapist({
                           
                           if (cell.inMonth) {
                             if (isOutsideBookingWindow) {
-                              // Dates outside booking window (within 24hrs or beyond 14 days) are greyed out and disabled
+                              // Dates outside booking window (within 24hrs or beyond 15 days) are greyed out and disabled
                               bgClass = 'bg-gray-100';
                               textClass = 'text-gray-400';
                               isUnavailable = true;
@@ -2183,7 +2192,7 @@ export default function MatchedTherapist({
                               } else if (isWithinLeadTime) {
                                 return 'Within 24-hour minimum lead time - not available';
                               } else if (isBeyond14Days) {
-                                return 'Beyond 14-day advance limit - not available';
+                                return 'Beyond 15-day advance limit - not available';
                               } else {
                                 return 'Past date - not available';
                               }
