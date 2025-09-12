@@ -300,19 +300,11 @@ export default function MatchedTherapist({
 
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
-      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability`, API_BASE);
-      url.searchParams.set("year", currentYear.toString());
-      url.searchParams.set("month", (currentMonth + 1).toString());
-      url.searchParams.set("timezone", timezone);
-      url.searchParams.set("payment_type", paymentType);
-      url.searchParams.set("live", "true");
-      url.searchParams.set("slot_minutes", "60");
-      url.searchParams.set("months", "1");
-      url.searchParams.set("session_minutes", paymentType === 'insurance' ? "55" : "45");
-      url.searchParams.set("work_start", "07:00");
-      url.searchParams.set("work_end", "22:00");
-      url.searchParams.set("mode", "cmp");
-      url.searchParams.set("view", "compact");
+      // For daily API, we'll fetch multiple days for the month
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+      const url = new URL(`/therapists/${encodeURIComponent(email)}/availability/daily`, API_BASE);
+      url.searchParams.set("date", firstDayOfMonth.toISOString().split('T')[0]);
+      url.searchParams.set("debug", "false");
 
       const finalUrl = url.toString();
       console.log(`[Calendar Debug] 🌐 Full API URL:`, finalUrl);
@@ -385,9 +377,45 @@ export default function MatchedTherapist({
         });
       }
       
-      // Transform array-based days to object format expected by UI
+      // Transform response to format expected by UI
       const transformedDays: { [key: number]: any } = {};
-      if (data.days && Array.isArray(data.days)) {
+      
+      // Handle new daily API response format
+      if (data.available_slots && data.date && data.therapist_info) {
+        console.log(`[Calendar Debug] 🆕 Processing new daily API response format`);
+        const dayNumber = new Date(data.date).getDate();
+        const dayDate = new Date(data.date);
+        
+        // Convert available_slots like ["10:00", "11:00", "12:00"] to slot objects
+        const transformedSlots = data.available_slots.map((timeSlot: string) => {
+          const [hours, minutes] = timeSlot.split(':').map(Number);
+          const slotDateTime = new Date(dayDate);
+          slotDateTime.setHours(hours, minutes, 0, 0);
+          
+          return {
+            start: slotDateTime.toISOString(),
+            end: timeSlot, // Keep original time for reference
+            is_free: true
+          };
+        });
+        
+        transformedDays[dayNumber] = {
+          date: data.date,
+          day_of_week: data.day_of_week,
+          slots: transformedSlots,
+          sessions: [], // Initialize sessions array for compatibility
+          summary: `${data.total_slots} slots available`
+        };
+        
+        console.log(`[Calendar Debug] 🆕 Transformed daily response:`, {
+          dayNumber,
+          slotsCount: transformedSlots.length,
+          originalSlots: data.available_slots,
+          transformedSlots: transformedSlots.slice(0, 2)
+        });
+      }
+      // Handle legacy array-based days format
+      else if (data.days && Array.isArray(data.days)) {
         data.days.forEach((day: any) => {
           if (day.date && day.slots !== undefined) {
             const dayNumber = new Date(day.date).getDate();
@@ -452,7 +480,7 @@ export default function MatchedTherapist({
         message: error instanceof Error ? error.message : String(error),
         email: email,
         avKey: avKey,
-        url: `${API_BASE}/therapists/${encodeURIComponent(email)}/availability`,
+        url: `${API_BASE}/therapists/${encodeURIComponent(email)}/availability/daily`,
         timestamp: new Date().toISOString()
       };
       
@@ -497,16 +525,9 @@ export default function MatchedTherapist({
     });
     
     if (therapist && !isSwitchingTherapists) {
-      console.log(`[Calendar Debug] ⏰ Setting 100ms timer to load calendar for ${therapist.intern_name}`);
-      // Small delay to let UI render first, then load calendar in background
-      const timer = setTimeout(() => {
-        console.log(`[Calendar Debug] 🚀 Timer fired, calling loadCalendarData for ${therapist.intern_name}`);
-        loadCalendarData();
-      }, 100);
-      return () => {
-        console.log(`[Calendar Debug] 🧹 Cleaning up timer for ${therapist?.intern_name}`);
-        clearTimeout(timer);
-      };
+      console.log(`[Calendar Debug] 🚀 Loading calendar data immediately for ${therapist.intern_name}`);
+      // Load calendar data immediately
+      loadCalendarData();
     }
   }, [therapist?.id, therapist, loadCalendarData, isSwitchingTherapists]);
   
@@ -1678,7 +1699,6 @@ export default function MatchedTherapist({
     if (!showTherapistSearchLoading) return;
     
     let mounted = true;
-    let timeoutId: NodeJS.Timeout;
     
     console.log(`[Find Another] 🔄 Starting simple preload + timeout approach`);
     
@@ -1693,23 +1713,22 @@ export default function MatchedTherapist({
     if (therapistSearchPreloader) {
       therapistSearchPreloader()
         .then(() => {
-          console.log(`[Find Another] ✅ Preload complete, waiting for minimum time`);
-          // Wait at least 4 seconds total before completing
-          timeoutId = setTimeout(handleCompletion, 4000);
+          console.log(`[Find Another] ✅ Preload complete, completing immediately`);
+          // Complete immediately when preload is done
+          handleCompletion();
         })
         .catch((error) => {
           console.error(`[Find Another] ❌ Preload failed:`, error);
-          // Still complete even if preload fails
-          timeoutId = setTimeout(handleCompletion, 4000);
+          // Complete immediately even if preload fails
+          handleCompletion();
         });
     } else {
-      // No preloader, just wait minimum time
-      timeoutId = setTimeout(handleCompletion, 4000);
+      // No preloader, complete immediately
+      handleCompletion();
     }
     
     return () => {
       mounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [showTherapistSearchLoading, handleTherapistSearchComplete, therapistSearchPreloader]);
 
@@ -1753,7 +1772,7 @@ export default function MatchedTherapist({
       <LoadingScreen
         variant="therapist-search"
         // Don't pass preloadData or onComplete - we handle it manually
-        minDisplayTime={10000} // Long timeout as fallback
+        minDisplayTime={500} // Quick loading
       />
     );
   }

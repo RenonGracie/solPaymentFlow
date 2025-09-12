@@ -186,7 +186,7 @@ interface LoadingScreenProps {
 
 export const LoadingScreen = ({ 
   onComplete, 
-  minDisplayTime = 12000, 
+  minDisplayTime = 1000, 
   variant = 'therapist-matching', 
   preloadData,
   preloadProgress = 0 
