@@ -572,9 +572,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'safety_screening':
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+          <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-visible">
+            <div className="relative h-20 md:h-24 overflow-visible flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -602,8 +602,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="w-10"></div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 min-h-0">
+            {/* Content - positioned below header with top spacing instead of center */}
+            <div className="flex-1 flex flex-col justify-start items-center px-4 sm:px-6 pt-8 pb-8 min-h-0">
               <div className="w-full max-w-md mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
                   <div className="text-center space-y-4">
@@ -646,10 +646,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'therapist_matching':
         return (
-          <div className="h-full flex flex-col"
-          >
+          <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-visible">
+            <div className="relative h-20 md:h-24 overflow-visible flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -677,8 +676,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="w-10"></div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 min-h-0">
+            {/* Content - positioned below header with top spacing instead of center */}
+            <div className="flex-1 flex flex-col justify-start items-center px-4 sm:px-6 pt-8 pb-8 min-h-0">
               <div className="w-full max-w-md mx-auto">
                 <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
                   <div className="text-center space-y-4">
@@ -725,9 +724,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'therapist_search':
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+          <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-visible">
+            <div className="relative h-20 md:h-24 overflow-visible flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -818,9 +817,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'therapist_preferences':
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+          <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-visible">
+            <div className="relative h-20 md:h-24 overflow-visible flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1085,9 +1084,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
       case 'alcohol_drugs':
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+          <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image */}
-            <div className="relative h-20 md:h-24 overflow-visible">
+            <div className="relative h-20 md:h-24 overflow-visible flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1119,99 +1118,102 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
               <div className="w-8"></div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 flex flex-col justify-between px-4 sm:px-6 pb-4 sm:pb-6">
-              <div className="flex-1 flex items-center justify-center">
-                <div className="max-w-md w-full">
-                  <div className="text-center mb-4 sm:mb-6">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 text-gray-800" 
+            {/* Content - positioned below header with top spacing instead of center */}
+            <div className="flex-1 flex flex-col px-4 sm:px-6 pt-8 pb-20 min-h-0">
+              <div className="w-full max-w-md mx-auto">
+                <div className="text-center mb-4 sm:mb-6">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 text-gray-800" 
+                      style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                    Alcohol and Recreational Drugs
+                  </h1>
+                  <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                    Disclaimer: Your information is confidential and used only for assessment and treatment.
+                  </p>
+                </div>
+
+                {/* Stacked Questions */}
+                <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
+                  {/* Alcohol */}
+                  <div>
+                    <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2 mb-4" 
                         style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                      Alcohol and Recreational Drugs
-                    </h1>
-                    <p className="text-gray-500 text-xs sm:text-sm italic px-4" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Disclaimer: Your information is confidential and used only for assessment and treatment.
-                    </p>
+                      Do you drink alcohol? If yes, how often per week?
+                    </h2>
+                    <div className="space-y-3 sm:space-y-4">
+                      {['Not at all','Several days','More than half the days','Nearly every day'].map((option) => {
+                        const isSelected = surveyData.alcohol_frequency === option;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => {
+                              updateSurveyData('alcohol_frequency', option);
+                            }}
+                            className={`w-full py-2 sm:py-2.5 px-3 sm:px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
+                              isSelected
+                                ? 'bg-[#5C3106] text-white border border-[#5C3106]'
+                                : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  {/* Stacked Questions */}
-                  <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
-                    {/* Alcohol */}
-                    <div>
-                      <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2 mb-4" 
-                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                        Do you drink alcohol? If yes, how often per week?
-                      </h2>
-                      <div className="space-y-3 sm:space-y-4">
-                        {['Not at all','Several days','More than half the days','Nearly every day'].map((option) => {
-                          const isSelected = surveyData.alcohol_frequency === option;
-                          return (
-                            <button
-                              key={option}
-                              onClick={() => {
-                                updateSurveyData('alcohol_frequency', option);
-                              }}
-                              className={`w-full py-2 sm:py-2.5 px-3 sm:px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
-                                isSelected
-                                  ? 'bg-[#5C3106] text-white border border-[#5C3106]'
-                                  : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
-                              }`}
-                              style={{ fontFamily: 'var(--font-inter)' }}
-                            >
-                              {option}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Recreational Drugs */}
-                    <div>
-                      <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2 mb-4" 
-                          style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
-                        Do you use recreational drugs? If yes, how often per week?
-                      </h2>
-                      <div className="space-y-3 sm:space-y-4">
-                        {['Not at all','Several days','More than half the days','Nearly every day'].map((option) => {
-                          const isSelected = surveyData.recreational_drugs_frequency === option;
-                          return (
-                            <button
-                              key={option}
-                              onClick={() => {
-                                updateSurveyData('recreational_drugs_frequency', option);
-                              }}
-                              className={`w-full py-2 sm:py-2.5 px-3 sm:px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
-                                isSelected
-                                  ? 'bg-[#5C3106] text-white border border-[#5C3106]'
-                                  : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
-                              }`}
-                              style={{ fontFamily: 'var(--font-inter)' }}
-                            >
-                              {option}
-                            </button>
-                          );
-                        })}
-                      </div>
+                  {/* Recreational Drugs */}
+                  <div>
+                    <h2 className="text-lg sm:text-xl md:text-2xl text-gray-800 leading-[1.1] px-2 mb-4" 
+                        style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}>
+                      Do you use recreational drugs? If yes, how often per week?
+                    </h2>
+                    <div className="space-y-3 sm:space-y-4">
+                      {['Not at all','Several days','More than half the days','Nearly every day'].map((option) => {
+                        const isSelected = surveyData.recreational_drugs_frequency === option;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => {
+                              updateSurveyData('recreational_drugs_frequency', option);
+                            }}
+                            className={`w-full py-2 sm:py-2.5 px-3 sm:px-4 rounded-2xl text-sm sm:text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] ${
+                              isSelected
+                                ? 'bg-[#5C3106] text-white border border-[#5C3106]'
+                                : 'bg-white border border-[#5C3106] text-gray-800 hover:bg-[#F5E8D1]'
+                            }`}
+                            style={{ fontFamily: 'var(--font-inter)' }}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Continue Button */}
-              {surveyData.alcohol_frequency && surveyData.recreational_drugs_frequency && (
-                <div className="pt-6 flex justify-center">
-                  <Button
-                    onClick={() => {
-                      setShowPhq9Intro(true);
-                      setPhq9IntroEnded(false);
-                      setCurrentStep('phq9');
-                    }}
-                    className="max-w-md py-4 px-6 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-full text-base font-medium transition-colors shadow-[1px_1px_0_#5C3106] border border-[#5C3106] min-w-[200px]"
-                    style={{ fontFamily: 'var(--font-inter)' }}
-                  >
-                    Continue →
-                  </Button>
-                </div>
-              )}
+            {/* Continue Button - Always visible with conditional styling */}
+            <div className="pointer-events-none">
+              <div className="fixed bottom-4 left-1/2 -translate-x-1/2 transform z-20">
+                <Button
+                  onClick={() => {
+                    setShowPhq9Intro(true);
+                    setPhq9IntroEnded(false);
+                    setCurrentStep('phq9');
+                  }}
+                  disabled={!surveyData.alcohol_frequency || !surveyData.recreational_drugs_frequency}
+                  className={`pointer-events-auto rounded-full text-sm md:text-base font-medium transition-colors px-5 md:px-6 py-2 md:py-2.5 shadow-[1px_1px_0_#5C3106] border border-[#5C3106] ${
+                    surveyData.alcohol_frequency && surveyData.recreational_drugs_frequency
+                      ? 'bg-yellow-100 hover:bg-yellow-200 text-gray-800' 
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  Continue →
+                </Button>
+              </div>
             </div>
           </div>
         );
@@ -1262,8 +1264,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
         if (showPhq9Intro) {
           return (
-            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
-              <div className="relative h-20 md:h-24 overflow-visible">
+            <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+              <div className="relative h-20 md:h-24 overflow-visible flex-shrink-0">
                 <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
               </div>
@@ -1327,9 +1329,9 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
         }
 
         return (
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+          <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
             {/* Header with sunset image - smaller for mobile */}
-            <div className="relative h-20 md:h-24 overflow-visible">
+            <div className="relative h-20 md:h-24 overflow-visible flex-shrink-0">
               <img 
                 src="/onboarding-banner.jpg" 
                 alt="" 
@@ -1498,8 +1500,8 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
 
        if (showGad7Intro) {
          return (
-           <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
-             <div className="relative h-20 md:h-24 overflow-visible">
+           <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+             <div className="relative h-20 md:h-24 overflow-visible flex-shrink-0">
                <img src="/onboarding-banner.jpg" alt="" className="w-full h-full object-cover" />
                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-50/50"></div>
              </div>
@@ -1562,7 +1564,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
        }
 
        return (
-         <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+         <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
            {/* Header with sunset image - smaller for mobile */}
            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
              <img 
@@ -1708,7 +1710,7 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
        const invalidRace = (surveyData.race_ethnicity || []).length === 0;
 
        return (
-         <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
+         <div className="h-full flex flex-col" style={{ backgroundColor: '#FFFBF3' }}>
            {/* Header with sunset image */}
            <div className="relative h-20 md:h-24 overflow-hidden flex-shrink-0">
              <img 

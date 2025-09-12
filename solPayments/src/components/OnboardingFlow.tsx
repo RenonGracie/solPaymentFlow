@@ -1180,48 +1180,50 @@ export default function OnboardingFlow({
           <div className="w-10"></div>
         </div>
 
-        {/* Content - compact centered layout */}
-        <div className="flex-1 flex items-center justify-center px-6 py-4">
+        {/* Content - top aligned with card design */}
+        <div className="flex-1 flex flex-col justify-start items-center px-4 sm:px-6 pt-8 pb-8 min-h-0" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
           <div className="w-full max-w-md mx-auto">
-            <div className="text-center space-y-3 mb-6">
-              <span className="text-3xl sm:text-4xl block">👋</span>
-              <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
-                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
-                What can we call you?
-              </h1>
-            </div>
+            <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
+              <div className="text-center space-y-4">
+                <span className="text-3xl sm:text-4xl block">👋</span>
+                <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
+                    style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                  What can we call you?
+                </h1>
+              </div>
 
-            {/* Single Preferred Name Input */}
-            <div className="space-y-5">
-              <input
-                ref={nameInputRef}
-                type="text"
-                value={formData.preferredName}
-                onChange={(e) => handleInputChange('preferredName', e.target.value)}
-                onFocus={() => setShowKeyboard(true)}
-                onBlur={() => setShowKeyboard(false)}
-                placeholder=""
-                className="w-full text-base sm:text-lg font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
-                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="words"
-                inputMode="text"
-              />
+              {/* Single Preferred Name Input */}
+              <div className="space-y-5">
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={formData.preferredName}
+                  onChange={(e) => handleInputChange('preferredName', e.target.value)}
+                  onFocus={() => setShowKeyboard(true)}
+                  onBlur={() => setShowKeyboard(false)}
+                  placeholder=""
+                  className="w-full text-base sm:text-lg font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
+                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="words"
+                  inputMode="text"
+                />
 
-              <Button
-                onClick={handleContinue}
-                disabled={!formData.preferredName.trim()}
-                className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 ${
-                  formData.preferredName.trim() 
-                    ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
-                style={{ fontFamily: 'var(--font-inter)' }}
-              >
-                Continue
-                <ChevronRight className="inline w-5 h-5 ml-2" />
-              </Button>
+                <Button
+                  onClick={handleContinue}
+                  disabled={!formData.preferredName.trim()}
+                  className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 shadow-[1px_1px_0_#5C3106] border border-[#5C3106] ${
+                    formData.preferredName.trim() 
+                      ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  Continue
+                  <ChevronRight className="inline w-5 h-5 ml-2" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -1408,48 +1410,50 @@ export default function OnboardingFlow({
           <div className="w-10"></div>
         </div>
 
-        {/* Content - Email Input */}
-        <div className="flex-1 flex items-center justify-center px-6 py-4">
-          <div className="w-full max-w-md mx-auto space-y-6">
-            <div className="text-center space-y-3">
-              <span className="text-3xl sm:text-4xl block">📧</span>
-              <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
-                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
-                What's Your Email?
-              </h1>
-            </div>
+        {/* Content - top aligned with card design */}
+        <div className="flex-1 flex flex-col justify-start items-center px-4 sm:px-6 pt-8 pb-8 min-h-0" style={{ backgroundColor: '#FFFBF3', backgroundImage: 'url("/beige texture 2048.svg")', backgroundRepeat: 'repeat', backgroundSize: '200px 200px' }}>
+          <div className="w-full max-w-md mx-auto">
+            <div className="bg-transparent border border-[#5C3106] rounded-3xl p-6 sm:p-8 shadow-[1px_1px_0_#5C3106] space-y-6">
+              <div className="text-center space-y-4">
+                <span className="text-3xl sm:text-4xl block">📧</span>
+                <h1 className="text-xl sm:text-2xl md:text-3xl text-gray-800" 
+                    style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
+                  What's Your Email?
+                </h1>
+              </div>
 
-            {/* Email Input */}
-            <div className="space-y-5">
-              <input
-                ref={emailInputRef}
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                onFocus={() => setShowKeyboard(true)}
-                onBlur={() => setShowKeyboard(false)}
-                placeholder="well@being.com"
-                className="w-full text-base sm:text-lg font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
-                style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
-                autoComplete="email"
-                autoCorrect="off"
-                autoCapitalize="off"
-                inputMode="email"
-              />
+              {/* Email Input */}
+              <div className="space-y-5">
+                <input
+                  ref={emailInputRef}
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  onFocus={() => setShowKeyboard(true)}
+                  onBlur={() => setShowKeyboard(false)}
+                  placeholder="well@being.com"
+                  className="w-full text-base sm:text-lg font-light border-b-2 border-gray-300 pb-3 focus:border-gray-600 focus:outline-none bg-transparent text-gray-800 placeholder-gray-400 transition-colors duration-200 text-center"
+                  style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif' }}
+                  autoComplete="email"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  inputMode="email"
+                />
 
-              <Button
-                onClick={handleContinue}
-                disabled={!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)}
-                className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 ${
-                  formData.email.trim() && /\S+@\S+\.\S+/.test(formData.email)
-                    ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
-                style={{ fontFamily: 'var(--font-inter)' }}
-              >
-                Continue
-                <ChevronRight className="inline w-5 h-5 ml-2" />
-              </Button>
+                <Button
+                  onClick={handleContinue}
+                  disabled={!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)}
+                  className={`w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 shadow-[1px_1px_0_#5C3106] border border-[#5C3106] ${
+                    formData.email.trim() && /\S+@\S+\.\S+/.test(formData.email)
+                      ? 'bg-yellow-100 text-gray-800 hover:bg-yellow-200' 
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  Continue
+                  <ChevronRight className="inline w-5 h-5 ml-2" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
