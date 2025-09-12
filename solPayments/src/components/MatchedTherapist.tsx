@@ -1549,16 +1549,17 @@ export default function MatchedTherapist({
     let rawSlots: Date[] = [];
     let dataSource = 'none';
 
-    // Get raw slots from API - prefer new availability JSON
+    // Get raw slots from API - use the direct API response data
     if (availability?.days) {
       const dayNum = selectedDateObj.getDate();
       const payload = availability.days[dayNum];
-      if (payload) {
+      if (payload && payload.slots && payload.slots.length > 0) {
         dataSource = 'new-availability-api';
-        const sessions = (payload.sessions && payload.sessions.length > 0)
-          ? payload.sessions.map(s => new Date(s.start))
-          : payload.slots.filter(s => s.is_free).map(s => new Date(s.start));
-        rawSlots = sessions.filter(dt => isSameDay(dt, selectedDateObj));
+        // Just fucking use the slots directly - no more complicated bullshit
+        rawSlots = payload.slots
+          .filter(s => s.is_free)
+          .map(s => new Date(s.start))
+          .filter(dt => isSameDay(dt, selectedDateObj));
       }
     }
 
