@@ -25,6 +25,7 @@ type AvDay = {
   };
   slots: AvSlot[];
   sessions?: { start: string; end: string }[];
+  has_bookable_sessions?: boolean; // NEW: Clear signal for calendar coloring
 };
 type AvailabilityMonth = {
   meta: {
@@ -1446,9 +1447,23 @@ export default function MatchedTherapist({
     if (isSameMonth && availability?.days && availability.days[dayNum]) {
       const payload = availability.days[dayNum];
       const sessions = payload.sessions ?? [];
-      
-      // Filter sessions to respect 24-hour lead time
-      let availableSessions = sessions.length > 0 ? sessions : (payload.slots || []).filter(s => s.is_free).map(s => ({ start: s.start, end: s.end }));
+
+      // FIXED: Use only actual bookable sessions, not slots fallback
+      // The has_bookable_sessions field from the backend ensures consistency
+      const hasBookableSessions = payload.has_bookable_sessions ?? (sessions.length > 0);
+
+      if (process.env.NODE_ENV === 'development') {
+        const slotsAvailable = (payload.slots || []).filter(s => s.is_free).length;
+        if (slotsAvailable > 0 && !hasBookableSessions) {
+          console.warn(`🔧 AVAILABILITY FIX: Day ${dayNum} has ${slotsAvailable} free slots but has_bookable_sessions=${hasBookableSessions}, sessions=${sessions.length}`);
+        }
+      }
+
+      if (!hasBookableSessions) {
+        return 0; // No bookable sessions = no availability color
+      }
+
+      let availableSessions = sessions;
       
       // Apply 24-hour lead time and 15-day advance limit filter  
       // Use the normalized maximumBookingTime already calculated above
