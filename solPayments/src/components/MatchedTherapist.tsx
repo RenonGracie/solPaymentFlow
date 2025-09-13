@@ -243,7 +243,7 @@ export default function MatchedTherapist({
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + 42); // 6 weeks
 
-    let currentDate = new Date(startDate);
+    const currentDate = new Date(startDate);
     while (currentDate < endDate) {
       cells.push({
         date: new Date(currentDate),
