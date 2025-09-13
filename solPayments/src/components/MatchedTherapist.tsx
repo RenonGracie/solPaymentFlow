@@ -1448,22 +1448,32 @@ export default function MatchedTherapist({
       const payload = availability.days[dayNum];
       const sessions = payload.sessions ?? [];
 
-      // FIXED: Use only actual bookable sessions, not slots fallback
-      // The has_bookable_sessions field from the backend ensures consistency
-      const hasBookableSessions = payload.has_bookable_sessions ?? (sessions.length > 0);
+      // FIXED: Use has_bookable_sessions when available, with graceful fallback
+      // This provides backward compatibility during deployment transition
+      const hasBookableSessions = payload.has_bookable_sessions;
 
-      if (process.env.NODE_ENV === 'development') {
-        const slotsAvailable = (payload.slots || []).filter(s => s.is_free).length;
-        if (slotsAvailable > 0 && !hasBookableSessions) {
-          console.warn(`🔧 AVAILABILITY FIX: Day ${dayNum} has ${slotsAvailable} free slots but has_bookable_sessions=${hasBookableSessions}, sessions=${sessions.length}`);
+      let availableSessions;
+
+      if (hasBookableSessions !== undefined) {
+        // New backend with has_bookable_sessions field - use it reliably
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[Calendar] Day ${dayNum}: Using new backend has_bookable_sessions=${hasBookableSessions}, sessions=${sessions.length}`);
+        }
+        if (!hasBookableSessions) {
+          return 0; // Backend confirms no bookable sessions
+        }
+        availableSessions = sessions; // Use only actual sessions
+      } else {
+        // Fallback for older backend without has_bookable_sessions field
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[Calendar] Day ${dayNum}: Using fallback logic, sessions=${sessions.length}, slots=${(payload.slots || []).filter(s => s.is_free).length}`);
+        }
+        availableSessions = sessions.length > 0 ? sessions : (payload.slots || []).filter(s => s.is_free).map(s => ({ start: s.start, end: s.end }));
+
+        if (availableSessions.length === 0) {
+          return 0; // No availability found
         }
       }
-
-      if (!hasBookableSessions) {
-        return 0; // No bookable sessions = no availability color
-      }
-
-      let availableSessions = sessions;
       
       // Apply 24-hour lead time and 15-day advance limit filter  
       // Use the normalized maximumBookingTime already calculated above
