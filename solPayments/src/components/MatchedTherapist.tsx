@@ -163,6 +163,9 @@ export default function MatchedTherapist({
   /** New: cache monthly availability by therapist + month + tz (30s cache for live data) */
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, Availability>>({});
   const [lastLiveRefresh, setLastLiveRefresh] = useState<Record<string, number>>({});
+  
+  /** Direct API response cache - stores the raw API data without transformation bullshit */
+  const [apiResponseCache, setApiResponseCache] = useState<Record<string, any>>({});
   const [showTherapistSearchLoading, setShowTherapistSearchLoading] = useState(false);
   const [therapistSearchPreloader, setTherapistSearchPreloader] = useState<(() => Promise<void>) | null>(null);
   const [isSwitchingTherapists, setIsSwitchingTherapists] = useState(false);
@@ -354,6 +357,13 @@ export default function MatchedTherapist({
               timezone: data.timezone,
               totalSlots: data.total_slots
             });
+            
+            // Store the raw API response directly - fuck the transformation layer
+            const apiKey = `${email}:${data.date}`;
+            setApiResponseCache(prev => ({
+              ...prev,
+              [apiKey]: data
+            }));
             
             return { day, data, success: true };
           } else {
@@ -1549,18 +1559,27 @@ export default function MatchedTherapist({
     let rawSlots: Date[] = [];
     let dataSource = 'none';
 
-    // Get raw slots from API - use the direct API response data
-    if (availability?.days) {
-      const dayNum = selectedDateObj.getDate();
-      const payload = availability.days[dayNum];
-      if (payload && payload.slots && payload.slots.length > 0) {
-        dataSource = 'new-availability-api';
-        // Just fucking use the slots directly - no more complicated bullshit
-        rawSlots = payload.slots
-          .filter(s => s.is_free)
-          .map(s => new Date(s.start))
-          .filter(dt => isSameDay(dt, selectedDateObj));
-      }
+    // Use the direct API response data - bypass the broken transformation layer completely
+    const selectedDateStr = selectedDateObj.toISOString().split('T')[0];
+    const apiKey = `${emailForSlots}:${selectedDateStr}`;
+    const apiResponse = apiResponseCache[apiKey];
+    
+    if (apiResponse && apiResponse.available_slots) {
+      dataSource = 'direct-api-response';
+      // Convert API slots like ["17:00", "18:00"] directly to Date objects
+      rawSlots = apiResponse.available_slots.map((timeSlot: string) => {
+        const [hours, minutes] = timeSlot.split(':').map(Number);
+        const slotDateTime = new Date(selectedDateObj);
+        slotDateTime.setHours(hours, minutes, 0, 0);
+        return slotDateTime;
+      });
+      
+      console.log(`[API Direct] 🎯 Using API response directly for ${selectedDateStr}:`, {
+        apiKey,
+        availableSlots: apiResponse.available_slots,
+        convertedToSlots: rawSlots.length,
+        slotTimes: rawSlots.map(s => s.toLocaleTimeString())
+      });
     }
 
 
