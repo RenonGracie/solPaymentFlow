@@ -1448,7 +1448,12 @@ export default function MatchedTherapist({
 
     if (apiResponse && apiResponse.available_slots) {
       // Use the daily API response data - same as slotsForDay
-      const rawSlots = (apiResponse.available_slots || []).map((slot: string) => new Date(slot));
+      const rawSlots = (apiResponse.available_slots || []).map((timeSlot: string) => {
+        const [hours, minutes] = timeSlot.split(':').map(Number);
+        const slotDateTime = new Date(date);
+        slotDateTime.setHours(hours, minutes, 0, 0);
+        return slotDateTime;
+      });
 
       // Apply the same business hours filtering as slotsForDay
       const filteredSlots = rawSlots.filter((slot: Date) => {
