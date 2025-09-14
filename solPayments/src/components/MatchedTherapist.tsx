@@ -302,9 +302,7 @@ export default function MatchedTherapist({
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(0, 0, 0, 0);
       
-      const minimumBookingTime = new Date(tomorrow);
-      minimumBookingTime.setDate(minimumBookingTime.getDate() + 1);
-      minimumBookingTime.setHours(0, 0, 0, 0); // Start of day after tomorrow
+      const minimumBookingTime = tomorrow; // Consistent with calendar rendering and getDayAvailableCount
       
       const maximumBookingTime = new Date(now);
       maximumBookingTime.setDate(maximumBookingTime.getDate() + 15);
