@@ -138,15 +138,17 @@ interface MatchedTherapistProps {
   onBack?: () => void;
   onBookSession?: (therapist: TMatchedTherapistData, slot: string) => void;
   onFindAnother?: () => void; // New prop for fetching additional therapists
+  onFindAnotherWithPreferences?: (preferences: { [key: string]: unknown }) => void; // New prop for re-searching with updated preferences
 }
 
-export default function MatchedTherapist({ 
+export default function MatchedTherapist({
   therapistsList,
   clientData,
   initialIndex = 0,
   onBack,
   onBookSession,
   onFindAnother,
+  onFindAnotherWithPreferences,
 }: MatchedTherapistProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
@@ -506,9 +508,15 @@ export default function MatchedTherapist({
   }, [therapist?.id, therapist, loadCalendarData, isSwitchingTherapists]);
   
   // Get previously viewed therapists (excluding current)
-  const previouslyViewed = therapistsList.filter(t => 
+  const previouslyViewed = therapistsList.filter(t =>
     viewedTherapistIds.has(t.therapist.id) && t.therapist.id !== therapist?.id
   );
+
+  // Determine if user has a specific gender preference
+  const hasSpecificGenderPreference = useMemo(() => {
+    const genderPref = clientData?.therapist_gender_preference || clientData?.gender_preference;
+    return genderPref && !['No preference', 'no preference', 'No Preference', 'none'].includes(String(genderPref).toLowerCase());
+  }, [clientData?.therapist_gender_preference, clientData?.gender_preference]);
   
   const handleFindAnother = async () => {
     console.log(`[Find Another] Current therapist: ${therapist?.intern_name} (index ${currentIndex})`);
@@ -2733,14 +2741,17 @@ export default function MatchedTherapist({
           </DialogHeader>
           
           <div className="space-y-4 text-center px-2">
-            <p className="text-base sm:text-lg text-gray-800 font-medium" 
+            <p className="text-base sm:text-lg text-gray-800 font-medium"
                style={{ fontFamily: 'var(--font-inter)' }}>
-              We couldn't find any more therapists that match your preferences
+              {hasSpecificGenderPreference
+                ? "We couldn't find any more therapists that match your specific preferences in your area."
+                : "We've shown you all available therapists that match your preferences in your area."
+              }
             </p>
-            
-            <p className="text-sm text-gray-600" 
+
+            <p className="text-sm text-gray-600"
                style={{ fontFamily: 'var(--font-inter)' }}>
-              We're actively expanding our clinical team quickly to cover a wider range of preferences
+              We're actively expanding our clinical team {hasSpecificGenderPreference ? 'quickly to cover a wider range of preferences' : 'to provide more options'}.
             </p>
             
             <div className="flex flex-col gap-3 pt-4">
@@ -2755,22 +2766,47 @@ export default function MatchedTherapist({
               >
                 Change Preferences
               </Button>
-              
-              <Button
-                onClick={() => {
-                  setShowNoMatchesModal(false);
-                  // Option B: Keep all preferences but set gender to "No Preference" and re-search
-                  console.log('View All Genders clicked - setting gender preference to no preference and re-searching');
-                  if (onFindAnother) {
-                    // This would need to pass updated preferences to the parent
-                    onFindAnother();
-                  }
-                }}
-                className="w-full py-3 px-6 bg-yellow-100 border border-[#5C3106] rounded-2xl text-gray-800 text-base font-medium hover:bg-yellow-200 transition-colors shadow-[1px_1px_0_#5C3106]"
-                style={{ fontFamily: 'var(--font-inter)' }}
-              >
-                View All Genders
-              </Button>
+
+              {hasSpecificGenderPreference ? (
+                <Button
+                  onClick={() => {
+                    setShowNoMatchesModal(false);
+                    console.log('View All Genders clicked - setting gender preference to no preference and re-searching');
+                    if (onFindAnotherWithPreferences) {
+                      onFindAnotherWithPreferences({ therapist_gender_preference: "No preference" });
+                    }
+                  }}
+                  className="w-full py-3 px-6 bg-yellow-100 border border-[#5C3106] rounded-2xl text-gray-800 text-base font-medium hover:bg-yellow-200 transition-colors shadow-[1px_1px_0_#5C3106]"
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  View All Genders
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    setShowNoMatchesModal(false);
+                    console.log('Join Waitlist clicked - submitting data to Google Sheets and redirecting to solhealth.co');
+
+                    // Submit to Google Sheets incomplete list
+                    if (clientData?.response_id) {
+                      journeyTracker.trackIncompleteUser(clientData, 'no_therapists_available')
+                        .then(() => {
+                          console.log('Waitlist data submitted successfully');
+                        })
+                        .catch((error: any) => {
+                          console.error('Failed to submit waitlist data:', error);
+                        });
+                    }
+
+                    // Redirect to solhealth.co
+                    window.location.href = 'https://solhealth.co';
+                  }}
+                  className="w-full py-3 px-6 bg-[#5C3106] text-white rounded-2xl text-base font-medium hover:bg-[#4A2805] transition-colors"
+                  style={{ fontFamily: 'var(--font-inter)' }}
+                >
+                  Join Waitlist
+                </Button>
+              )}
             </div>
           </div>
         </DialogContent>
