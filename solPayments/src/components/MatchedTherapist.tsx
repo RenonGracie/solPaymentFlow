@@ -1409,15 +1409,16 @@ export default function MatchedTherapist({
   }, [therapist, availabilityResponse]);
 
 
-  // Count available slots for a particular day
+  // Count available slots for a particular day - FIXED: Use same data source as slotsForDay
   const getDayAvailableCount = useCallback((date: Date): number => {
     const dayNum = date.getDate();
-    
+    const emailForSlots = therapist?.calendar_email || therapist?.email || '';
+
     // Check if the date is in the currently cached month
     const dateYear = date.getFullYear();
     const dateMonth = date.getMonth();
     const isSameMonth = (dateYear === currentYear && dateMonth === currentMonth);
-    
+
     // FIXED: 24-hour minimum lead time check - tomorrow is the minimum booking time
     const now = new Date();
     const tomorrow = new Date(now);
@@ -1427,19 +1428,70 @@ export default function MatchedTherapist({
     const minimumBookingTime = tomorrow; // FIXED: Tomorrow is the minimum booking time
     const dateEndOfDay = new Date(date);
     dateEndOfDay.setHours(23, 59, 59, 999); // End of the selected day
-    
+
     // 15-day advance limit - normalized to 15 days from today at end of day
     const maximumBookingTime = new Date(now);
     maximumBookingTime.setDate(maximumBookingTime.getDate() + 15);
     maximumBookingTime.setHours(23, 59, 59, 999); // End of 15th day
     const dateStartOfDay = new Date(date);
     dateStartOfDay.setHours(0, 0, 0, 0); // Start of the selected day
-    
+
     // If the entire day is within the 24-hour lead time or beyond 15 days, return 0
     if (dateEndOfDay.getTime() < minimumBookingTime.getTime() || dateStartOfDay.getTime() > maximumBookingTime.getTime()) {
       return 0;
     }
-    
+
+    // FIXED: Use the same data source as slotsForDay - check daily API cache first
+    const selectedDateStr = date.toISOString().split('T')[0];
+    const apiKey = `${emailForSlots}:${selectedDateStr}`;
+    const apiResponse = apiResponseCache[apiKey];
+
+    if (apiResponse && apiResponse.available_slots) {
+      // Use the daily API response data - same as slotsForDay
+      const rawSlots = (apiResponse.available_slots || []).map((slot: string) => new Date(slot));
+
+      // Apply the same business hours filtering as slotsForDay
+      const filteredSlots = rawSlots.filter((slot: Date) => {
+        const hour = slot.getHours();
+        return hour >= 7 && hour < 22; // 7 AM - 10 PM EST
+      });
+
+      // Apply the same time window filtering as slotsForDay
+      const filteredSlotsAfterTimeWindow = filteredSlots.filter((slot: Date) => {
+        return slot.getTime() >= minimumBookingTime.getTime() && slot.getTime() <= maximumBookingTime.getTime();
+      });
+
+      // Apply therapist category restrictions (same as slotsForDay)
+      const therapistCategory = getTherapistCategory(therapist);
+      let finalSlots = filteredSlotsAfterTimeWindow;
+
+      if (therapistCategory === 'Associate Therapist') {
+        finalSlots = finalSlots.filter((slot: Date) => slot.getMinutes() === 0);
+      }
+
+      // 🐛 DEBUG: Add detailed logging for September 21st
+      if (dayNum === 21) {
+        console.log(`🔍 [CALENDAR DEBUG - PRIMARY] Sept 21st getDayAvailableCount:`, {
+          dayNum,
+          selectedDateStr,
+          apiKey,
+          hasApiResponse: !!apiResponse,
+          rawSlotsFromAPI: rawSlots.length,
+          afterBusinessHours: filteredSlots.length,
+          afterTimeWindowFilter: filteredSlotsAfterTimeWindow.length,
+          afterTherapistRestrictions: finalSlots.length,
+          minimumBookingTime: minimumBookingTime.toLocaleString(),
+          maximumBookingTime: maximumBookingTime.toLocaleString(),
+          therapistCategory,
+          finalCount: finalSlots.length,
+          dataSource: 'daily-api-cache'
+        });
+      }
+
+      return finalSlots.length;
+    }
+
+    // Fallback to monthly data if daily API data not available
     if (isSameMonth && availability?.days && availability.days[dayNum]) {
       const payload = availability.days[dayNum];
       const sessions = payload.sessions ?? [];
@@ -1496,7 +1548,7 @@ export default function MatchedTherapist({
       
       // 🐛 DEBUG: Add detailed logging for September 21st
       if (dayNum === 21) {
-        console.log(`🔍 [CALENDAR DEBUG] Sept 21st getDayAvailableCount:`, {
+        console.log(`🔍 [CALENDAR DEBUG - FALLBACK] Sept 21st getDayAvailableCount:`, {
           dayNum,
           isSameMonth,
           hasAvailabilityData: !!availability?.days,
@@ -1506,7 +1558,8 @@ export default function MatchedTherapist({
           minimumBookingTime: minimumBookingTime.toLocaleString(),
           maximumBookingTime: normalizedMaxBookingTime.toLocaleString(),
           therapistCategory,
-          finalCount: availableSessions.length
+          finalCount: availableSessions.length,
+          dataSource: 'monthly-fallback'
         });
       }
 
@@ -1515,7 +1568,7 @@ export default function MatchedTherapist({
     
     // For dates in different months, return 0 (will need to fetch availability when calendar changes)
     return 0;
-  }, [availability?.days, currentYear, currentMonth, therapist, getTherapistCategory]);
+  }, [availability?.days, currentYear, currentMonth, therapist, getTherapistCategory, apiResponseCache]);
 
   // Auto-select first available date in current month only (never navigate calendar)
   useEffect(() => {
