@@ -1668,6 +1668,9 @@ export default function MatchedTherapist({
 
     // 🐛 DEBUG: Add detailed logging for September 21st
     if (selectedDateObj.getDate() === 21 && selectedDateObj.getMonth() === 8) { // September = month 8
+      // Also check what getDayAvailableCount returns for comparison
+      const countFromAvailabilityFunction = getDayAvailableCount(selectedDateObj);
+
       console.log(`🔍 [TIME SLOTS DEBUG] Sept 21st slotsForDay:`, {
         selectedDate: selectedDateObj.toDateString(),
         dataSource,
@@ -1678,7 +1681,13 @@ export default function MatchedTherapist({
         minimumBookingTime: minimumBookingTime.toLocaleString(),
         maximumBookingTime: maximumBookingTime.toLocaleString(),
         now: now.toLocaleString(),
-        therapistCategory
+        therapistCategory,
+        COMPARISON: {
+          getDayAvailableCountResult: countFromAvailabilityFunction,
+          mismatch: countFromAvailabilityFunction !== filteredSlots.length,
+          monthlyVsDaily: `Monthly: ${countFromAvailabilityFunction}, Daily: ${filteredSlots.length}`,
+          dataSourceConflict: countFromAvailabilityFunction > 0 && filteredSlots.length === 0
+        }
       });
     }
 
@@ -2261,7 +2270,22 @@ export default function MatchedTherapist({
                                 const count = getDayAvailableCount(cell.date);
                                 const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
                                 isUnavailable = count === 0; // Only unavailable when no slots exist
-                                
+
+                                // 🐛 DEBUG: Add logging for September 21st calendar coloring
+                                if (cell.date.getDate() === 21) {
+                                  console.log(`🎨 [CALENDAR COLOR DEBUG] Sept 21st:`, {
+                                    count,
+                                    color,
+                                    isUnavailable,
+                                    willBeGrey: isUnavailable && color === 'red',
+                                    cell: cell.date.toDateString(),
+                                    avKey,
+                                    hasAvailabilityCache: !!availabilityCache[avKey],
+                                    availabilityDataSource: availability ? 'cache' : 'none',
+                                    Sept21InCache: availability?.days?.['21'] || 'not found'
+                                  });
+                                }
+
                                 // Make unavailable red slots grey to be more visually distinct
                                 if (isUnavailable && color === 'red') {
                                   bgClass = 'bg-gray-200';
