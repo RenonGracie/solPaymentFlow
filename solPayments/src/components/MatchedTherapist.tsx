@@ -1474,9 +1474,9 @@ export default function MatchedTherapist({
         finalSlots = finalSlots.filter((slot: Date) => slot.getMinutes() === 0);
       }
 
-      // 🐛 DEBUG: Add detailed logging for September 21st
-      if (dayNum === 21) {
-        console.log(`🔍 [CALENDAR DEBUG - PRIMARY] Sept 21st getDayAvailableCount:`, {
+      // 🐛 DEBUG: Add detailed logging for September 15th and 21st
+      if (dayNum === 15 || dayNum === 21) {
+        console.log(`🔍 [CALENDAR DEBUG - PRIMARY] Sept ${dayNum}th getDayAvailableCount:`, {
           dayNum,
           selectedDateStr,
           apiKey,
@@ -1489,7 +1489,8 @@ export default function MatchedTherapist({
           maximumBookingTime: maximumBookingTime.toLocaleString(),
           therapistCategory,
           finalCount: finalSlots.length,
-          dataSource: 'daily-api-cache'
+          dataSource: 'daily-api-cache',
+          rawApiSlots: apiResponse?.available_slots || 'none'
         });
       }
 
@@ -2329,9 +2330,9 @@ export default function MatchedTherapist({
                                 const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
                                 isUnavailable = count === 0; // Only unavailable when no slots exist
 
-                                // 🐛 DEBUG: Add logging for September 21st calendar coloring
-                                if (cell.date.getDate() === 21) {
-                                  console.log(`🎨 [CALENDAR COLOR DEBUG] Sept 21st:`, {
+                                // 🐛 DEBUG: Add logging for September 15th and 21st calendar coloring
+                                if (cell.date.getDate() === 15 || cell.date.getDate() === 21) {
+                                  console.log(`🎨 [CALENDAR COLOR DEBUG] Sept ${cell.date.getDate()}th:`, {
                                     count,
                                     color,
                                     isUnavailable,
@@ -2340,7 +2341,7 @@ export default function MatchedTherapist({
                                     avKey,
                                     hasAvailabilityCache: !!availabilityCache[avKey],
                                     availabilityDataSource: availability ? 'cache' : 'none',
-                                    Sept21InCache: availability?.days?.['21'] || 'not found'
+                                    dataInCache: availability?.days?.[cell.date.getDate()] || 'not found'
                                   });
                                 }
 
