@@ -1494,6 +1494,22 @@ export default function MatchedTherapist({
         });
       }
       
+      // 🐛 DEBUG: Add detailed logging for September 21st
+      if (dayNum === 21) {
+        console.log(`🔍 [CALENDAR DEBUG] Sept 21st getDayAvailableCount:`, {
+          dayNum,
+          isSameMonth,
+          hasAvailabilityData: !!availability?.days,
+          hasBookableSessions: payload.has_bookable_sessions,
+          rawSessions: sessions.length,
+          afterTimeWindowFilter: availableSessions.length,
+          minimumBookingTime: minimumBookingTime.toLocaleString(),
+          maximumBookingTime: normalizedMaxBookingTime.toLocaleString(),
+          therapistCategory,
+          finalCount: availableSessions.length
+        });
+      }
+
       return availableSessions.length;
     }
     
@@ -1623,16 +1639,14 @@ export default function MatchedTherapist({
       return hour >= 7 && hour < 22; // Filter to 7AM-10PM range silently
     });
 
-    // 24-HOUR MINIMUM LEAD TIME & 14-DAY ADVANCE LIMIT: Only show slots within booking window
+    // 🔧 FIXED: 24-HOUR MINIMUM LEAD TIME & 15-DAY ADVANCE LIMIT: Only show slots within booking window
     const now = new Date();
-    // Normalize to day after tomorrow at start of day for minimum
+    // FIXED: Normalize to tomorrow at start of day for minimum (not day after tomorrow)
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
-    
-    const minimumBookingTime = new Date(tomorrow);
-    minimumBookingTime.setDate(minimumBookingTime.getDate() + 1);
-    minimumBookingTime.setHours(0, 0, 0, 0); // Start of day after tomorrow
+
+    const minimumBookingTime = tomorrow; // FIXED: Tomorrow is the minimum booking time
     
     // Normalize to 15 days from today at end of day for maximum
     const maximumBookingTime = new Date(now);
@@ -1646,11 +1660,29 @@ export default function MatchedTherapist({
     
     const removedByTimeWindowFilter = beforeTimeWindowFilter - filteredSlots.length;
     if (removedByTimeWindowFilter > 0) {
-      console.log(`[Booking Time Window Filter] ${therapist?.intern_name}: Filtered out ${removedByTimeWindowFilter} slots outside 24hr-14day window (${minimumBookingTime.toLocaleString()} to ${maximumBookingTime.toLocaleString()})`);
+      console.log(`[Booking Time Window Filter] ${therapist?.intern_name}: Filtered out ${removedByTimeWindowFilter} slots outside 24hr-15day window (${minimumBookingTime.toLocaleString()} to ${maximumBookingTime.toLocaleString()})`);
+    }
+
+    // Get therapist category for restrictions
+    const therapistCategory = getTherapistCategory(therapist);
+
+    // 🐛 DEBUG: Add detailed logging for September 21st
+    if (selectedDateObj.getDate() === 21 && selectedDateObj.getMonth() === 8) { // September = month 8
+      console.log(`🔍 [TIME SLOTS DEBUG] Sept 21st slotsForDay:`, {
+        selectedDate: selectedDateObj.toDateString(),
+        dataSource,
+        rawSlotsCount: rawSlots.length,
+        afterBusinessHours: filteredSlots.length + removedByTimeWindowFilter,
+        afterTimeWindowFilter: filteredSlots.length,
+        removedByTimeWindow: removedByTimeWindowFilter,
+        minimumBookingTime: minimumBookingTime.toLocaleString(),
+        maximumBookingTime: maximumBookingTime.toLocaleString(),
+        now: now.toLocaleString(),
+        therapistCategory
+      });
     }
 
     // ASSOCIATE THERAPIST RESTRICTION: Only allow on-the-hour slots (12pm, 1pm, 2pm, NO in-betweens)
-    const therapistCategory = getTherapistCategory(therapist);
     if (therapistCategory === 'Associate Therapist') {
       const beforeHourlyFilter = filteredSlots.length;
       filteredSlots = filteredSlots.filter(dt => {
