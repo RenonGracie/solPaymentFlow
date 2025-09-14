@@ -1792,10 +1792,10 @@ export default function MatchedTherapist({
     return timeString;
   };
 
-  // Get session duration based on payment type
+  // Get session duration based on therapist category
   const getSessionDuration = () => {
-    const paymentType = getSelectedPaymentType();
-    return paymentType === 'insurance' ? 55 : 45;
+    const therapistCategory = getTherapistCategory(therapist);
+    return therapistCategory === 'Graduate Therapist' ? 45 : 55;
   };
 
   // Handle therapist search loading with useEffect at top level

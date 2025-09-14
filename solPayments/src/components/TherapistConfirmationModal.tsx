@@ -207,9 +207,6 @@ export const TherapistConfirmationModal = ({
                       })() : ''
                     } {timezoneDisplay}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {actualSessionDuration} minute session
-                  </p>
                 </div>
               </div>
             </div>
