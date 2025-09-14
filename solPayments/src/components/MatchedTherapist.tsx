@@ -2325,7 +2325,7 @@ export default function MatchedTherapist({
                               } else {
                                 // Future dates within booking window use availability color-coding
                                 const count = getDayAvailableCount(cell.date);
-                                const color = count > 5 ? 'green' : count > 2 ? 'yellow' : 'red';
+                                const color = count >= 4 ? 'green' : count > 2 ? 'yellow' : 'red';
                                 isUnavailable = count === 0; // Only unavailable when no slots exist
 
                                 // 🐛 DEBUG: Add logging for September 15th and 21st calendar coloring
