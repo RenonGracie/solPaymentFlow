@@ -20,7 +20,7 @@ type DailyAvailabilityData = {
 };
 
 // Core interfaces
-interface ClientSignupData {
+export interface ClientSignupData {
   response_id?: string;
   client_name?: string;
   payment_type?: 'insurance' | 'cash_pay';
@@ -34,6 +34,7 @@ interface MatchedTherapistProps {
   clientData: ClientSignupData | null;
   timezone?: string;
   timezoneDisplay?: string;
+  onBookSession?: (therapistData: TMatchedTherapistData, slot: string) => Promise<void>;
 }
 
 // Helper functions
@@ -62,7 +63,8 @@ export default function MatchedTherapist({
   onBack,
   clientData,
   // timezone = 'America/New_York', // Unused
-  timezoneDisplay = 'EST'
+  timezoneDisplay = 'EST',
+  onBookSession
 }: MatchedTherapistProps) {
   // Basic state
   const [currentIndex] = useState(initialIndex); // setCurrentIndex removed as unused
