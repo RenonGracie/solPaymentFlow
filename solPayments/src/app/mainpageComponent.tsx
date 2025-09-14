@@ -1824,7 +1824,7 @@ export default function MainPageComponent() {
             {currentStep === STEPS.MATCHED_THERAPIST && matchData?.therapists && matchData.therapists.length > 0 && (() => {
               const clientData = {
                 ...matchData.client,
-                payment_type: selectedPaymentType || (matchData.client as ExtendedClientData)?.payment_type,
+                payment_type: (selectedPaymentType || (matchData.client as ExtendedClientData)?.payment_type) as 'cash_pay' | 'insurance' | undefined,
                 response_id: clientResponseId || (matchData.client as ExtendedClientData)?.response_id,
               };
               
