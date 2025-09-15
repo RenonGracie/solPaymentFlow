@@ -31,15 +31,15 @@ export interface TimeSlotMapping {
     AK: "America/Anchorage", HI: "Pacific/Honolulu",
   };
   
-  // Timezone display names for user-friendly display
-  export const TIMEZONE_DISPLAY_MAP: Record<string, string> = {
-    "America/New_York": "EST",
-    "America/Chicago": "CST",
-    "America/Denver": "MST",
-    "America/Phoenix": "MST", // Arizona doesn't observe DST
-    "America/Los_Angeles": "PST",
-    "America/Anchorage": "AK",
-    "Pacific/Honolulu": "HI",
+  // Timezone display names for user-friendly display (standard time)
+  export const TIMEZONE_DISPLAY_MAP: Record<string, { standard: string; daylight: string }> = {
+    "America/New_York": { standard: "EST", daylight: "EDT" },
+    "America/Chicago": { standard: "CST", daylight: "CDT" },
+    "America/Denver": { standard: "MST", daylight: "MDT" },
+    "America/Phoenix": { standard: "MST", daylight: "MST" }, // Arizona doesn't observe DST
+    "America/Los_Angeles": { standard: "PST", daylight: "PDT" },
+    "America/Anchorage": { standard: "AK", daylight: "AK" }, // Simplified for Alaska
+    "Pacific/Honolulu": { standard: "HI", daylight: "HI" }, // Hawaii doesn't observe DST
   };
   
   /**
@@ -55,29 +55,29 @@ export interface TimeSlotMapping {
     selectedDate: Date
   ): string => {
     try {
-      // Parse EST time
+      // Parse EST time (backend sends times as if they're always in Eastern time)
       const [hours, minutes] = estTime.split(':').map(Number);
   
-      // Create a datetime in EST for the selected date
-      const estDateTime = new Date(selectedDate);
-      estDateTime.setHours(hours, minutes, 0, 0);
+      // Create datetime in Eastern timezone (America/New_York handles EST/EDT automatically)
+      const easternDateTime = new Date(selectedDate);
+      easternDateTime.setHours(hours, minutes, 0, 0);
   
-      // Create EST datetime with explicit timezone
-      const estISOString = estDateTime.toISOString().split('T')[0] + `T${estTime}:00-05:00`;
-      const estDateTimeWithTZ = new Date(estISOString);
-  
-      // Convert to user's timezone
-      const userTimeString = estDateTimeWithTZ.toLocaleTimeString('en-US', {
+      // Convert to user's timezone using proper Eastern timezone handling
+      const userTimeString = easternDateTime.toLocaleTimeString('en-US', {
         timeZone: userTimezone,
         hour: 'numeric',
         minute: '2-digit',
         hour12: true
       });
   
-      console.log(`[Timezone Conversion] EST ${estTime} → ${userTimeString} (${userTimezone})`);
+      // Determine if the date is in EDT or EST for logging
+      const isEDT = isDaylightSavingTime(selectedDate);
+      const easternLabel = isEDT ? 'EDT' : 'EST';
+  
+      console.log(`[Timezone Conversion] ${estTime} ${easternLabel} → ${userTimeString} (${userTimezone})`);
       return userTimeString;
     } catch (error) {
-      console.error(`[Timezone Conversion] Error converting EST ${estTime} to ${userTimezone}:`, error);
+      console.error(`[Timezone Conversion] Error converting ${estTime} to ${userTimezone}:`, error);
       // Fallback: return original time formatted as 12-hour
       const [hours, minutes] = estTime.split(':').map(Number);
       const period = hours >= 12 ? 'PM' : 'AM';
@@ -153,7 +153,7 @@ export interface TimeSlotMapping {
     selectedDate: Date
   ): TimeSlotMapping => {
     const displayTime = convertESTToUserTime(estTime, userTimezone, selectedDate);
-    const timezoneDisplay = TIMEZONE_DISPLAY_MAP[userTimezone] || 'EST';
+    const timezoneDisplay = getTimezoneDisplay(userTimezone, selectedDate);
   
     return {
       displayTime,
@@ -211,8 +211,78 @@ export interface TimeSlotMapping {
   /**
    * Get display timezone abbreviation
    * @param timezone - IANA timezone string
-   * @returns User-friendly abbreviation (e.g., "PST", "EST")
+   * @param date - Date to check for DST (defaults to current date)
+   * @returns User-friendly abbreviation (e.g., "PST", "PDT", "EST", "EDT")
    */
-  export const getTimezoneDisplay = (timezone: string): string => {
-    return TIMEZONE_DISPLAY_MAP[timezone] || "EST";
+  export const getTimezoneDisplay = (timezone: string, date: Date = new Date()): string => {
+    const timezoneInfo = TIMEZONE_DISPLAY_MAP[timezone];
+    if (!timezoneInfo) {
+      return "EST"; // Fallback
+    }
+  
+    // Check if the timezone observes DST and if the date is during DST
+    const isDST = checkTimezoneDST(timezone, date);
+    return isDST ? timezoneInfo.daylight : timezoneInfo.standard;
+  };
+  
+  /**
+   * Check if a given date is during Daylight Saving Time for any timezone
+   * @param timezone - IANA timezone string
+   * @param date - Date to check
+   * @returns True if the date is during DST for the given timezone
+   */
+  export const checkTimezoneDST = (timezone: string, date: Date): boolean => {
+    // Arizona and Hawaii don't observe DST
+    if (timezone === 'America/Phoenix' || timezone === 'Pacific/Honolulu') {
+      return false;
+    }
+  
+    try {
+      // Use Intl.DateTimeFormat to get the timezone name which includes DST info
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        timeZoneName: 'short'
+      });
+  
+      const parts = formatter.formatToParts(date);
+      const timeZoneName = parts.find(part => part.type === 'timeZoneName')?.value || '';
+  
+      // Check if the timezone name indicates daylight time
+      const isDaylight = timeZoneName.includes('DT') || // EDT, PDT, CDT, MDT
+                        timeZoneName.includes('Daylight') ||
+                        (timezone === 'America/New_York' && timeZoneName === 'EDT') ||
+                        (timezone === 'America/Los_Angeles' && timeZoneName === 'PDT') ||
+                        (timezone === 'America/Chicago' && timeZoneName === 'CDT') ||
+                        (timezone === 'America/Denver' && timeZoneName === 'MDT');
+  
+      return isDaylight;
+    } catch (error) {
+      console.warn(`[DST Check] Error checking DST for ${timezone}:`, error);
+  
+      // Fallback: manual check using offset comparison
+      const januaryDate = new Date(date.getFullYear(), 0, 1);
+      const januaryOffset = new Date(januaryDate.toLocaleString('en-US', { timeZone: timezone })).getTimezoneOffset();
+      const currentOffset = new Date(date.toLocaleString('en-US', { timeZone: timezone })).getTimezoneOffset();
+  
+      return januaryOffset !== currentOffset;
+    }
+  };
+  
+  /**
+   * Check if a given date is during Daylight Saving Time in Eastern timezone
+   * @param date - Date to check
+   * @returns True if the date is during EDT, false if EST
+   */
+  export const isDaylightSavingTime = (date: Date): boolean => {
+    // Create a date in January (definitely standard time) for the same year
+    const januaryDate = new Date(date.getFullYear(), 0, 1);
+  
+    // Get the timezone offset for both dates in minutes
+    // Note: getTimezoneOffset() returns offset in minutes, with positive values for UTC-X
+    const januaryOffset = new Date(januaryDate.toLocaleString('en-US', { timeZone: 'America/New_York' })).getTimezoneOffset();
+    const currentOffset = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' })).getTimezoneOffset();
+  
+    // During DST, the offset is smaller (closer to UTC)
+    // EST is UTC-5 (offset = 300 minutes), EDT is UTC-4 (offset = 240 minutes)
+    return currentOffset < januaryOffset;
   };

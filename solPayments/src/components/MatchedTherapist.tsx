@@ -158,10 +158,10 @@ export default function MatchedTherapist({
     return getUserTimezone(clientData?.state);
   }, [clientData?.state]);
 
-  // Get display-friendly timezone abbreviation
+  // Get display-friendly timezone abbreviation based on selected date
   const timezoneDisplay = useMemo(() => {
-    return getTimezoneDisplayUtil(timezone);
-  }, [timezone]);
+    return getTimezoneDisplayUtil(timezone, selectedDateObj || new Date());
+  }, [timezone, selectedDateObj]);
 
   // Record therapist selection when therapist changes
   useEffect(() => {
