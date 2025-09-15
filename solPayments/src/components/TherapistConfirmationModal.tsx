@@ -96,16 +96,22 @@ export const TherapistConfirmationModal = ({
   };
 
   const getSessionDuration = (therapist: TMatchedTherapistData['therapist']): number => {
-    // Prefer booking info from availability API if available
+    // Calculate correct duration based on therapist category
+    const category = getTherapistCategory(therapist);
+    const correctDuration = category === 'Graduate Therapist' ? 45 : 55;
+
+    // Use booking info only if it matches the correct duration, otherwise override
     if (bookingInfo?.session_duration_minutes) {
+      if (bookingInfo.session_duration_minutes === 60) {
+        console.warn('[Confirmation Modal] Overriding incorrect 60-minute duration from booking info');
+        return correctDuration;
+      }
       return bookingInfo.session_duration_minutes;
     }
-    
-    // Fallback to program-based logic
-    const category = getTherapistCategory(therapist);
-    if (category === 'Graduate Therapist') return 45;
-    if (category === 'Associate Therapist') return 55;
-    return sessionDuration; // fallback to prop value
+
+    // Return correct duration based on therapist category
+    console.log(`[Confirmation Modal] Using ${correctDuration}-minute duration for ${category}`);
+    return correctDuration;
   };
 
   const actualSessionDuration = therapist ? getSessionDuration(therapist.therapist) : sessionDuration;

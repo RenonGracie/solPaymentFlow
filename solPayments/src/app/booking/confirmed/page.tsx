@@ -166,6 +166,24 @@ function BookingConfirmedContent() {
         console.log('✅ Booking confirmation data received:', data);
         
         // Extract booking information from the response
+        console.log('🔍 [Booking Confirmed Page] Raw data from backend:', data);
+
+        // Determine correct session duration based on therapist program
+        const therapistProgram = data.therapist_program || data.therapist?.program || '';
+        const isAssociateTherapist = therapistProgram === 'Limited Permit';
+        const correctDuration = isAssociateTherapist ? 55 : 45;
+
+        // Override duration_minutes if it's incorrect (60 minutes is wrong)
+        const finalDuration = data.duration_minutes === 60 ? correctDuration : (data.duration_minutes || correctDuration);
+
+        console.log('⏱️ [Booking Confirmed Page] Duration calculation:', {
+          therapistProgram,
+          isAssociateTherapist,
+          rawDurationFromBackend: data.duration_minutes,
+          correctDuration,
+          finalDuration
+        });
+
         const bookingInfo: BookingData = {
           client: {
             id: data.id || responseId,
@@ -180,12 +198,12 @@ function BookingConfirmedContent() {
             email: data.therapist_email || '',
             image_link: data.therapist_image || '',
             welcome_video: data.therapist_welcome_video || '',
-            program: data.therapist_program || ''
+            program: therapistProgram
           },
           appointment: {
             datetime: data.appointment_datetime || new Date().toISOString(),
             status: data.appointment_status || 'scheduled',
-            duration_minutes: data.duration_minutes || (data.therapist?.program === 'Limited Permit' ? 55 : 45),
+            duration_minutes: finalDuration,
             payment_type: data.payment_type || 'insurance'
           }
         };
