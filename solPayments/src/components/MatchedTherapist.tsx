@@ -16,7 +16,8 @@ import {
   formatTimeWithTimezone,
   getUserTimezone,
   getTimezoneDisplay as getTimezoneDisplayUtil,
-  TimeSlotMapping
+  TimeSlotMapping,
+  checkTimezoneDST
 } from "@/utils/timezoneUtils";
 
 /** ---- Availability types (from new backend endpoint) ---- */
@@ -808,14 +809,15 @@ export default function MatchedTherapist({
       
       console.log(`  Booking metadata:`, bookingMetadata);
       
-      // Create EST datetime with explicit EST timezone offset (-05:00)
-      // Backend expects EST times, so we use -05:00 offset
-      const estTimezoneOffset = '-05:00';
+      // Create EST/EDT datetime with proper timezone offset based on current DST status
+      // Backend expects Eastern times, so we use dynamic offset calculation
+      const isDST = checkTimezoneDST('America/New_York', selectedDateObj);
+      const estTimezoneOffset = isDST ? '-04:00' : '-05:00'; // EDT vs EST
       datetime = `${appointmentDateTimeString}${estTimezoneOffset}`;
 
       console.log(`  EST datetime string: ${appointmentDateTimeString}`);
-      console.log(`  EST timezone offset: ${estTimezoneOffset}`);
-      console.log(`  Final EST datetime: ${datetime}`);
+      console.log(`  Eastern timezone offset: ${estTimezoneOffset} (${isDST ? 'EDT' : 'EST'})`);
+      console.log(`  Final Eastern datetime: ${datetime}`);
       
       // Verification: Confirm EST time is being sent to backend
       const verificationDate = new Date(datetime);
@@ -833,7 +835,7 @@ export default function MatchedTherapist({
       console.log(`  ✅ VERIFICATION:`);
       console.log(`  User sees: ${selectedDateObj.toDateString()} at ${selectedTimeSlotMapping.displayTime} ${selectedTimeSlotMapping.timezoneDisplay}`);
       console.log(`  Backend gets: ${verificationInEST}`);
-      console.log(`  EST time matches original: ${selectedTimeSlotMapping.originalEST}`);
+      console.log(`  Eastern time matches original: ${selectedTimeSlotMapping.originalEST}`);
 
       // Parse expected hour from user's display time
       const displayTimeMatch = selectedTimeSlotMapping.displayTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -859,13 +861,13 @@ export default function MatchedTherapist({
       }
       
     } catch (error) {
-      console.error('❌ Error in EST datetime creation:', error);
+      console.error('❌ Error in Eastern datetime creation:', error);
 
-      // Fallback: Send EST time without timezone offset
+      // Fallback: Send Eastern time without timezone offset
       const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${estTime}:00`;
 
-      console.log('🔄 Using fallback: sending EST datetime without timezone offset');
-      console.log(`  Fallback EST datetime: ${appointmentDateTimeString}`);
+      console.log('🔄 Using fallback: sending Eastern datetime without timezone offset');
+      console.log(`  Fallback Eastern datetime: ${appointmentDateTimeString}`);
 
       datetime = appointmentDateTimeString;
     }
