@@ -2664,7 +2664,7 @@ export default function MatchedTherapist({
         isVisible={showConfirmationModal}
         therapist={currentTherapistData}
         selectedDate={selectedDateObj}
-        selectedTimeSlot={selectedTimeSlot}
+        selectedTimeSlot={selectedTimeSlotMapping?.displayTime || selectedTimeSlot}
         onConfirm={handleConfirmBooking}
         onCancel={() => setShowConfirmationModal(false)}
         clientTimezone={timezone}
