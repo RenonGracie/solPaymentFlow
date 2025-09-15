@@ -882,22 +882,36 @@ export default function MatchedTherapist({
   
 
   const getTherapistOffsetMinutes = (timezone: string): number => {
-    // Get the therapist's timezone offset in minutes from UTC using proper method
-    try {
-      const now = new Date();
-      console.log(`[Timezone Debug] Getting offset minutes for: ${timezone}`);
-      
-      // Create two dates: one in UTC and one in the target timezone
-      const utcDate = new Date(now.getTime() + (now.getTimezoneOffset() * 60000));
-      const targetDate = new Date(utcDate.toLocaleString("en-US", { timeZone: timezone }));
-      const offsetMinutes = Math.round((targetDate.getTime() - utcDate.getTime()) / (1000 * 60));
-      
-      console.log(`[Timezone Debug] Offset minutes calculated: ${offsetMinutes}`);
-      return offsetMinutes;
-    } catch (error) {
-      console.error('[Timezone Debug] Error calculating therapist offset minutes:', error);
-      return -300; // Default to EST (-5 hours = -300 minutes)
+    // Get standard timezone offset in minutes (no DST calculations)
+    console.log(`[Timezone Debug] Getting standard offset minutes for: ${timezone}`);
+
+    let offsetMinutes;
+    switch (timezone) {
+      case 'America/Los_Angeles':
+        offsetMinutes = -480; // PST is UTC-8 (8 * 60 = 480 minutes)
+        break;
+      case 'America/Denver':
+        offsetMinutes = -420; // MST is UTC-7 (7 * 60 = 420 minutes)
+        break;
+      case 'America/Chicago':
+        offsetMinutes = -360; // CST is UTC-6 (6 * 60 = 360 minutes)
+        break;
+      case 'America/New_York':
+        offsetMinutes = -300; // EST is UTC-5 (5 * 60 = 300 minutes)
+        break;
+      case 'America/Phoenix':
+        offsetMinutes = -420; // MST is UTC-7 (no DST)
+        break;
+      case 'Pacific/Honolulu':
+        offsetMinutes = -600; // HST is UTC-10 (10 * 60 = 600 minutes)
+        break;
+      default:
+        offsetMinutes = -300; // Default to EST
+        break;
     }
+
+    console.log(`[Timezone Debug] Standard offset minutes: ${offsetMinutes}`);
+    return offsetMinutes;
   };
 
   const convertTo24Hour = (time: string) => {
