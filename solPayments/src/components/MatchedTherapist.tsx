@@ -11,13 +11,13 @@ import { TherapistConfirmationModal } from "@/components/TherapistConfirmationMo
 import { journeyTracker } from "@/services/journeyTracker";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { createTherapistPreloader } from "@/utils/therapistPreloader";
-// Define TimeSlotMapping locally since import is failing
-interface TimeSlotMapping {
-  displayTime: string;      // "3:00 PM" - what user sees
-  originalEST: string;      // "18:00" - original EST time from API
-  userTimezone: string;     // "America/Los_Angeles" - user's timezone
-  timezoneDisplay: string;  // "PST" - user-friendly timezone abbreviation
-}
+import {
+  convertESTTimesToUserSlots,
+  formatTimeWithTimezone,
+  getUserTimezone,
+  getTimezoneDisplay as getTimezoneDisplayUtil,
+  TimeSlotMapping
+} from "@/utils/timezoneUtils";
 
 /** ---- Availability types (from new backend endpoint) ---- */
 type AvSlot = { start: string; end: string; free_ratio: number; is_free: boolean };
@@ -64,30 +64,6 @@ type Availability = {
   };
 };
 
-// State to timezone mapping (IANA format for internal use)
-// Note: We use IANA timezones (America/New_York) for calculations but display 
-// user-friendly abbreviations (EST, CST, etc.) in the UI
-const STATE_TIMEZONE_MAP: Record<string, string> = {
-  // Eastern
-  CT: "America/New_York", DE: "America/New_York", DC: "America/New_York", FL: "America/New_York",
-  GA: "America/New_York", ME: "America/New_York", MD: "America/New_York", MA: "America/New_York",
-  NH: "America/New_York", NJ: "America/New_York", NY: "America/New_York", NC: "America/New_York",
-  OH: "America/New_York", PA: "America/New_York", RI: "America/New_York", SC: "America/New_York",
-  VT: "America/New_York", VA: "America/New_York", WV: "America/New_York", MI: "America/New_York",
-  IN: "America/New_York", KY: "America/New_York",
-  // Central
-  AL: "America/Chicago", AR: "America/Chicago", IL: "America/Chicago", IA: "America/Chicago",
-  LA: "America/Chicago", MN: "America/Chicago", MS: "America/Chicago", MO: "America/Chicago",
-  OK: "America/Chicago", WI: "America/Chicago", TX: "America/Chicago", TN: "America/Chicago",
-  KS: "America/Chicago", NE: "America/Chicago", SD: "America/Chicago", ND: "America/Chicago",
-  // Mountain
-  AZ: "America/Phoenix", CO: "America/Denver", ID: "America/Denver", MT: "America/Denver",
-  NM: "America/Denver", UT: "America/Denver", WY: "America/Denver",
-  // Pacific
-  CA: "America/Los_Angeles", NV: "America/Los_Angeles", OR: "America/Los_Angeles", WA: "America/Los_Angeles",
-  // Alaska/Hawaii
-  AK: "America/Anchorage", HI: "Pacific/Honolulu",
-};
 
 
 interface MatchedTherapistProps {
@@ -177,26 +153,14 @@ export default function MatchedTherapist({
     return 'insurance';
   }, [clientData]);
 
-  // Get timezone based on client's state (IANA format for calculations)
+  // Get timezone based on client's state using centralized utility
   const timezone = useMemo(() => {
-    // First try to get from client's state
-    if (clientData?.state) {
-      const stateUpper = String(clientData.state).toUpperCase().trim();
-      const tz = STATE_TIMEZONE_MAP[stateUpper];
-      if (tz) return tz;
-    }
-    
-    // Fallback to browser timezone
-    try { 
-      return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; 
-    } catch { 
-      return "America/New_York"; 
-    }
+    return getUserTimezone(clientData?.state);
   }, [clientData?.state]);
 
   // Get display-friendly timezone abbreviation
   const timezoneDisplay = useMemo(() => {
-    return getTimezoneDisplay(timezone);
+    return getTimezoneDisplayUtil(timezone);
   }, [timezone]);
 
   // Record therapist selection when therapist changes
