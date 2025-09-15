@@ -55,25 +55,37 @@ export interface TimeSlotMapping {
     selectedDate: Date
   ): string => {
     try {
-      // Parse EST time (backend sends times as if they're always in Eastern time)
+      // Parse Eastern time (backend sends times in Eastern timezone - EST in winter, EDT in summer)
       const [hours, minutes] = estTime.split(':').map(Number);
   
-      // Create datetime in Eastern timezone (America/New_York handles EST/EDT automatically)
-      const easternDateTime = new Date(selectedDate);
-      easternDateTime.setHours(hours, minutes, 0, 0);
+      // Format the date for ISO string
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
   
-      // Convert to user's timezone using proper Eastern timezone handling
-      const userTimeString = easternDateTime.toLocaleTimeString('en-US', {
+      // Create an ISO string as if the time is in UTC, then we'll adjust
+      const isoString = `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00.000Z`;
+  
+      // Create date from ISO string (this will be in UTC)
+      const utcDate = new Date(isoString);
+  
+      // Determine Eastern timezone offset for the selected date
+      const isEDT = isDaylightSavingTime(selectedDate);
+      const easternOffsetHours = isEDT ? 4 : 5; // EDT is UTC-4, EST is UTC-5
+  
+      // Adjust UTC time to represent the Eastern time
+      // If backend says 16:00 EDT, we want UTC time that equals 16:00 in Eastern
+      const adjustedUTCTime = new Date(utcDate.getTime() + (easternOffsetHours * 60 * 60 * 1000));
+  
+      // Now convert this adjusted UTC time to user's timezone
+      const userTimeString = adjustedUTCTime.toLocaleTimeString('en-US', {
         timeZone: userTimezone,
         hour: 'numeric',
         minute: '2-digit',
         hour12: true
       });
   
-      // Determine if the date is in EDT or EST for logging
-      const isEDT = isDaylightSavingTime(selectedDate);
       const easternLabel = isEDT ? 'EDT' : 'EST';
-  
       console.log(`[Timezone Conversion] ${estTime} ${easternLabel} → ${userTimeString} (${userTimezone})`);
       return userTimeString;
     } catch (error) {

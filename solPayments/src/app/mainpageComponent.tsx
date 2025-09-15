@@ -238,10 +238,10 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
 
     // Get user's timezone based on their state using centralized utility
     const userTimezone = getUserTimezone(currentUserData?.state);
-    const timezoneDisplay = getTimezoneDisplay(userTimezone);
 
     // Convert the booking time to user's timezone for display
     const startDate = new Date(bookingData.StartDateIso);
+    const timezoneDisplay = getTimezoneDisplay(userTimezone, startDate);
 
     const dateStr = startDate.toLocaleDateString('en-US', {
       timeZone: userTimezone,
