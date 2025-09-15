@@ -55,60 +55,41 @@ export interface TimeSlotMapping {
     selectedDate: Date
   ): string => {
     try {
-      // Parse EST time (backend always sends times as EST)
+      // Parse time from backend (backend sends times in America/New_York timezone, respecting EDT/EST)
       const [hours, minutes] = estTime.split(':').map(Number);
   
-      // Create an ISO string representing EST time as UTC+5 (EST is always UTC-5)
+      // Create a proper date-time in the Eastern timezone for the selected date
       const year = selectedDate.getFullYear();
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
       const day = String(selectedDate.getDate()).padStart(2, '0');
   
-      // Simple timezone conversion using standard offsets
+      // Create ISO string and interpret it as Eastern time
+      const easternTimeString = `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
   
-      // Convert to user's timezone using standard offsets
-      let userOffsetHours;
-      switch (userTimezone) {
-        case 'America/Los_Angeles':
-          userOffsetHours = 8; // PST is UTC-8
-          break;
-        case 'America/Denver':
-          userOffsetHours = 7; // MST is UTC-7
-          break;
-        case 'America/Chicago':
-          userOffsetHours = 6; // CST is UTC-6
-          break;
-        case 'America/New_York':
-          userOffsetHours = 5; // EST is UTC-5
-          break;
-        case 'America/Phoenix':
-          userOffsetHours = 7; // MST is UTC-7 (no DST)
-          break;
-        case 'Pacific/Honolulu':
-          userOffsetHours = 10; // HST is UTC-10
-          break;
-        default:
-          userOffsetHours = 5; // Default to EST
-          break;
-      }
+      // Create a date and explicitly treat it as if it's in Eastern timezone
+      const tempDate = new Date(easternTimeString);
   
-      // Calculate the time difference between EST and user timezone
-      const timeDifference = 5 - userOffsetHours; // EST (5) minus user offset
-      const userHour = hours + timeDifference;
+      // Get what this time would be in Eastern timezone to verify our interpretation
+      const easternDisplay = tempDate.toLocaleString('en-US', {
+        timeZone: 'America/New_York',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
   
-      // Handle day boundary crossings
-      let finalHour = userHour;
-      if (finalHour < 0) {
-        finalHour += 24;
-      } else if (finalHour >= 24) {
-        finalHour -= 24;
-      }
+      // Convert to user's timezone using JavaScript's native timezone handling
+      const userTimeString = tempDate.toLocaleString('en-US', {
+        timeZone: userTimezone,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
   
-      // Format as 12-hour time
-      const period = finalHour >= 12 ? 'PM' : 'AM';
-      const displayHour = finalHour === 0 ? 12 : finalHour > 12 ? finalHour - 12 : finalHour;
-      const userTimeString = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+      // Determine if we're in daylight saving time for logging
+      const isDST = checkTimezoneDST('America/New_York', selectedDate);
+      const easternLabel = isDST ? 'EDT' : 'EST';
   
-      console.log(`[Timezone Conversion] ${estTime} EST → ${userTimeString} (${userTimezone})`);
+      console.log(`[Timezone Conversion] ${estTime} (${easternDisplay} Eastern ${easternLabel}) → ${userTimeString} (${userTimezone})`);
       return userTimeString;
     } catch (error) {
       console.error(`[Timezone Conversion] Error converting ${estTime} to ${userTimezone}:`, error);
@@ -121,11 +102,11 @@ export interface TimeSlotMapping {
   };
   
   /**
-   * Convert user's selected time back to EST for backend
+   * Convert user's selected time back to Eastern time for backend
    * @param userTime - Time selected by user (e.g., "3:00 PM")
    * @param userTimezone - User's IANA timezone (e.g., "America/Los_Angeles")
    * @param selectedDate - The date for the appointment
-   * @returns EST time in 24-hour format (e.g., "18:00")
+   * @returns Eastern time in 24-hour format (e.g., "18:00")
    */
   export const convertUserTimeToEST = (
     userTime: string,
@@ -150,51 +131,52 @@ export interface TimeSlotMapping {
         hour = 0;
       }
   
-      // Get standard timezone offset hours
-      let userOffsetHours;
-      switch (userTimezone) {
-        case 'America/Los_Angeles':
-          userOffsetHours = 8; // PST is UTC-8
-          break;
-        case 'America/Denver':
-          userOffsetHours = 7; // MST is UTC-7
-          break;
-        case 'America/Chicago':
-          userOffsetHours = 6; // CST is UTC-6
-          break;
-        case 'America/New_York':
-          userOffsetHours = 5; // EST is UTC-5
-          break;
-        case 'America/Phoenix':
-          userOffsetHours = 7; // MST is UTC-7 (no DST)
-          break;
-        case 'Pacific/Honolulu':
-          userOffsetHours = 10; // HST is UTC-10
-          break;
-        default:
-          userOffsetHours = 5; // Default to EST
-          break;
-      }
+      // Use selectedDate or fallback to today
+      const dateToUse = selectedDate || new Date();
+      const year = dateToUse.getFullYear();
+      const month = String(dateToUse.getMonth() + 1).padStart(2, '0');
+      const day = String(dateToUse.getDate()).padStart(2, '0');
   
-      // Calculate the time difference between user timezone and EST
-      const timeDifference = userOffsetHours - 5; // User offset minus EST (5)
-      const estHour = hour + timeDifference;
+      // Create a date-time that represents the user's local time
+      // We need to be careful here - we want to create a time that when interpreted
+      // in the user's timezone gives us the correct local time
+      const userTimeString = `${year}-${month}-${day}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
   
-      // Handle day boundary crossings
-      let finalHour = estHour;
-      if (finalHour < 0) {
-        finalHour += 24;
-      } else if (finalHour >= 24) {
-        finalHour -= 24;
-      }
+      // Parse this as if it's in the user's timezone by using a temporary approach
+      const tempDate = new Date(userTimeString);
   
-      // Format as 24-hour time string
-      const estTimeString = `${String(finalHour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+      // Get what this time would be when formatted in the user's timezone
+      const userFormatted = tempDate.toLocaleString('en-US', {
+        timeZone: userTimezone,
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit'
+      });
   
-      console.log(`[Timezone Conversion] ${userTime} (${userTimezone}) → ${estTimeString} EST`);
-      return estTimeString;
+      // If the formatted time doesn't match our intended time, we need to adjust
+      const [formattedHour, formattedMinute] = userFormatted.split(':').map(Number);
+      const hourDiff = hour - formattedHour;
+      const minuteDiff = minute - formattedMinute;
+  
+      // Adjust the date by the difference to get the correct UTC representation
+      const adjustedDate = new Date(tempDate.getTime() + (hourDiff * 60 + minuteDiff) * 60 * 1000);
+  
+      // Now convert to Eastern timezone using JavaScript's native timezone handling
+      const easternTimeString = adjustedDate.toLocaleString('en-US', {
+        timeZone: 'America/New_York',
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+  
+      // Determine if we're in daylight saving time for logging
+      const isDST = checkTimezoneDST('America/New_York', dateToUse);
+      const easternLabel = isDST ? 'EDT' : 'EST';
+  
+      console.log(`[Timezone Conversion] ${userTime} (${userTimezone}) → ${easternTimeString} Eastern ${easternLabel}`);
+      return easternTimeString;
     } catch (error) {
-      console.error(`[Timezone Conversion] Error converting ${userTime} to EST:`, error);
+      console.error(`[Timezone Conversion] Error converting ${userTime} to Eastern:`, error);
       // Fallback: try to parse as 24-hour format
       if (userTime.includes(':')) {
         return userTime.split(' ')[0]; // Return just the time part
