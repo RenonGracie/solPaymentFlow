@@ -20,13 +20,14 @@ import IntakeQService from "@/api/services/intakeqService";
 import { sendMandatoryForm } from "@/app/api/intakeq";
 import { STEPS } from "@/constants";
 import { createTherapistPreloader } from "@/utils/therapistPreloader";
-import { 
-  buildSuperJson, 
-  updateSuperJsonWithTherapistMatch, 
-  updateSuperJsonWithSelectedTherapist, 
-  updateSuperJsonWithAppointmentConfirmation, 
-  type SuperJsonData 
+import {
+  buildSuperJson,
+  updateSuperJsonWithTherapistMatch,
+  updateSuperJsonWithSelectedTherapist,
+  updateSuperJsonWithAppointmentConfirmation,
+  type SuperJsonData
 } from "@/utils/superJsonBuilder";
+import { getUserTimezone, getTimezoneDisplay } from "@/utils/timezoneUtils";
 
 // Meta pixel type declaration
 declare global {
@@ -228,76 +229,42 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
     return '';
   };
 
-  // State to timezone mapping for consistency with MatchedTherapist
-  const STATE_TIMEZONE_MAP: Record<string, string> = {
-    // Eastern
-    CT: "America/New_York", DE: "America/New_York", DC: "America/New_York", FL: "America/New_York",
-    GA: "America/New_York", ME: "America/New_York", MD: "America/New_York", MA: "America/New_York",
-    NH: "America/New_York", NJ: "America/New_York", NY: "America/New_York", NC: "America/New_York",
-    OH: "America/New_York", PA: "America/New_York", RI: "America/New_York", SC: "America/New_York",
-    VT: "America/New_York", VA: "America/New_York", WV: "America/New_York", MI: "America/New_York",
-    IN: "America/New_York", KY: "America/New_York",
-    // Central
-    AL: "America/Chicago", AR: "America/Chicago", IL: "America/Chicago", IA: "America/Chicago",
-    LA: "America/Chicago", MN: "America/Chicago", MS: "America/Chicago", MO: "America/Chicago",
-    OK: "America/Chicago", WI: "America/Chicago", TX: "America/Chicago", TN: "America/Chicago",
-    KS: "America/Chicago", NE: "America/Chicago", SD: "America/Chicago", ND: "America/Chicago",
-    // Mountain
-    AZ: "America/Phoenix", CO: "America/Denver", ID: "America/Denver", MT: "America/Denver",
-    NM: "America/Denver", UT: "America/Denver", WY: "America/Denver",
-    // Pacific
-    CA: "America/Los_Angeles", NV: "America/Los_Angeles", OR: "America/Los_Angeles", WA: "America/Los_Angeles",
-    // Alaska/Hawaii
-    AK: "America/Anchorage", HI: "Pacific/Honolulu",
-  };
 
-  // Timezone display names for consistency
-  const TIMEZONE_DISPLAY_MAP: Record<string, string> = {
-    "America/New_York": "EST",
-    "America/Chicago": "CST", 
-    "America/Denver": "MST",
-    "America/Phoenix": "MST",
-    "America/Los_Angeles": "PST",
-    "America/Anchorage": "AK",
-    "Pacific/Honolulu": "HI",
-  };
-
-  // Format appointment date and time with consistent timezone handling
+  // Format appointment date and time with proper timezone conversion
   const formatAppointmentDateTime = () => {
     if (!bookingData?.StartDateIso) {
       return { dateStr: '', timeStr: '', timezone: '' };
     }
-    
-    // Get user's timezone based on their state for consistency
-    let userTimezone = "America/New_York"; // Default to EST
-    if (currentUserData?.state) {
-      const stateUpper = String(currentUserData.state).toUpperCase().trim();
-      userTimezone = STATE_TIMEZONE_MAP[stateUpper] || userTimezone;
-    }
-    
+
+    // Get user's timezone based on their state using centralized utility
+    const userTimezone = getUserTimezone(currentUserData?.state);
+    const timezoneDisplay = getTimezoneDisplay(userTimezone);
+
+    // Convert the booking time to user's timezone for display
     const date = new Date(bookingData.StartDateIso);
-    
-    // Format in user's timezone for consistency with booking page
-    const dateStr = date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: '2-digit',
-      timeZone: userTimezone
+
+    const dateStr = date.toLocaleDateString('en-US', {
+      timeZone: userTimezone,
+      weekday: 'short',
+      month: 'short',
+      day: '2-digit'
     });
-    
-    const timeStr = date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
+
+    const timeStr = date.toLocaleTimeString('en-US', {
+      timeZone: userTimezone,
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: true,
-      timeZone: userTimezone
+      hour12: true
     });
-    
-    // Use consistent timezone display
-    const timezoneDisplay = TIMEZONE_DISPLAY_MAP[userTimezone] || 'EST';
-    
-    console.log(`[Booking Confirmation Time Consistency] User state: ${currentUserData?.state}, Timezone: ${userTimezone}, Display: ${timezoneDisplay}`);
-    console.log(`[Booking Confirmation Time] Original ISO: ${bookingData.StartDateIso}, Formatted: ${dateStr} ${timeStr} ${timezoneDisplay}`);
-    
+
+    console.log(`[Booking Confirmation Time] Converting booking time to user timezone:`, {
+      originalISO: bookingData.StartDateIso,
+      userState: currentUserData?.state,
+      userTimezone,
+      timezoneDisplay,
+      convertedDateTime: `${dateStr} ${timeStr} ${timezoneDisplay}`
+    });
+
     return { dateStr, timeStr, timezone: timezoneDisplay };
   };
 
@@ -1849,54 +1816,58 @@ export default function MainPageComponent() {
                       console.warn('⚠️ Booking already in progress, ignoring duplicate attempt');
                       return;
                     }
-                    
+
                     try {
                       setIsBookingInProgress(true);
                       const therapist = therapistData.therapist;
-                      
-                      // COMPREHENSIVE TIMEZONE LOGGING FOR BOOKING FLOW
-                      console.log('🚀 [MAIN COMPONENT] BOOKING INITIATED - TIMEZONE ANALYSIS');
+
+                      // TIMEZONE CONVERSION FOR BOOKING FLOW
+                      console.log('🚀 [MAIN COMPONENT] BOOKING INITIATED - TIMEZONE CONVERSION');
                       console.log('==========================================');
                       console.log(`📅 Raw slot received from MatchedTherapist: ${slot}`);
                       console.log(`🕐 Slot type: ${typeof slot}`);
-                      
-                      // Parse and analyze the incoming datetime
+
+                      // Parse the incoming datetime
                       const slotDate = new Date(slot);
-                      const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                      
-                      console.log(`🌍 Browser timezone: ${browserTimezone}`);
-                      console.log(`📅 Parsed slot date: ${slotDate.toISOString()}`);
-                      console.log(`🕐 Slot in browser timezone: ${slotDate.toLocaleString()}`);
-                      console.log(`⏰ Slot timestamp: ${slotDate.getTime()}`);
-                      
-                      // Test conversion in different timezones
                       const clientState = currentUserData?.state || 'Unknown';
                       console.log(`📍 Client state: ${clientState}`);
-                      
-                      if (clientState && clientState !== 'Unknown') {
-                        const stateTimezoneMap: Record<string, string> = {
-                          'CA': 'America/Los_Angeles',
-                          'NY': 'America/New_York', 
-                          'TX': 'America/Chicago',
-                          'FL': 'America/New_York',
-                          'IL': 'America/Chicago',
-                          'NJ': 'America/New_York'
-                        };
-                        
-                        const clientTimezone = stateTimezoneMap[clientState.toUpperCase()] || browserTimezone;
-                        const slotInClientTz = slotDate.toLocaleString("en-US", { 
-                          timeZone: clientTimezone,
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit', 
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: true,
-                          timeZoneName: 'short'
-                        });
-                        
-                        console.log(`🏠 Client timezone (${clientTimezone}): ${slotInClientTz}`);
-                      }
+
+                      // Get user's timezone and convert the selected time back to EST for backend
+                      const userTimezone = getUserTimezone(clientState !== 'Unknown' ? clientState : undefined);
+                      const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+                      console.log(`🌍 User timezone (${clientState}): ${userTimezone}`);
+                      console.log(`🌐 Browser timezone: ${browserTimezone}`);
+                      console.log(`📅 User selected datetime: ${slotDate.toLocaleString()}`);
+
+                      // Convert the user's selected time back to EST for the backend API
+                      // The slot comes from MatchedTherapist as an ISO string in the user's timezone
+                      // We need to convert it to EST time for the backend
+                      const estDateTime = slotDate.toLocaleString("en-US", {
+                        timeZone: 'America/New_York',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      });
+
+                      // Parse the EST datetime back to ISO format for backend
+                      const [datePart, timePart] = estDateTime.split(', ');
+                      const [month, day, year] = datePart.split('/');
+                      const estISOString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}:00`;
+
+                      console.log(`🕐 Converted to EST for backend: ${estISOString}`);
+                      console.log(`⏰ Original slot: ${slot} → EST: ${estISOString}`);
+
+                      // Verify the conversion is correct
+                      const verifyDate = new Date(estISOString + '-05:00'); // Add EST offset
+                      console.log(`✅ Verification - EST date: ${verifyDate.toLocaleString('en-US', { timeZone: 'America/New_York' })}`);
+                      console.log(`✅ Verification - User TZ: ${verifyDate.toLocaleString('en-US', { timeZone: userTimezone })}`);
+
+                      // Use the EST datetime for the backend API call
+                      const backendDatetime = estISOString;
                       
                       // Enrich current user data with selected therapist info BEFORE booking
                       if (currentUserData) {
@@ -1943,13 +1914,14 @@ export default function MainPageComponent() {
                         const appointmentInfo = {
                           date: slotDate.toLocaleDateString(),
                           time: slotDate.toLocaleTimeString(),
-                          timezone: browserTimezone,
+                          timezone: userTimezone, // Use user's actual timezone
                           duration: sessionDuration,
                           session_type: 'initial',
-                          // Add debugging info
-                          slot_raw: slot,
-                          slot_iso: slotDate.toISOString(),
-                          slot_timestamp: slotDate.getTime()
+                          // Add timezone conversion info
+                          user_selected_time: slot,
+                          est_backend_time: backendDatetime,
+                          user_timezone: userTimezone,
+                          browser_timezone: browserTimezone
                         };
                         
                         const enrichedData = {
@@ -1965,8 +1937,8 @@ export default function MainPageComponent() {
                           appointment_date: appointmentInfo.date,
                           appointment_time: appointmentInfo.time,
                           appointment_timezone: appointmentInfo.timezone,
-                          raw_slot: slot,
-                          parsed_slot_iso: appointmentInfo.slot_iso
+                          user_selected_time: appointmentInfo.user_selected_time,
+                          est_backend_time: appointmentInfo.est_backend_time
                         });
                         
                         setCurrentUserData(enrichedData);
@@ -1991,20 +1963,23 @@ export default function MainPageComponent() {
                         client_response_id: clientResponseId as string,
                         therapist_email: therapist.email || '',
                         therapist_name: therapist.name || '',
-                        datetime: slot,
+                        datetime: backendDatetime, // Use converted EST time for backend
                         send_client_email_notification: true,
                         reminder_type: 'email',
                         status: 'scheduled',
-                        // Add browser timezone for validation
-                        browser_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        // Add timezone info for validation
+                        user_timezone: userTimezone,
+                        browser_timezone: browserTimezone,
+                        original_user_selection: slot, // Keep original for debugging
                       };
-                      
+
                       console.log('📡 [MAIN COMPONENT] API REQUEST TO BACKEND:');
                       console.log('==========================================');
                       console.log('API Endpoint: /api/appointments/book');
                       console.log('Request Data:', JSON.stringify(apiRequestData, null, 2));
-                      console.log(`🕐 Datetime being sent to backend: ${slot}`);
-                      console.log(`🕐 Datetime type: ${typeof slot}`);
+                      console.log(`🕐 EST datetime being sent to backend: ${backendDatetime}`);
+                      console.log(`🕐 Original user selection: ${slot}`);
+                      console.log(`🌍 User timezone: ${userTimezone}`);
                       console.log('==========================================');
 
                       const bookedSession = await bookAppointment.makeRequest({

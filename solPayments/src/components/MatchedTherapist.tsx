@@ -11,6 +11,13 @@ import { TherapistConfirmationModal } from "@/components/TherapistConfirmationMo
 import { journeyTracker } from "@/services/journeyTracker";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { createTherapistPreloader } from "@/utils/therapistPreloader";
+// Define TimeSlotMapping locally since import is failing
+interface TimeSlotMapping {
+  displayTime: string;      // "3:00 PM" - what user sees
+  originalEST: string;      // "18:00" - original EST time from API
+  userTimezone: string;     // "America/Los_Angeles" - user's timezone
+  timezoneDisplay: string;  // "PST" - user-friendly timezone abbreviation
+}
 
 /** ---- Availability types (from new backend endpoint) ---- */
 type AvSlot = { start: string; end: string; free_ratio: number; is_free: boolean };
@@ -82,45 +89,6 @@ const STATE_TIMEZONE_MAP: Record<string, string> = {
   AK: "America/Anchorage", HI: "Pacific/Honolulu",
 };
 
-// Timezone display names for user-friendly display
-// Note: These will show standard time abbreviations year-round for consistency
-// In production, you might want to detect DST and show EDT/CDT/MDT/PDT accordingly
-const TIMEZONE_DISPLAY_MAP: Record<string, string> = {
-  "America/New_York": "EST",
-  "America/Chicago": "CST",
-  "America/Denver": "MST",
-  "America/Phoenix": "MST", // Arizona doesn't observe DST
-  "America/Los_Angeles": "PST",
-  "America/Anchorage": "AK",
-  "Pacific/Honolulu": "HI",
-};
-
-// Get display timezone abbreviation with DST awareness (optional)
-const getTimezoneDisplay = (ianaTimezone: string, includeDST: boolean = false): string => {
-  if (!includeDST) {
-    return TIMEZONE_DISPLAY_MAP[ianaTimezone] || "EST";
-  }
-  
-  // If you want to show EDT/CDT/MDT/PDT during daylight saving time:
-  const now = new Date();
-  const isDST = () => {
-    const jan = new Date(now.getFullYear(), 0, 1);
-    const jul = new Date(now.getFullYear(), 6, 1);
-    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset()) !== now.getTimezoneOffset();
-  };
-  
-  const dstMap: Record<string, string> = {
-    "America/New_York": isDST() ? "EDT" : "EST",
-    "America/Chicago": isDST() ? "CDT" : "CST",
-    "America/Denver": isDST() ? "MDT" : "MST",
-    "America/Phoenix": "MST", // Arizona doesn't observe DST
-    "America/Los_Angeles": isDST() ? "PDT" : "PST",
-    "America/Anchorage": isDST() ? "AKDT" : "AKST",
-    "Pacific/Honolulu": "HI", // Hawaii doesn't observe DST
-  };
-  
-  return dstMap[ianaTimezone] || "EST";
-};
 
 interface MatchedTherapistProps {
   therapistsList: TMatchedTherapistData[];
@@ -152,6 +120,7 @@ export default function MatchedTherapist({
 }: MatchedTherapistProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
+  const [selectedTimeSlotMapping, setSelectedTimeSlotMapping] = useState<TimeSlotMapping | null>(null);
   const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(null);
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [viewedTherapistIds, setViewedTherapistIds] = useState<Set<string>>(new Set());
@@ -726,7 +695,12 @@ export default function MatchedTherapist({
   };
 
   const handleConfirmBooking = async () => {
-    if (!selectedTimeSlot || !selectedDateObj || !clientData?.response_id) {
+    if (!selectedTimeSlotMapping || !selectedDateObj || !clientData?.response_id) {
+      console.warn('❌ BOOKING BLOCKED - Missing required data:', {
+        hasTimeSlotMapping: !!selectedTimeSlotMapping,
+        hasDateObj: !!selectedDateObj,
+        hasResponseId: !!clientData?.response_id
+      });
       return;
     }
     
@@ -749,10 +723,16 @@ export default function MatchedTherapist({
     console.log('🆔 RESPONSE_ID:');
     console.log(JSON.stringify({ response_id: clientData?.response_id }, null, 2));
     
+    // TIMEZONE CONVERSION DATA
+    console.log('🌐 TIMEZONE CONVERSION:');
+    console.log(`User sees: "${selectedTimeSlotMapping.displayTime}" (${selectedTimeSlotMapping.timezoneDisplay})`);
+    console.log(`Backend gets: "${selectedTimeSlotMapping.originalEST}" EST`);
+    console.log(`User timezone: ${selectedTimeSlotMapping.userTimezone}`);
+
     // ADDITIONAL BOOKING CONTEXT
     console.log('📅 BOOKING CONTEXT:');
     const bookingContext = {
-      selectedTimeSlot: selectedTimeSlot,
+      selectedTimeSlotMapping: selectedTimeSlotMapping,
       selectedDate: selectedDateObj?.toISOString(),
       selectedDateLocal: selectedDateObj?.toDateString(),
       paymentType: getSelectedPaymentType(),
@@ -781,23 +761,21 @@ export default function MatchedTherapist({
     }
     
     console.log('==========================================');
-    
+
     const yyyy = selectedDateObj.getFullYear();
     const mm = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(selectedDateObj.getDate()).padStart(2, '0');
-    const normalizedTime = selectedTimeSlot.replace(/\s/g, '');
-    
-    console.log('🕐 BOOKING TIME DEBUG - SIMPLIFIED APPROACH:');
+
+    console.log('🕐 BOOKING TIME DEBUG - USING EST FOR BACKEND:');
     console.log(`  Selected date object: ${selectedDateObj.toDateString()}`);
-    console.log(`  Selected time slot: "${selectedTimeSlot}"`);
-    console.log(`  Normalized time: "${normalizedTime}"`);
-    console.log(`  Client state timezone: ${timezone} (${timezoneDisplay})`);
-    
-    // Convert time to 24-hour format
-    const timeIn24Hour = convertTo24Hour(normalizedTime);
-    console.log(`  Converted to 24-hour: "${timeIn24Hour}"`);
-    
-    const [hour, minute] = timeIn24Hour.split(':').map(Number);
+    console.log(`  User display time: "${selectedTimeSlotMapping.displayTime}" (${selectedTimeSlotMapping.timezoneDisplay})`);
+    console.log(`  EST time for backend: "${selectedTimeSlotMapping.originalEST}"`);
+
+    // Use EST time directly for backend (no conversion needed)
+    const estTime = selectedTimeSlotMapping.originalEST;
+    console.log(`  EST time for backend: "${estTime}"`);
+
+    const [hour, minute] = estTime.split(':').map(Number);
     console.log(`  Parsed hour: ${hour}, minute: ${minute}`);
     
     // FIXED TIMEZONE HANDLING - Create appointment datetime with proper client timezone
@@ -847,83 +825,68 @@ export default function MatchedTherapist({
     }
     
     let datetime: string;
-    
+
     try {
-      // Method 1: Create the datetime string and let the backend handle timezone conversion
-      // This is more reliable than frontend timezone calculations which are error-prone
-      const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${timeIn24Hour}:00`;
-      
+      // Create the EST datetime string for the backend
+      // Backend expects EST times from the original API format
+      const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${estTime}:00`;
+
       // Create metadata to help backend properly handle timezone
       const bookingMetadata = {
         selectedDate: selectedDateObj.toDateString(),
-        selectedTimeSlot: selectedTimeSlot,
-        selectedTimeIn24Hour: timeIn24Hour,
-        clientTimezone: timezone,
-        clientTimezoneDisplay: timezoneDisplay,
+        userDisplayTime: selectedTimeSlotMapping.displayTime,
+        userTimezone: selectedTimeSlotMapping.userTimezone,
+        userTimezoneDisplay: selectedTimeSlotMapping.timezoneDisplay,
+        estTimeForBackend: selectedTimeSlotMapping.originalEST,
         clientState: clientData?.state || '',
         originalDateTimeString: appointmentDateTimeString
       };
       
       console.log(`  Booking metadata:`, bookingMetadata);
       
-      // Calculate timezone offset for the client's timezone
+      // Create EST datetime with explicit EST timezone offset (-05:00)
+      // Backend expects EST times, so we use -05:00 offset
+      const estTimezoneOffset = '-05:00';
+      datetime = `${appointmentDateTimeString}${estTimezoneOffset}`;
+
+      console.log(`  EST datetime string: ${appointmentDateTimeString}`);
+      console.log(`  EST timezone offset: ${estTimezoneOffset}`);
+      console.log(`  Final EST datetime: ${datetime}`);
       
-      // Get the proper timezone offset string
-      const offsetMinutes = -getTherapistOffsetMinutes(timezone);
-      const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
-      const offsetMins = Math.abs(offsetMinutes) % 60;
-      const offsetSign = offsetMinutes >= 0 ? '+' : '-';
-      const timezoneOffsetString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
-      
-      // Create the final datetime with explicit timezone
-      datetime = `${appointmentDateTimeString}${timezoneOffsetString}`;
-      
-      console.log(`  Original datetime string: ${appointmentDateTimeString}`);
-      console.log(`  Client timezone offset: ${timezoneOffsetString}`);
-      console.log(`  Final datetime with timezone: ${datetime}`);
-      
-      // Verification: Parse back and verify it shows the correct time
+      // Verification: Confirm EST time is being sent to backend
       const verificationDate = new Date(datetime);
-      const verificationInClientTz = verificationDate.toLocaleString("en-US", { 
-        timeZone: timezone,
+      const verificationInEST = verificationDate.toLocaleString("en-US", {
+        timeZone: 'America/New_York',
         weekday: 'short',
         year: 'numeric',
-        month: 'short', 
+        month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
         timeZoneName: 'short'
       });
-      
-      // Also get just the time to compare
-      const verificationTimeOnly = verificationDate.toLocaleString("en-US", { 
+
+      console.log(`  ✅ VERIFICATION:`);
+      console.log(`  User sees: ${selectedDateObj.toDateString()} at ${selectedTimeSlotMapping.displayTime} ${selectedTimeSlotMapping.timezoneDisplay}`);
+      console.log(`  Backend gets: ${verificationInEST}`);
+      console.log(`  EST time matches original: ${selectedTimeSlotMapping.originalEST}`);
+
+      // Parse expected hour from user's display time
+      const displayTimeMatch = selectedTimeSlotMapping.displayTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      let expectedHour = 0;
+      if (displayTimeMatch) {
+        const displayHour = parseInt(displayTimeMatch[1]);
+        const period = displayTimeMatch[3].toUpperCase();
+        expectedHour = period === 'PM' && displayHour !== 12 ? displayHour + 12 : (period === 'AM' && displayHour === 12 ? 0 : displayHour);
+      }
+
+      // Get actual hour in client timezone
+      const actualHourInClientTz = parseInt(verificationDate.toLocaleString("en-US", {
         timeZone: timezone,
         hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-      
-      console.log(`  ✅ VERIFICATION:`);
-      console.log(`  Selected: ${selectedDateObj.toDateString()} at ${selectedTimeSlot}`);
-      console.log(`  Parsed back: ${verificationInClientTz}`);
-      console.log(`  Time only: ${verificationTimeOnly} (should match ${selectedTimeSlot})`);
-      
-      // Critical verification: ensure the hour matches
-      const selectedHourNum = hour;
-      const isAM = selectedTimeSlot.toLowerCase().includes('am');
-      const isPM = selectedTimeSlot.toLowerCase().includes('pm');
-      
-      let expectedHour = selectedHourNum;
-      if (isPM && selectedHourNum !== 12) expectedHour += 12;
-      if (isAM && selectedHourNum === 12) expectedHour = 0;
-      
-      // Get actual hour in client timezone
-      const actualHourInClientTz = parseInt(verificationDate.toLocaleString("en-US", { 
-        timeZone: timezone, 
-        hour: 'numeric', 
-        hour12: false 
+        hour12: false
       }));
-      
+
       if (Math.abs(actualHourInClientTz - expectedHour) <= 1) { // Allow 1 hour tolerance for edge cases
         console.log(`  ✅ Hour verification PASSED: Expected ${expectedHour}, got ${actualHourInClientTz}`);
       } else {
@@ -932,18 +895,15 @@ export default function MatchedTherapist({
       }
       
     } catch (error) {
-      console.error('❌ Error in fixed timezone conversion:', error);
-      
-      // Fallback: Send without timezone and include metadata for backend processing
-      const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${timeIn24Hour}:00`;
-      
-      console.log('🔄 Using fallback: sending datetime without timezone for backend processing');
-      console.log(`  Backend will handle timezone conversion using client state: ${clientData?.state}`);
-      
-      // Send the raw datetime and let backend apply timezone based on client state
+      console.error('❌ Error in EST datetime creation:', error);
+
+      // Fallback: Send EST time without timezone offset
+      const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${estTime}:00`;
+
+      console.log('🔄 Using fallback: sending EST datetime without timezone offset');
+      console.log(`  Fallback EST datetime: ${appointmentDateTimeString}`);
+
       datetime = appointmentDateTimeString;
-      
-      console.log(`  Fallback datetime: ${datetime}`);
     }
     
     // Close the confirmation modal
@@ -1654,33 +1614,38 @@ export default function MatchedTherapist({
     }
   }, [selectedDateObj, currentMonth, currentYear, getDayAvailableCount]);
 
-  // Build time slots for the selected day with time restrictions and extensive logging
+  // Build time slots for the selected day with timezone conversion and extensive logging
   const slotsForDay = useMemo(() => {
     if (!selectedDateObj) return [];
 
-    let rawSlots: Date[] = [];
+    let timeSlotMappings: TimeSlotMapping[] = [];
     let dataSource = 'none';
 
-    // Use the direct API response data - bypass the broken transformation layer completely
+    // Use the direct API response data with timezone conversion
     const selectedDateStr = selectedDateObj.toISOString().split('T')[0];
     const apiKey = `${emailForSlots}:${selectedDateStr}`;
     const apiResponse = apiResponseCache[apiKey];
-    
+
     if (apiResponse && apiResponse.available_slots) {
       dataSource = 'direct-api-response';
-      // Convert API slots like ["17:00", "18:00"] directly to Date objects
-      rawSlots = apiResponse.available_slots.map((timeSlot: string) => {
-        const [hours, minutes] = timeSlot.split(':').map(Number);
-        const slotDateTime = new Date(selectedDateObj);
-        slotDateTime.setHours(hours, minutes, 0, 0);
-        return slotDateTime;
-      });
-      
-      console.log(`[API Direct] 🎯 Using API response directly for ${selectedDateStr}:`, {
+
+      // Convert EST API times to user's timezone using new utility
+      timeSlotMappings = convertESTTimesToUserSlots(
+        apiResponse.available_slots,
+        timezone,
+        selectedDateObj
+      );
+
+      console.log(`[API Direct + Timezone] 🎯 Converting EST times to ${timezoneDisplay} for ${selectedDateStr}:`, {
         apiKey,
-        availableSlots: apiResponse.available_slots,
-        convertedToSlots: rawSlots.length,
-        slotTimes: rawSlots.map(s => s.toLocaleTimeString())
+        estSlots: apiResponse.available_slots,
+        userTimezone: timezone,
+        timezoneDisplay: timezoneDisplay,
+        convertedSlots: timeSlotMappings.map(slot => ({
+          est: slot.originalEST,
+          display: slot.displayTime,
+          withTZ: formatTimeWithTimezone(slot)
+        }))
       });
     }
 
@@ -1688,20 +1653,20 @@ export default function MatchedTherapist({
     // Extensive logging for debugging
     console.log(`[Calendar Debug] ${therapist?.intern_name} - ${selectedDateObj.toDateString()}:`, {
       dataSource,
-      rawSlotsCount: rawSlots.length,
-      rawSlots: rawSlots.map(s => ({
-        time: s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }),
-        hour24: s.getHours(),
-        isoString: s.toISOString()
+      slotMappingsCount: timeSlotMappings.length,
+      timeSlotMappings: timeSlotMappings.map(slot => ({
+        est: slot.originalEST,
+        display: slot.displayTime,
+        timezone: slot.timezoneDisplay
       })),
       timezone: `${timezoneDisplay} (${timezone})`,
       therapistEmail: emailForSlots
     });
 
-    // Filter for 7 AM - 10 PM (7:00 - 21:59)
-    let filteredSlots = rawSlots.filter(dt => {
-      const hour = dt.getHours();
-      return hour >= 7 && hour < 22; // Filter to 7AM-10PM range silently
+    // Filter for business hours (7 AM - 10 PM EST) - use originalEST time for filtering
+    let filteredSlots = timeSlotMappings.filter(slot => {
+      const [hour] = slot.originalEST.split(':').map(Number);
+      return hour >= 7 && hour < 22; // Filter to 7AM-10PM EST range
     });
 
     // 🔧 FIXED: 24-HOUR MINIMUM LEAD TIME & 15-DAY ADVANCE LIMIT: Only show slots within booking window
@@ -1712,17 +1677,22 @@ export default function MatchedTherapist({
     tomorrow.setHours(0, 0, 0, 0);
 
     const minimumBookingTime = tomorrow; // FIXED: Tomorrow is the minimum booking time
-    
+
     // Normalize to 15 days from today at end of day for maximum
     const maximumBookingTime = new Date(now);
     maximumBookingTime.setDate(maximumBookingTime.getDate() + 15);
     maximumBookingTime.setHours(23, 59, 59, 999); // End of 15th day
-    
+
     const beforeTimeWindowFilter = filteredSlots.length;
-    filteredSlots = filteredSlots.filter(dt => {
-      return dt.getTime() >= minimumBookingTime.getTime() && dt.getTime() <= maximumBookingTime.getTime();
+    filteredSlots = filteredSlots.filter(slot => {
+      // Create a DateTime from the EST time and selected date for comparison
+      const [hour, minute] = slot.originalEST.split(':').map(Number);
+      const slotDateTime = new Date(selectedDateObj);
+      slotDateTime.setHours(hour, minute, 0, 0);
+
+      return slotDateTime.getTime() >= minimumBookingTime.getTime() && slotDateTime.getTime() <= maximumBookingTime.getTime();
     });
-    
+
     const removedByTimeWindowFilter = beforeTimeWindowFilter - filteredSlots.length;
     if (removedByTimeWindowFilter > 0) {
       console.log(`[Booking Time Window Filter] ${therapist?.intern_name}: Filtered out ${removedByTimeWindowFilter} slots outside 24hr-15day window (${minimumBookingTime.toLocaleString()} to ${maximumBookingTime.toLocaleString()})`);
@@ -1739,7 +1709,7 @@ export default function MatchedTherapist({
       console.log(`🔍 [TIME SLOTS DEBUG] Sept 21st slotsForDay:`, {
         selectedDate: selectedDateObj.toDateString(),
         dataSource,
-        rawSlotsCount: rawSlots.length,
+        rawSlotsCount: timeSlotMappings.length,
         afterBusinessHours: filteredSlots.length + removedByTimeWindowFilter,
         afterTimeWindowFilter: filteredSlots.length,
         removedByTimeWindow: removedByTimeWindowFilter,
@@ -1759,33 +1729,40 @@ export default function MatchedTherapist({
     // ASSOCIATE THERAPIST RESTRICTION: Only allow on-the-hour slots (12pm, 1pm, 2pm, NO in-betweens)
     if (therapistCategory === 'Associate Therapist') {
       const beforeHourlyFilter = filteredSlots.length;
-      filteredSlots = filteredSlots.filter(dt => {
-        const minutes = dt.getMinutes();
+      filteredSlots = filteredSlots.filter(slot => {
+        const [, minutes] = slot.originalEST.split(':').map(Number);
         return minutes === 0; // Only allow slots at exact hour (no :15, :30, :45)
       });
-      
+
       const removedByHourlyFilter = beforeHourlyFilter - filteredSlots.length;
       if (removedByHourlyFilter > 0) {
         console.log(`[Associate Therapist Filter] ${therapist?.intern_name}: Filtered out ${removedByHourlyFilter} non-hourly slots (only on-the-hour allowed for Associate Therapists)`);
       }
-      
-      console.log(`[Associate Therapist Filter] Available hourly slots:`, filteredSlots.map(s => ({
-        time: s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }),
-        hour: s.getHours(),
-        minute: s.getMinutes()
+
+      console.log(`[Associate Therapist Filter] Available hourly slots:`, filteredSlots.map(slot => ({
+        est: slot.originalEST,
+        display: slot.displayTime,
+        timezone: slot.timezoneDisplay
       })));
     }
 
     // Only log if there are issues or no slots available
-    const removedCount = rawSlots.length - filteredSlots.length;
-    if (filteredSlots.length === 0 && rawSlots.length > 0) {
-      console.log(`[Calendar] ${therapist?.intern_name} on ${selectedDateObj.toDateString()}: All ${rawSlots.length} slots filtered out (outside 7AM-10PM or non-hourly for Associate Therapists)`);
+    const removedCount = timeSlotMappings.length - filteredSlots.length;
+    if (filteredSlots.length === 0 && timeSlotMappings.length > 0) {
+      console.log(`[Calendar] ${therapist?.intern_name} on ${selectedDateObj.toDateString()}: All ${timeSlotMappings.length} slots filtered out (outside 7AM-10PM EST or non-hourly for Associate Therapists)`);
     } else if (removedCount > 0) {
       console.log(`[Calendar] ${therapist?.intern_name}: ${removedCount} slots filtered (time restrictions + hourly filter for Associates), ${filteredSlots.length} available`);
     }
 
-    return filteredSlots.sort((a, b) => a.getTime() - b.getTime());
-  }, [availability?.days, selectedDateObj, emailForSlots, timezoneDisplay, timezone, therapist, getTherapistCategory]);
+    // Sort by EST time for consistent ordering
+    return filteredSlots.sort((a, b) => {
+      const [aHour, aMin] = a.originalEST.split(':').map(Number);
+      const [bHour, bMin] = b.originalEST.split(':').map(Number);
+      const aMinutes = aHour * 60 + aMin;
+      const bMinutes = bHour * 60 + bMin;
+      return aMinutes - bMinutes;
+    });
+  }, [selectedDateObj, emailForSlots, timezoneDisplay, timezone, therapist, getTherapistCategory, apiResponseCache]);
 
   const formatTimeLabel = (date: Date) => {
     const timeString = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -2450,28 +2427,32 @@ export default function MatchedTherapist({
                   {/* Time Slots */}
                   <div className="grid grid-cols-2 gap-3 mb-6">
                     {slotsForDay.length > 0 ? (
-                      slotsForDay.map((dt) => {
-                        const label = formatTimeLabel(dt);
+                      slotsForDay.map((timeSlot) => {
+                        const label = timeSlot.displayTime; // Use converted time for display
                         const normalized = label.replace(/\s/g, '').toLowerCase();
+                        const isSelected = selectedTimeSlotMapping?.originalEST === timeSlot.originalEST;
                         return (
                           <button
-                            key={dt.toISOString()}
+                            key={`${timeSlot.originalEST}-${timeSlot.userTimezone}`}
                             onClick={() => {
-                              setSelectedTimeSlot(normalized);
+                              setSelectedTimeSlot(timeSlot.originalEST); // Store EST time for backend
+                              setSelectedTimeSlotMapping(timeSlot); // Store full mapping for UI
                               // Track time slot selection
                               if (clientData?.response_id) {
                                 journeyTracker.trackInteraction(clientData.response_id, 'time_slot_selection', {
-                                  selected_time: label,
+                                  selected_time: label, // User-friendly display time
+                                  selected_time_est: timeSlot.originalEST, // EST time for backend
                                   selected_date: selectedDateObj?.toISOString().split('T')[0],
                                   therapist_id: therapist?.id,
                                   therapist_name: therapist?.intern_name,
                                   source: 'dynamic_availability',
-                                  timezone: timezoneDisplay
+                                  timezone: timezoneDisplay,
+                                  user_timezone: timeSlot.userTimezone
                                 }).catch(console.error);
                               }
                             }}
                             className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
-                              selectedTimeSlot === normalized
+                              isSelected
                                 ? 'border-yellow-400 bg-yellow-50'
                                 : 'border-[#5C3106] bg-white hover:bg-yellow-50'
                             }`}

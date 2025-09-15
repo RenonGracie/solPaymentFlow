@@ -9,6 +9,7 @@ import { ArrowLeft, Play, CheckCircle, Calendar, Clock } from "lucide-react";
 import Image from "next/image";
 import axios from "@/api/axios";
 import { getMediaUrlWithFallback, S3MediaType } from "@/utils/s3";
+import { getUserTimezone, getTimezoneDisplay } from "@/utils/timezoneUtils";
 
 // Meta pixel type declaration
 declare global {
@@ -211,30 +212,48 @@ function BookingConfirmedContent() {
 
   const hasValidVideo = videoAnalysis.hasVideo;
 
-  // Format appointment date and time
-  const formatAppointmentDateTime = (isoString: string, durationMinutes: number) => {
+  // Format appointment date and time with proper timezone conversion
+  const formatAppointmentDateTime = (isoString: string, durationMinutes: number, userState?: string) => {
     const date = new Date(isoString);
-    const dateStr = date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+
+    // Get user's timezone based on their state using centralized utility
+    const userTimezone = getUserTimezone(userState);
+    const timezoneDisplay = getTimezoneDisplay(userTimezone);
+
+    const dateStr = date.toLocaleDateString('en-US', {
+      timeZone: userTimezone,
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
-    const startTime = date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
+
+    const startTime = date.toLocaleTimeString('en-US', {
+      timeZone: userTimezone,
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     });
-    
+
     // Calculate end time
     const endDate = new Date(date.getTime() + durationMinutes * 60000);
-    const endTime = endDate.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
+    const endTime = endDate.toLocaleTimeString('en-US', {
+      timeZone: userTimezone,
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     });
-    
-    const timeStr = `${startTime} - ${endTime} EST`;
+
+    const timeStr = `${startTime} - ${endTime} ${timezoneDisplay}`;
+
+    console.log(`[Booking Confirmed Page] Converting appointment time:`, {
+      originalISO: isoString,
+      userState,
+      userTimezone,
+      timezoneDisplay,
+      convertedDateTime: `${dateStr} at ${timeStr}`
+    });
+
     return { dateStr, timeStr };
   };
 
@@ -284,7 +303,7 @@ function BookingConfirmedContent() {
     );
   }
 
-  const { dateStr, timeStr } = formatAppointmentDateTime(bookingData.appointment.datetime, bookingData.appointment.duration_minutes);
+  const { dateStr, timeStr } = formatAppointmentDateTime(bookingData.appointment.datetime, bookingData.appointment.duration_minutes, bookingData.client.state);
 
   return (
     <div className="h-full flex flex-col">
