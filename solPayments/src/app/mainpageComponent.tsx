@@ -1812,47 +1812,25 @@ export default function MainPageComponent() {
                       console.log(`📅 Raw slot received from MatchedTherapist: ${slot}`);
                       console.log(`🕐 Slot type: ${typeof slot}`);
 
-                      // Parse the incoming datetime
-                      const slotDate = new Date(slot);
+                      // MatchedTherapist already sends properly formatted Eastern time with timezone offset
+                      // No additional conversion needed - use the datetime as-is for backend
                       const clientState = currentUserData?.state || 'Unknown';
                       console.log(`📍 Client state: ${clientState}`);
 
-                      // Get user's timezone and convert the selected time back to EST for backend
                       const userTimezone = getUserTimezone(clientState !== 'Unknown' ? clientState : undefined);
                       const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
                       console.log(`🌍 User timezone (${clientState}): ${userTimezone}`);
                       console.log(`🌐 Browser timezone: ${browserTimezone}`);
-                      console.log(`📅 User selected datetime: ${slotDate.toLocaleString()}`);
+                      console.log(`📅 MatchedTherapist datetime (already in Eastern): ${slot}`);
 
-                      // Convert the user's selected time back to EST for the backend API
-                      // The slot comes from MatchedTherapist as an ISO string in the user's timezone
-                      // We need to convert it to EST time for the backend
-                      const estDateTime = slotDate.toLocaleString("en-US", {
-                        timeZone: 'America/New_York',
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                      });
+                      // Extract just the datetime part without timezone offset for backend
+                      // MatchedTherapist sends: "2025-09-29T19:00:00-04:00" (EDT) or "2025-09-29T19:00:00-05:00" (EST)
+                      // Backend expects: "2025-09-29T19:00:00"
+                      const backendDatetime = slot.split(/[+-]\d{2}:\d{2}$/)[0]; // Remove timezone offset
 
-                      // Parse the EST datetime back to ISO format for backend
-                      const [datePart, timePart] = estDateTime.split(', ');
-                      const [month, day, year] = datePart.split('/');
-                      const estISOString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}:00`;
-
-                      console.log(`🕐 Converted to EST for backend: ${estISOString}`);
-                      console.log(`⏰ Original slot: ${slot} → EST: ${estISOString}`);
-
-                      // Verify the conversion is correct
-                      const verifyDate = new Date(estISOString + '-05:00'); // Add EST offset
-                      console.log(`✅ Verification - EST date: ${verifyDate.toLocaleString('en-US', { timeZone: 'America/New_York' })}`);
-                      console.log(`✅ Verification - User TZ: ${verifyDate.toLocaleString('en-US', { timeZone: userTimezone })}`);
-
-                      // Use the EST datetime for the backend API call
-                      const backendDatetime = estISOString;
+                      console.log(`🕐 Backend datetime (timezone offset removed): ${backendDatetime}`);
+                      console.log(`✅ No conversion needed - MatchedTherapist already handled timezone properly`);
                       
                       // Enrich current user data with selected therapist info BEFORE booking
                       if (currentUserData) {
@@ -1896,9 +1874,12 @@ export default function MainPageComponent() {
                           duration: sessionDuration
                         });
                         
+                        // Parse the backend datetime for appointment info
+                        const appointmentDate = new Date(backendDatetime);
+
                         const appointmentInfo = {
-                          date: slotDate.toLocaleDateString(),
-                          time: slotDate.toLocaleTimeString(),
+                          date: appointmentDate.toLocaleDateString(),
+                          time: appointmentDate.toLocaleTimeString(),
                           timezone: userTimezone, // Use user's actual timezone
                           duration: sessionDuration,
                           session_type: 'initial',
