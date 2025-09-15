@@ -236,7 +236,7 @@ function BookingConfirmedContent() {
 
     // Get user's timezone based on their state using centralized utility
     const userTimezone = getUserTimezone(userState);
-    const timezoneDisplay = getTimezoneDisplay(userTimezone);
+    const timezoneDisplay = getTimezoneDisplay(userTimezone, date);
 
     const dateStr = date.toLocaleDateString('en-US', {
       timeZone: userTimezone,

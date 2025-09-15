@@ -31,15 +31,15 @@ export interface TimeSlotMapping {
     AK: "America/Anchorage", HI: "Pacific/Honolulu",
   };
   
-  // Timezone display names for user-friendly display (standard time)
-  export const TIMEZONE_DISPLAY_MAP: Record<string, { standard: string; daylight: string }> = {
-    "America/New_York": { standard: "EST", daylight: "EDT" },
-    "America/Chicago": { standard: "CST", daylight: "CDT" },
-    "America/Denver": { standard: "MST", daylight: "MDT" },
-    "America/Phoenix": { standard: "MST", daylight: "MST" }, // Arizona doesn't observe DST
-    "America/Los_Angeles": { standard: "PST", daylight: "PDT" },
-    "America/Anchorage": { standard: "AK", daylight: "AK" }, // Simplified for Alaska
-    "Pacific/Honolulu": { standard: "HI", daylight: "HI" }, // Hawaii doesn't observe DST
+  // Timezone display names for user-friendly display (STANDARD TIME ONLY)
+  export const TIMEZONE_DISPLAY_MAP: Record<string, string> = {
+    "America/New_York": "EST",
+    "America/Chicago": "CST",
+    "America/Denver": "MST",
+    "America/Phoenix": "MST", // Arizona doesn't observe DST
+    "America/Los_Angeles": "PST",
+    "America/Anchorage": "AK",
+    "Pacific/Honolulu": "HI",
   };
   
   /**
@@ -55,38 +55,60 @@ export interface TimeSlotMapping {
     selectedDate: Date
   ): string => {
     try {
-      // Parse Eastern time (backend sends times in Eastern timezone - EST in winter, EDT in summer)
+      // Parse EST time (backend always sends times as EST)
       const [hours, minutes] = estTime.split(':').map(Number);
   
-      // Format the date for ISO string
+      // Create an ISO string representing EST time as UTC+5 (EST is always UTC-5)
       const year = selectedDate.getFullYear();
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
       const day = String(selectedDate.getDate()).padStart(2, '0');
   
-      // Create an ISO string as if the time is in UTC, then we'll adjust
-      const isoString = `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00.000Z`;
+      // Simple timezone conversion using standard offsets
   
-      // Create date from ISO string (this will be in UTC)
-      const utcDate = new Date(isoString);
+      // Convert to user's timezone using standard offsets
+      let userOffsetHours;
+      switch (userTimezone) {
+        case 'America/Los_Angeles':
+          userOffsetHours = 8; // PST is UTC-8
+          break;
+        case 'America/Denver':
+          userOffsetHours = 7; // MST is UTC-7
+          break;
+        case 'America/Chicago':
+          userOffsetHours = 6; // CST is UTC-6
+          break;
+        case 'America/New_York':
+          userOffsetHours = 5; // EST is UTC-5
+          break;
+        case 'America/Phoenix':
+          userOffsetHours = 7; // MST is UTC-7 (no DST)
+          break;
+        case 'Pacific/Honolulu':
+          userOffsetHours = 10; // HST is UTC-10
+          break;
+        default:
+          userOffsetHours = 5; // Default to EST
+          break;
+      }
   
-      // Determine Eastern timezone offset for the selected date
-      const isEDT = isDaylightSavingTime(selectedDate);
-      const easternOffsetHours = isEDT ? 4 : 5; // EDT is UTC-4, EST is UTC-5
+      // Calculate the time difference between EST and user timezone
+      const timeDifference = 5 - userOffsetHours; // EST (5) minus user offset
+      const userHour = hours + timeDifference;
   
-      // Adjust UTC time to represent the Eastern time
-      // If backend says 16:00 EDT, we want UTC time that equals 16:00 in Eastern
-      const adjustedUTCTime = new Date(utcDate.getTime() + (easternOffsetHours * 60 * 60 * 1000));
+      // Handle day boundary crossings
+      let finalHour = userHour;
+      if (finalHour < 0) {
+        finalHour += 24;
+      } else if (finalHour >= 24) {
+        finalHour -= 24;
+      }
   
-      // Now convert this adjusted UTC time to user's timezone
-      const userTimeString = adjustedUTCTime.toLocaleTimeString('en-US', {
-        timeZone: userTimezone,
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
+      // Format as 12-hour time
+      const period = finalHour >= 12 ? 'PM' : 'AM';
+      const displayHour = finalHour === 0 ? 12 : finalHour > 12 ? finalHour - 12 : finalHour;
+      const userTimeString = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
   
-      const easternLabel = isEDT ? 'EDT' : 'EST';
-      console.log(`[Timezone Conversion] ${estTime} ${easternLabel} → ${userTimeString} (${userTimezone})`);
+      console.log(`[Timezone Conversion] ${estTime} EST → ${userTimeString} (${userTimezone})`);
       return userTimeString;
     } catch (error) {
       console.error(`[Timezone Conversion] Error converting ${estTime} to ${userTimezone}:`, error);
@@ -108,7 +130,7 @@ export interface TimeSlotMapping {
   export const convertUserTimeToEST = (
     userTime: string,
     userTimezone: string,
-    selectedDate: Date
+    selectedDate?: Date
   ): string => {
     try {
       // Parse user time
@@ -121,24 +143,53 @@ export interface TimeSlotMapping {
       const minute = parseInt(timeMatch[2] || '0', 10);
       const period = timeMatch[3].toLowerCase();
   
-      // Convert to 24-hour format in user's timezone
+      // Convert to 24-hour format
       if (period === 'pm' && hour !== 12) {
         hour += 12;
       } else if (period === 'am' && hour === 12) {
         hour = 0;
       }
   
-      // Create datetime in user's timezone
-      const userDateTime = new Date(selectedDate);
-      userDateTime.setHours(hour, minute, 0, 0);
+      // Get standard timezone offset hours
+      let userOffsetHours;
+      switch (userTimezone) {
+        case 'America/Los_Angeles':
+          userOffsetHours = 8; // PST is UTC-8
+          break;
+        case 'America/Denver':
+          userOffsetHours = 7; // MST is UTC-7
+          break;
+        case 'America/Chicago':
+          userOffsetHours = 6; // CST is UTC-6
+          break;
+        case 'America/New_York':
+          userOffsetHours = 5; // EST is UTC-5
+          break;
+        case 'America/Phoenix':
+          userOffsetHours = 7; // MST is UTC-7 (no DST)
+          break;
+        case 'Pacific/Honolulu':
+          userOffsetHours = 10; // HST is UTC-10
+          break;
+        default:
+          userOffsetHours = 5; // Default to EST
+          break;
+      }
   
-      // Convert to EST
-      const estTimeString = userDateTime.toLocaleTimeString('en-US', {
-        timeZone: 'America/New_York',
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      // Calculate the time difference between user timezone and EST
+      const timeDifference = userOffsetHours - 5; // User offset minus EST (5)
+      const estHour = hour + timeDifference;
+  
+      // Handle day boundary crossings
+      let finalHour = estHour;
+      if (finalHour < 0) {
+        finalHour += 24;
+      } else if (finalHour >= 24) {
+        finalHour -= 24;
+      }
+  
+      // Format as 24-hour time string
+      const estTimeString = `${String(finalHour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
   
       console.log(`[Timezone Conversion] ${userTime} (${userTimezone}) → ${estTimeString} EST`);
       return estTimeString;
@@ -221,20 +272,13 @@ export interface TimeSlotMapping {
   };
   
   /**
-   * Get display timezone abbreviation
+   * Get display timezone abbreviation (STANDARD TIME ONLY)
    * @param timezone - IANA timezone string
-   * @param date - Date to check for DST (defaults to current date)
-   * @returns User-friendly abbreviation (e.g., "PST", "PDT", "EST", "EDT")
+   * @param date - Date (ignored - always returns standard time)
+   * @returns User-friendly abbreviation (e.g., "PST", "EST", "CST", "MST")
    */
-  export const getTimezoneDisplay = (timezone: string, date: Date = new Date()): string => {
-    const timezoneInfo = TIMEZONE_DISPLAY_MAP[timezone];
-    if (!timezoneInfo) {
-      return "EST"; // Fallback
-    }
-  
-    // Check if the timezone observes DST and if the date is during DST
-    const isDST = checkTimezoneDST(timezone, date);
-    return isDST ? timezoneInfo.daylight : timezoneInfo.standard;
+  export const getTimezoneDisplay = (timezone: string, _date?: Date): string => {
+    return TIMEZONE_DISPLAY_MAP[timezone] || "EST";
   };
   
   /**
