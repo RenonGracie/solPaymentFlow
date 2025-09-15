@@ -274,6 +274,7 @@ export default function OnboardingFlow({
   const [screenReady, setScreenReady] = useState(false);
   // Initial video loading state
   const [initialVideoReady, setInitialVideoReady] = useState(false);
+  const [videoLoadError, setVideoLoadError] = useState(false);
   // Asset preloading state
   const [assetsPreloaded, setAssetsPreloaded] = useState(false);
   const [showInitialLoader, setShowInitialLoader] = useState(true);
@@ -282,6 +283,11 @@ export default function OnboardingFlow({
   useEffect(() => {
     if (typeof window !== 'undefined' && typeof window.__appScrollToTop === 'function') {
       window.__appScrollToTop(false);
+    }
+    // Reset video error state when navigating away from step 0
+    if (currentStep !== 0) {
+      setVideoLoadError(false);
+      setInitialVideoReady(false);
     }
   }, [currentStep]);
 
@@ -945,6 +951,7 @@ export default function OnboardingFlow({
             }}
             onError={(e) => {
               console.warn('Video load error:', e);
+              setVideoLoadError(true);
               setInitialVideoReady(true); // Continue anyway
             }}
           >
@@ -965,12 +972,35 @@ export default function OnboardingFlow({
             </Button>
           </div>
 
-          {!initialVideoReady && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 pointer-events-none">
-              <div className="flex items-center space-x-2 text-white">
-                <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-sm">Loading video…</span>
+          {(!initialVideoReady || videoLoadError) && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 pointer-events-none">
+              <div className="text-center mb-4">
+                <img
+                  src="/sol-health-logo.svg"
+                  alt="Sol Health"
+                  className="h-8 w-auto mx-auto mb-4 opacity-90"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.textContent = 'Sol Health';
+                    fallback.className = 'text-white mb-4 opacity-90 text-xl';
+                    fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                    target.parentNode?.insertBefore(fallback, target);
+                  }}
+                />
               </div>
+              {videoLoadError ? (
+                <div className="text-center text-white">
+                  <p className="text-sm mb-2">Content is loading...</p>
+                  <p className="text-xs opacity-75">Please wait a moment</p>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 text-white">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm">Loading video…</span>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -997,6 +1027,7 @@ export default function OnboardingFlow({
             }}
             onError={(e) => {
               console.warn('Video load error:', e);
+              setVideoLoadError(true);
               setInitialVideoReady(true);
             }}
           >
@@ -1017,12 +1048,35 @@ export default function OnboardingFlow({
             </Button>
           </div>
 
-          {!initialVideoReady && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 pointer-events-none">
-              <div className="flex items-center space-x-2 text-white">
-                <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-sm">Loading video…</span>
+          {(!initialVideoReady || videoLoadError) && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 pointer-events-none">
+              <div className="text-center mb-4">
+                <img
+                  src="/sol-health-logo.svg"
+                  alt="Sol Health"
+                  className="h-8 w-auto mx-auto mb-4 opacity-90"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.textContent = 'Sol Health';
+                    fallback.className = 'text-white mb-4 opacity-90 text-xl';
+                    fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                    target.parentNode?.insertBefore(fallback, target);
+                  }}
+                />
               </div>
+              {videoLoadError ? (
+                <div className="text-center text-white">
+                  <p className="text-sm mb-2">Content is loading...</p>
+                  <p className="text-xs opacity-75">Please wait a moment</p>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 text-white">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm">Loading video…</span>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1033,10 +1087,10 @@ export default function OnboardingFlow({
     if (isWideScreen === false && screenType === 'desktop') {
       return (
         <div className="relative bg-black w-full h-[100vh] overflow-hidden">
-          <video 
+          <video
             className="absolute inset-0 w-full h-full object-contain bg-black"
-            autoPlay 
-            muted 
+            autoPlay
+            muted
             playsInline
             loop={false}
             controls={false}
@@ -1049,6 +1103,7 @@ export default function OnboardingFlow({
             }}
             onError={(e) => {
               console.warn('Video load error:', e);
+              setVideoLoadError(true);
               setInitialVideoReady(true);
             }}
           >
@@ -1068,12 +1123,35 @@ export default function OnboardingFlow({
             </Button>
           </div>
 
-          {!initialVideoReady && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 pointer-events-none">
-              <div className="flex items-center space-x-2 text-white">
-                <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-sm">Loading video…</span>
+          {(!initialVideoReady || videoLoadError) && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 pointer-events-none">
+              <div className="text-center mb-4">
+                <img
+                  src="/sol-health-logo.svg"
+                  alt="Sol Health"
+                  className="h-8 w-auto mx-auto mb-4 opacity-90"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.textContent = 'Sol Health';
+                    fallback.className = 'text-white mb-4 opacity-90 text-xl';
+                    fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                    target.parentNode?.insertBefore(fallback, target);
+                  }}
+                />
               </div>
+              {videoLoadError ? (
+                <div className="text-center text-white">
+                  <p className="text-sm mb-2">Content is loading...</p>
+                  <p className="text-xs opacity-75">Please wait a moment</p>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 text-white">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm">Loading video…</span>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1083,10 +1161,10 @@ export default function OnboardingFlow({
     // Desktop landscape - wide screens: full-screen 16x9 video, auto-advance
     return (
       <div className="relative bg-black w-full overflow-visible" style={{ height: '100%' }}>
-        <video 
+        <video
           className="absolute inset-0 w-full h-full object-contain bg-black"
-          autoPlay 
-          muted 
+          autoPlay
+          muted
           playsInline
           loop={false}
           controls={false}
@@ -1099,6 +1177,7 @@ export default function OnboardingFlow({
           }}
           onError={(e) => {
             console.warn('Video load error:', e);
+            setVideoLoadError(true);
             setInitialVideoReady(true);
           }}
         >
@@ -1118,12 +1197,35 @@ export default function OnboardingFlow({
           </Button>
           </div>
 
-          {!initialVideoReady && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 pointer-events-none">
-              <div className="flex items-center space-x-2 text-white">
-                <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-sm">Loading video…</span>
+          {(!initialVideoReady || videoLoadError) && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 pointer-events-none">
+              <div className="text-center mb-4">
+                <img
+                  src="/sol-health-logo.svg"
+                  alt="Sol Health"
+                  className="h-10 w-auto mx-auto mb-4 opacity-90"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.textContent = 'Sol Health';
+                    fallback.className = 'text-white mb-4 opacity-90 text-2xl';
+                    fallback.style.fontFamily = 'var(--font-very-vogue), Georgia, serif';
+                    target.parentNode?.insertBefore(fallback, target);
+                  }}
+                />
               </div>
+              {videoLoadError ? (
+                <div className="text-center text-white">
+                  <p className="text-base mb-2">Content is loading...</p>
+                  <p className="text-sm opacity-75">Please wait a moment</p>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 text-white">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span className="text-base">Loading video…</span>
+                </div>
+              )}
             </div>
           )}
       </div>
