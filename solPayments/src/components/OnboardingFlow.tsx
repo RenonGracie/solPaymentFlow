@@ -1086,9 +1086,9 @@ export default function OnboardingFlow({
     // Desktop landscape (narrow) - full-screen 16x9 video, auto-advance
     if (isWideScreen === false && screenType === 'desktop') {
       return (
-        <div className="relative bg-black w-full h-[100vh] overflow-hidden">
+        <div className="relative bg-black w-full overflow-hidden" style={{ height: '100%' }}>
           <video
-            className="absolute inset-0 w-full h-full object-contain bg-black"
+            className="absolute inset-0 w-full h-full object-cover bg-black"
             autoPlay
             muted
             playsInline
@@ -1162,7 +1162,7 @@ export default function OnboardingFlow({
     return (
       <div className="relative bg-black w-full overflow-visible" style={{ height: '100%' }}>
         <video
-          className="absolute inset-0 w-full h-full object-contain bg-black"
+          className="absolute inset-0 w-full h-full object-cover bg-black"
           autoPlay
           muted
           playsInline
