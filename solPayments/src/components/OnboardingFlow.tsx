@@ -393,20 +393,23 @@ export default function OnboardingFlow({
   useEffect(() => {
     const checkOrientation = () => {
       if (typeof window === 'undefined') return;
-      
+
       const width = window.innerWidth;
       const height = window.innerHeight;
       const aspectRatio = height / width;
-      
+
       setIsPortrait(aspectRatio > 1);
-      setIsWideScreen(width > 1024); // Changed from 1400 to 1024 to match the logic
-      
-      // Prefer width threshold for mobile to ensure vertical video on phones
-      if (width < 1200) {
+      setIsWideScreen(width > 1024);
+
+      // Improved breakpoint logic for better mobile/desktop detection
+      if (width <= 768) {
+        // True mobile devices (phones, small tablets in portrait)
         setScreenType('mobile');
-      } else if (aspectRatio > 1) {
+      } else if (width <= 1024 && aspectRatio > 1) {
+        // Tablets in portrait mode
         setScreenType('tablet');
       } else {
+        // Desktop browsers (including narrow windows)
         setScreenType('desktop');
       }
       setScreenReady(true);
@@ -1086,9 +1089,9 @@ export default function OnboardingFlow({
     // Desktop landscape (narrow) - full-screen 16x9 video, auto-advance
     if (isWideScreen === false && screenType === 'desktop') {
       return (
-        <div className="relative bg-black w-full overflow-hidden" style={{ height: '100%' }}>
+        <div className="relative bg-black w-full h-[100vh] overflow-hidden">
           <video
-            className="absolute inset-0 w-full h-full object-cover bg-black"
+            className="absolute inset-0 w-full h-full object-contain bg-black"
             autoPlay
             muted
             playsInline
@@ -1160,9 +1163,9 @@ export default function OnboardingFlow({
 
     // Desktop landscape - wide screens: full-screen 16x9 video, auto-advance
     return (
-      <div className="relative bg-black w-full overflow-visible" style={{ height: '100%' }}>
+      <div className="relative bg-black w-full h-[100vh] overflow-hidden">
         <video
-          className="absolute inset-0 w-full h-full object-cover bg-black"
+          className="absolute inset-0 w-full h-full object-contain bg-black"
           autoPlay
           muted
           playsInline
