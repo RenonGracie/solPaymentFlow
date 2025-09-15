@@ -233,7 +233,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
   // Format appointment date and time with proper timezone conversion
   const formatAppointmentDateTime = () => {
     if (!bookingData?.StartDateIso) {
-      return { dateStr: '', timeStr: '', timezone: '' };
+      return { dateStr: '', timeStr: '', endTimeStr: '', timezone: '' };
     }
 
     // Get user's timezone based on their state using centralized utility
@@ -241,16 +241,26 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
     const timezoneDisplay = getTimezoneDisplay(userTimezone);
 
     // Convert the booking time to user's timezone for display
-    const date = new Date(bookingData.StartDateIso);
+    const startDate = new Date(bookingData.StartDateIso);
 
-    const dateStr = date.toLocaleDateString('en-US', {
+    const dateStr = startDate.toLocaleDateString('en-US', {
       timeZone: userTimezone,
       weekday: 'short',
       month: 'short',
       day: '2-digit'
     });
 
-    const timeStr = date.toLocaleTimeString('en-US', {
+    const timeStr = startDate.toLocaleTimeString('en-US', {
+      timeZone: userTimezone,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    // Calculate end time in user's timezone
+    const sessionDuration = getSessionDuration();
+    const endDate = new Date(startDate.getTime() + sessionDuration * 60000);
+    const endTimeStr = endDate.toLocaleTimeString('en-US', {
       timeZone: userTimezone,
       hour: 'numeric',
       minute: '2-digit',
@@ -262,10 +272,11 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
       userState: currentUserData?.state,
       userTimezone,
       timezoneDisplay,
-      convertedDateTime: `${dateStr} ${timeStr} ${timezoneDisplay}`
+      sessionDuration,
+      convertedDateTime: `${dateStr} ${timeStr} - ${endTimeStr} ${timezoneDisplay}`
     });
 
-    return { dateStr, timeStr, timezone: timezoneDisplay };
+    return { dateStr, timeStr, endTimeStr, timezone: timezoneDisplay };
   };
 
   // Get therapist category from selected therapist data
@@ -342,7 +353,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
     );
   }
 
-  const { dateStr, timeStr, timezone } = formatAppointmentDateTime();
+  const { dateStr, timeStr, endTimeStr, timezone } = formatAppointmentDateTime();
 
   // Debug therapist data
   console.log('🎬 BOOKING CONFIRMATION DEBUG:', {
@@ -439,7 +450,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gray-500" />
                 <p className="font-medium text-gray-800 text-sm" style={{ fontFamily: 'var(--font-inter)' }}>
-                  {timeStr} - {new Date(new Date(bookingData.StartDateIso).getTime() + getSessionDuration()*60000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} {timezone}
+                  {timeStr} - {endTimeStr} {timezone}
                 </p>
               </div>
             </div>
