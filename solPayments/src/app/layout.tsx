@@ -47,8 +47,18 @@ export default function RootLayout({
             <link rel="dns-prefetch" href={videoCdn} />
           </>
         )}
+        <noscript>
+          <img 
+            height="1" 
+            width="1" 
+            style={{display: 'none'}}
+            src="https://www.facebook.com/tr?id=1020640882653434&ev=PageView&noscript=1"
+          />
+        </noscript>
+      </head>
+      <body suppressHydrationWarning className="antialiased">
         {/* Meta Pixel */}
-        <Script id="meta-pixel" strategy="afterInteractive">
+        <Script id="meta-pixel" strategy="beforeInteractive">
           {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -62,16 +72,6 @@ export default function RootLayout({
             fbq('track', 'PageView');
           `}
         </Script>
-        <noscript>
-          <img 
-            height="1" 
-            width="1" 
-            style={{display: 'none'}}
-            src="https://www.facebook.com/tr?id=1020640882653434&ev=PageView&noscript=1"
-          />
-        </noscript>
-      </head>
-      <body suppressHydrationWarning className="antialiased">
         <div className="min-h-screen" style={{ height: '100dvh', maxHeight: '100dvh' }}>
           <ClientBody>{children}</ClientBody>
         </div>
