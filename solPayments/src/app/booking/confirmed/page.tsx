@@ -12,11 +12,6 @@ import { getMediaUrlWithFallback, S3MediaType } from "@/utils/s3";
 import { getUserTimezone, getTimezoneDisplay } from "@/utils/timezoneUtils";
 
 // Meta pixel type declaration
-declare global {
-  interface Window {
-    fbq: (action: string, event: string, params?: any) => void;
-  }
-}
 
 // Video analysis types (reused from MatchedTherapist)
 interface VideoAnalysis {

@@ -12,11 +12,6 @@ import { useAvailableStates } from "@/api/hooks/useAvailableStates";
 import { journeyTracker } from "@/services/journeyTracker";
 
 // Meta pixel type declaration
-declare global {
-  interface Window {
-    fbq: (action: string, event: string, params?: any) => void;
-  }
-}
 
 interface EligibilityBenefits {
   copay: string;

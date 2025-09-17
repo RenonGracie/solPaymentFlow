@@ -28,6 +28,7 @@ import {
   type SuperJsonData
 } from "@/utils/superJsonBuilder";
 import { getUserTimezone, getTimezoneDisplay } from "@/utils/timezoneUtils";
+import { trackPurchase } from "@/lib/fbq";
 
 // Meta pixel type declaration
 declare global {
@@ -172,6 +173,15 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
   const [imageError, setImageError] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [isMuted, setIsMuted] = useState(true); // Start muted for autoplay compliance
+
+  // Track Purchase event when user reaches confirmation
+  useEffect(() => {
+    trackPurchase({
+      value: 30.00,
+      currency: "USD",
+      eventID: `purchase.${Date.now()}`, // unique event ID
+    });
+  }, []); // Empty dependency array ensures it only runs once when component mounts
 
   // Welcome video configuration (YouTube with clean embed)
   const WELCOME_VIDEO_URL = 'https://youtu.be/q2dgtDe83uA';
