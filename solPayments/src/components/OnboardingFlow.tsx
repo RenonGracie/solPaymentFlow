@@ -515,15 +515,6 @@ export default function OnboardingFlow({
           return; // Don't proceed without required fields
         }
 
-        // Track Meta pixel conversion for cash pay flow completion
-        if (typeof window !== 'undefined' && window.fbq) {
-          window.fbq('track', 'Lead', {
-            content_name: 'Cash Pay Onboarding Complete',
-            content_category: 'cash_pay',
-            value: 30.00,
-            currency: 'USD'
-          });
-        }
 
         onComplete({
           firstName: preferredName, // Use preferred name as firstName for now
@@ -717,16 +708,6 @@ export default function OnboardingFlow({
         ? formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1)
         : '';
 
-    // Track Meta pixel conversion for insurance flow completion
-    if (typeof window !== 'undefined' && window.fbq) {
-      const memberObligation = verificationResponse?.benefits?.memberObligation || 'Unknown';
-      window.fbq('track', 'Lead', {
-        content_name: 'Insurance Onboarding Complete',
-        content_category: 'insurance',
-        value: parseFloat(memberObligation.replace(/[$,]/g, '')) || 0,
-        currency: 'USD'
-      });
-    }
 
     // Complete the onboarding with verified insurance data
     onComplete({

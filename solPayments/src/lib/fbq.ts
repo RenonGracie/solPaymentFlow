@@ -9,6 +9,29 @@ export const fbq = (...args: any[]) => {
 // Convenience wrappers
 export const trackPageView = () => fbq("track", "PageView");
 
+export const trackLead = ({
+  content_name,
+  content_category,
+  value,
+  currency = "USD",
+  eventID,
+  params = {},
+}: {
+  content_name: string;
+  content_category: string;
+  value?: number;
+  currency?: string;
+  eventID?: string;
+  params?: Record<string, any>;
+}) => {
+  const base = { content_name, content_category, value, currency, ...params };
+  if (eventID) {
+    fbq("track", "Lead", base, { eventID });
+  } else {
+    fbq("track", "Lead", base);
+  }
+};
+
 export const trackPurchase = ({
   value,
   currency = "USD",

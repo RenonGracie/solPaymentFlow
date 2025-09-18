@@ -25,10 +25,11 @@ import {
   updateSuperJsonWithTherapistMatch,
   updateSuperJsonWithSelectedTherapist,
   updateSuperJsonWithAppointmentConfirmation,
-  type SuperJsonData
+  type SuperJsonData,
+  type OnboardingData
 } from "@/utils/superJsonBuilder";
 import { getUserTimezone, getTimezoneDisplay } from "@/utils/timezoneUtils";
-import { trackPurchase } from "@/lib/fbq";
+import { trackPurchase, trackLead } from "@/lib/fbq";
 
 // Meta pixel type declaration
 declare global {
@@ -174,14 +175,6 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
   const [showVideo, setShowVideo] = useState(false);
   const [isMuted, setIsMuted] = useState(true); // Start muted for autoplay compliance
 
-  // Track Purchase event when user reaches confirmation
-  useEffect(() => {
-    trackPurchase({
-      value: 30.00,
-      currency: "USD",
-      eventID: `purchase.${Date.now()}`, // unique event ID
-    });
-  }, []); // Empty dependency array ensures it only runs once when component mounts
 
   // Welcome video configuration (YouTube with clean embed)
   const WELCOME_VIDEO_URL = 'https://youtu.be/q2dgtDe83uA';
@@ -705,14 +698,7 @@ export default function MainPageComponent() {
   // Add new state for onboarding
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [onboardingStep] = useState(0); // Track which step we're on
-  const [onboardingData, setOnboardingData] = useState<{
-    firstName: string;
-    lastName: string;
-    email: string;
-    preferredName?: string;
-    state?: string;
-    whatBringsYou?: string;
-  } | null>(null);
+  const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   
   // Modal states - no longer needed
   // const [isInsuranceModalOpen, setIsInsuranceModalOpen] = useState(false);
@@ -843,6 +829,21 @@ export default function MainPageComponent() {
       // Generate a unique response ID
       const responseId = `response_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
       setClientResponseId(responseId);
+
+      // Track Lead event when user completes survey and requests therapist matching
+      const paymentType = selectedPaymentType || onboardingData?.paymentType || 'unknown';
+      const value = paymentType === 'cash_pay' ? 30.00 : 0;
+      trackLead({
+        content_name: 'Survey Complete - Therapist Matching Requested',
+        content_category: paymentType,
+        value: value,
+        currency: 'USD',
+        eventID: `lead.${responseId}`,
+        params: {
+          survey_completion: true,
+          payment_type: paymentType
+        }
+      });
 
       // ============== MAIN COMPONENT SUPERJSON BUILD ==============
       console.log('🎯 ==========================================');
