@@ -265,6 +265,7 @@ export default function MatchedTherapist({
         
         const url = new URL(`/therapists/${encodeURIComponent(email)}/availability/daily`, API_BASE);
         url.searchParams.set("date", queryDate.toISOString().split('T')[0]);
+        url.searchParams.set("timezone", timezone);
         url.searchParams.set("debug", "false");
         
         // Debug: Log the API call details
@@ -273,6 +274,7 @@ export default function MatchedTherapist({
           therapistEmail: email,
           requestedDate: queryDate.toISOString().split('T')[0],
           dayInMonth: day,
+          timezone: timezone,
           debug: false
         });
         
