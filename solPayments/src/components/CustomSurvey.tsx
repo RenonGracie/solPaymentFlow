@@ -1307,7 +1307,6 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                         setPhq9IntroEnded(true);
                        }}
                       onError={() => {
-                        console.warn('PHQ-9 video load error');
                         setPhq9VideoLoaded(true); // Continue anyway
                       }}
                     />
@@ -1542,7 +1541,6 @@ export default function CustomSurvey({ paymentType, formData, existingUserData, 
                        setGad7IntroEnded(true);
                        }}
                      onError={() => {
-                       console.warn('GAD-7 video load error');
                        setGad7VideoLoaded(true); // Continue anyway
                      }}
                    />

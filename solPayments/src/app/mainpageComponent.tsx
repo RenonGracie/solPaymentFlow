@@ -288,14 +288,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
     const program = therapist?.program?.trim();
     const paymentType = currentUserData?.payment_type;
     
-    console.log('🏷️ [Booking Confirmation] Complete therapist debug:', {
-      has_selected_therapist: !!therapist,
-      therapist_keys: therapist ? Object.keys(therapist) : [],
-      program_value: program,
-      raw_program: therapist?.program,
-      payment_type: paymentType,
-      full_therapist: therapist
-    });
+
     
     // Primary: Use program field if available
     if (program === 'Limited Permit') return 'Associate Therapist';
@@ -359,16 +352,7 @@ function BookingConfirmation({ bookingData, currentUserData, onBack }: BookingCo
   const { dateStr, timeStr, endTimeStr, timezone } = formatAppointmentDateTime();
 
   // Debug therapist data
-  console.log('🎬 BOOKING CONFIRMATION DEBUG:', {
-    has_booking_data: !!bookingData,
-    practitioner_name: bookingData.PractitionerName,
-    has_current_user_data: !!currentUserData,
-    has_selected_therapist: !!currentUserData.selected_therapist,
-    selected_therapist_data: currentUserData.selected_therapist,
-    image_link: currentUserData.selected_therapist?.image_link,
-    image_url_processed: currentUserData.selected_therapist?.image_link ? getImageUrl(currentUserData.selected_therapist.image_link) : 'No image link',
-    imageError: imageError
-  });
+
 
   return (
     <div className="flex flex-col" style={{ height: '100%' }}>
@@ -750,7 +734,6 @@ export default function MainPageComponent() {
       verificationData?: FormData['verificationData'];
     }
   ) => {
-    console.log('🎯 ONBOARDING COMPLETE - Data received:', data);
     // Payment type from onboarding
     
     setOnboardingData({
@@ -803,13 +786,11 @@ export default function MainPageComponent() {
   // Function to send SuperJson updates to backend for Google Sheets logging
   const sendSuperJsonToBackend = useCallback(async (superJson: SuperJsonData, stage: string) => {
     try {
-      console.log(`🔄 Sending SuperJson to backend for stage: ${stage}`);
       await axiosInstance.post('/clients_signup/update_journey', {
         response_id: superJson.response_id,
         stage,
         super_json_data: superJson
       });
-      console.log(`✅ SuperJson sent to backend successfully for stage: ${stage}`);
     } catch (error) {
       console.error(`❌ Failed to send SuperJson to backend for stage ${stage}:`, error);
       // Don't throw - we don't want to break the user flow if logging fails
@@ -818,8 +799,6 @@ export default function MainPageComponent() {
 
   // Updated to handle custom survey submission
   const handleSurveySubmit = useCallback(async (surveyData: SurveyData) => {
-    console.log('🎯 Survey submitted with data:', surveyData);
-    console.log('🎯 Current selectedPaymentType state:', selectedPaymentType);
     
     setCurrentStep(null); // Hide survey, show loading
     setIsProcessingResponse(true);
@@ -845,55 +824,8 @@ export default function MainPageComponent() {
         }
       });
 
-      // ============== MAIN COMPONENT SUPERJSON BUILD ==============
-      console.log('🎯 ==========================================');
-      console.log('🎯 MAIN COMPONENT - SUPERJSON BUILD CALL');
-      console.log('🎯 ==========================================');
+
       
-      console.log('📊 PRE-BUILD DATA ANALYSIS:', {
-        responseId,
-        hasSelectedPaymentType: !!selectedPaymentType,
-        selectedPaymentType: selectedPaymentType,
-        hasOnboardingData: !!onboardingData,
-        hasFormData: !!formData,
-        hasFormDataVerification: !!(formData?.verificationData),
-        surveyDataKeys: Object.keys(surveyData).length,
-        timestamp: new Date().toISOString()
-      });
-      
-      if (onboardingData) {
-        console.log('🎯 ONBOARDING DATA PASSED TO SUPERJSON:', {
-          firstName: onboardingData.firstName,
-          lastName: onboardingData.lastName,
-          email: onboardingData.email,
-          state: onboardingData.state,
-          provider: (onboardingData as any).provider,
-          memberId: (onboardingData as any).memberId,
-          dateOfBirth: (onboardingData as any).dateOfBirth,
-          paymentType: (onboardingData as any).paymentType
-        });
-      }
-      
-      if (formData) {
-        console.log('🎯 FORM DATA PASSED TO SUPERJSON:', {
-          provider: formData.provider,
-          memberId: formData.memberId,
-          dateOfBirth: formData.dateOfBirth,
-          hasVerificationData: !!formData.verificationData,
-          paymentType: formData.paymentType
-        });
-      }
-      
-      console.log('🎯 SURVEY DATA SAMPLE:', {
-        firstName: surveyData.first_name,
-        lastName: surveyData.last_name,
-        email: surveyData.email,
-        age: surveyData.age,
-        state: surveyData.state,
-        totalFields: Object.keys(surveyData).length
-      });
-      
-      console.log('🎯 ==========================================');
 
       // Build comprehensive SuperJson data payload  
       const superJson = buildSuperJson(
@@ -912,13 +844,7 @@ export default function MainPageComponent() {
       // Store SuperJson in state
       setSuperJsonData(superJson);
 
-      console.log('🏗️ SuperJson built with comprehensive data:', {
-        total_fields: Object.keys(superJson).length,
-        phq9_score: superJson.phq9_total_score,
-        gad7_score: superJson.gad7_total_score,
-        has_insurance_data: !!superJson.insurance_verification_data,
-        completeness_score: superJson.data_completeness_score
-      });
+
 
       // Build comprehensive user data from SuperJson for backward compatibility
       const comprehensiveUserData: ComprehensiveUserData = {
@@ -989,18 +915,6 @@ export default function MainPageComponent() {
       // Store comprehensive user data in state for later use
       setCurrentUserData(comprehensiveUserData);
 
-      console.log('📦 Comprehensive user data created:', {
-        response_id: comprehensiveUserData.response_id,
-        has_phq9_scores: !!comprehensiveUserData.phq9_scores,
-        phq9_total: comprehensiveUserData.phq9_total,
-        has_gad7_scores: !!comprehensiveUserData.gad7_scores,
-        gad7_total: comprehensiveUserData.gad7_total,
-        has_therapist_preferences: !!(comprehensiveUserData.therapist_gender_preference || comprehensiveUserData.therapist_specialization?.length),
-        has_substance_data: !!(comprehensiveUserData.alcohol_frequency || comprehensiveUserData.recreational_drugs_frequency),
-        has_demographics: !!(comprehensiveUserData.race_ethnicity?.length || comprehensiveUserData.lived_experiences?.length),
-        payment_type: comprehensiveUserData.payment_type,
-        total_fields: Object.keys(comprehensiveUserData).length
-      });
 
       // Use SuperJson as the complete client data payload
       const completeClientData = {
@@ -1010,7 +924,6 @@ export default function MainPageComponent() {
         // SuperJson already contains all the comprehensive data we need
       };
 
-      console.log('📦 Complete client data being sent:', completeClientData);
       // Payment type in client data
       console.log('🎯 SPECIFIC THERAPIST DEBUG:', {
         matching_preference: completeClientData.matching_preference,
@@ -1084,21 +997,6 @@ export default function MainPageComponent() {
     }
     
     // Log appointment info after successful booking
-    console.log('📅 APPOINTMENT INFO (AFTER BOOKING):', {
-      has_appointment: true,
-      start_date_iso: bookedSession.StartDateIso,
-      end_date_iso: bookedSession.EndDateIso,
-      start_date_local: bookedSession.StartDateLocal,
-      end_date_local: bookedSession.EndDateLocal,
-      therapist_name: bookedSession.PractitionerName,
-      therapist_email: bookedSession.PractitionerEmail,
-      appointment_id: bookedSession.Id,
-      client_id: bookedSession.ClientId,
-      client_name: bookedSession.ClientName,
-      session_duration: bookedSession.Duration,
-      booked_by_client: bookedSession.BookedByClient,
-      status: bookedSession.Status
-    });
     
     setBookingData(bookedSession);
     setCurrentStep(STEPS.CONFIRMATION);
@@ -1136,7 +1034,6 @@ export default function MainPageComponent() {
     
     // Enrich current user data with booking information
     if (currentUserData) {
-      console.log('🔄 Enriching user data with booking information...');
       
       // Extract booking details from the response
       const enrichedUserData: ComprehensiveUserData = {
@@ -1146,11 +1043,6 @@ export default function MainPageComponent() {
         last_updated: new Date().toISOString()
       };
       
-      console.log('📋 Creating IntakeQ profile with enriched data:', {
-        response_id: enrichedUserData.response_id,
-        has_booking_data: !!bookedSession,
-        total_fields: Object.keys(enrichedUserData).length
-      });
       
       // Create comprehensive IntakeQ profile immediately
       createComprehensiveIntakeQProfile(enrichedUserData);
@@ -1159,11 +1051,6 @@ export default function MainPageComponent() {
       setCurrentUserData(enrichedUserData);
     } else {
       console.warn('⚠️ No currentUserData available for IntakeQ profile creation');
-      console.log('Current state:', {
-        currentUserData: currentUserData,
-        bookedSession: bookedSession,
-        clientResponseId: clientResponseId
-      });
     }
   };
 
@@ -1182,77 +1069,8 @@ export default function MainPageComponent() {
     
     try {
       setIsIntakeQProcessing(true);
-      console.log('🔄 =================================================');
-      console.log('🔄 CREATING COMPREHENSIVE INTAKEQ PROFILE');
-      console.log('🔄 =================================================');
-      
-      console.log('📋 Client Overview:', {
-        email: clientData.email,
-        preferred_name: clientData.preferred_name,
-        first_name: clientData.first_name,
-        last_name: clientData.last_name,
-        payment_type: clientData.payment_type,
-        response_id: clientData.response_id
-      });
 
-      console.log('📊 Assessment Data:', {
-        has_phq9_scores: !!(clientData.phq9_scores && Object.keys(clientData.phq9_scores).length > 0),
-        phq9_total: clientData.phq9_total,
-        has_gad7_scores: !!(clientData.gad7_scores && Object.keys(clientData.gad7_scores).length > 0),
-        gad7_total: clientData.gad7_total,
-        phq9_questions_answered: clientData.phq9_scores ? Object.keys(clientData.phq9_scores).length : 0,
-        gad7_questions_answered: clientData.gad7_scores ? Object.keys(clientData.gad7_scores).length : 0
-      });
 
-      console.log('🎯 Therapy Preferences:', {
-        therapist_gender_preference: clientData.therapist_gender_preference,
-        specialization_count: clientData.therapist_specialization?.length || 0,
-        lived_experience_count: clientData.therapist_lived_experiences?.length || 0,
-        therapist_specializations: clientData.therapist_specialization,
-        therapist_lived_experiences: clientData.therapist_lived_experiences
-      });
-
-      console.log('🔍 Substance Use Screening:', {
-        alcohol_frequency: clientData.alcohol_frequency,
-        recreational_drugs_frequency: clientData.recreational_drugs_frequency
-      });
-
-      console.log('👤 Demographics:', {
-        age: clientData.age,
-        gender: clientData.gender,
-        state: clientData.state,
-        race_ethnicity_count: clientData.race_ethnicity?.length || 0,
-        lived_experiences_count: clientData.lived_experiences?.length || 0,
-        university: clientData.university
-      });
-
-      console.log('💳 Insurance Data:', {
-        has_insurance_data: !!(clientData.insurance_data?.provider),
-        provider: clientData.insurance_data?.provider,
-        member_id: clientData.insurance_data?.member_id,
-        has_benefits: !!(clientData.insurance_data?.benefits),
-        has_verification_response: !!(clientData.insurance_data?.verification_response),
-        has_subscriber_info: !!(clientData.insurance_data?.verification_response?.subscriber),
-        has_coverage_info: !!(clientData.insurance_data?.verification_response?.coverage),
-        subscriber_address: (clientData.insurance_data?.verification_response?.subscriber as any)?.address,
-        group_id: (clientData.insurance_data?.verification_response as any)?.coverage?.groupId,
-        payer_id: (clientData.insurance_data?.verification_response as any)?.coverage?.payerId,
-        plan_name: (clientData.insurance_data?.verification_response as any)?.coverage?.planName
-      });
-
-      console.log('👩‍⚕️ Selected Therapist:', {
-        has_selected_therapist: !!(clientData.selected_therapist),
-        therapist_name: clientData.selected_therapist?.name,
-        therapist_email: clientData.selected_therapist?.email,
-        therapist_specialties_count: clientData.selected_therapist?.specialties?.length || 0
-      });
-
-      console.log('📅 Appointment Info:', {
-        has_appointment: !!(clientData.appointment),
-        date: clientData.appointment?.date,
-        time: clientData.appointment?.time,
-        timezone: clientData.appointment?.timezone
-      });
 
       const totalFieldsPopulated = Object.entries(clientData).filter(([, value]) => {
         if (value === undefined || value === null || value === '') return false;
@@ -1261,11 +1079,6 @@ export default function MainPageComponent() {
         return true;
       }).length;
 
-      console.log('📊 Data Completeness:', {
-        total_fields_in_interface: Object.keys(clientData).length,
-        total_fields_populated: totalFieldsPopulated,
-        completeness_percentage: Math.round((totalFieldsPopulated / Object.keys(clientData).length) * 100)
-      });
 
       // Convert comprehensive data to IntakeQ format
       const intakeQData = {
@@ -1411,65 +1224,11 @@ export default function MainPageComponent() {
         })
       };
 
-      console.log('🚀 Calling IntakeQ API with payload:', {
-        payload_keys: Object.keys(intakeQData),
-        payload_size: JSON.stringify(intakeQData).length,
-        has_assessment_totals: !!(intakeQData.phq9_total !== undefined && intakeQData.gad7_total !== undefined),
-        payment_type: intakeQData.payment_type,
-        billing_type: intakeQData.BillingType,
-        
-        // Address Information
-        address: intakeQData.Address,
-        street_address: intakeQData.StreetAddress,
-        city: intakeQData.City,
-        state: intakeQData.State,
-        postal_code: intakeQData.PostalCode,
-        
-        // Primary Insurance Information  
-        primary_insurance_company: intakeQData.PrimaryInsuranceCompany,
-        primary_insurance_payer_id: intakeQData.PrimaryInsurancePayerId,
-        primary_insurance_policy_number: intakeQData.PrimaryInsurancePolicyNumber,
-        primary_insurance_group_number: intakeQData.PrimaryInsuranceGroupNumber,
-        primary_insurance_plan: intakeQData.PrimaryInsurancePlan,
-        
-        // Policyholder Information
-        primary_insurance_holder_name: intakeQData.PrimaryInsuranceHolderName,
-        primary_relationship_to_insured: intakeQData.PrimaryRelationshipToInsured,
-        primary_insured_gender: intakeQData.PrimaryInsuredGender,
-        primary_insured_address: intakeQData.PrimaryInsuredStreetAddress,
-        primary_insured_city: intakeQData.PrimaryInsuredCity,
-        primary_insured_state: intakeQData.PrimaryInsuredState,
-        primary_insured_zip: intakeQData.PrimaryInsuredZipCode
-      });
 
       const intakeQResult = await IntakeQService.createClientProfile(intakeQData);
       
-      console.log('📥 IntakeQ API Response:', {
-        success: intakeQResult.success,
-        client_id: intakeQResult.client_id,
-        intake_url: intakeQResult.intake_url,
-        error: intakeQResult.error
-      });
       
       if (intakeQResult.success) {
-        // IntakeQ profile created successfully
-        console.log('IntakeQ Profile Details:', {
-          client_id: intakeQResult.client_id,
-          intake_url: intakeQResult.intake_url,
-          total_fields_sent: Object.keys(intakeQData).length,
-          assessment_scores: {
-            phq9_total: clientData.phq9_total,
-            gad7_total: clientData.gad7_total
-          },
-          therapist_info: clientData.selected_therapist ? {
-            name: clientData.selected_therapist.name,
-            email: clientData.selected_therapist.email
-          } : 'None selected',
-          appointment_info: clientData.appointment ? {
-            date: clientData.appointment.date,
-            time: clientData.appointment.time
-          } : 'None scheduled'
-        });
         
         // Send mandatory form after successful client creation
         if (intakeQResult.client_id) {
@@ -1510,12 +1269,6 @@ export default function MainPageComponent() {
               ? `https://intakeq.com/#/client/${extendedResult.client_uuid}?tab=overview`
               : intakeQResult.intake_url; // fallback to form URL if no UUID
               
-            console.log('🔗 IntakeQ URL format:', {
-              has_client_uuid: !!extendedResult.client_uuid,
-              client_uuid: extendedResult.client_uuid,
-              original_intake_url: intakeQResult.intake_url,
-              final_url: clientUrl
-            });
             
             await axiosInstance.patch(`/clients_signup/${clientData.response_id}`, {
               intakeq_client_id: intakeQResult.client_id,
@@ -1530,25 +1283,12 @@ export default function MainPageComponent() {
         console.error('❌ =================================================');
         console.error('❌ INTAKEQ PROFILE CREATION FAILED!');
         console.error('❌ =================================================');
-        console.error('❌ Error Details:', {
-          error: intakeQResult.error,
-          payload_size: Object.keys(intakeQData).length,
-          payment_type: intakeQData.payment_type,
-          client_email: intakeQData.email
-        });
       }
       
     } catch (error) {
       console.error('❌ =================================================');
       console.error('❌ EXCEPTION IN INTAKEQ PROFILE CREATION!');
       console.error('❌ =================================================');
-      console.error('❌ Exception Details:', {
-        error: error,
-        error_message: error instanceof Error ? error.message : 'Unknown error',
-        error_stack: error instanceof Error ? error.stack : 'No stack trace',
-        client_data_available: !!clientData,
-        response_id: clientData?.response_id
-      });
     } finally {
       setIsIntakeQProcessing(false);
     }
@@ -1557,9 +1297,6 @@ export default function MainPageComponent() {
   // Function to send mandatory form after successful booking
   const sendMandatoryFormAfterBooking = async (clientId: string, clientData: ComprehensiveUserData) => {
     try {
-      console.log('📋 =================================================');
-      console.log('📋 SENDING MANDATORY INTAKEQ FORM');
-      console.log('📋 =================================================');
       
       // Determine payment type from client data
       const paymentType = clientData.payment_type || 'cash_pay';
@@ -1576,29 +1313,13 @@ export default function MainPageComponent() {
         // Add external client ID for tracking
         external_client_id: clientData.response_id
       };
-      
-      console.log('📤 Form data being sent:', formData);
-      
+            
       // Send the mandatory form
       const formResult = await sendMandatoryForm(formData) as MandatoryFormResponse;
       
-      console.log('📥 Mandatory form response:', {
-        success: formResult.success,
-        intake_id: formResult.intake_id,
-        intake_url: formResult.intake_url,
-        questionnaire_id: formResult.questionnaire_id
-      });
       
       if (formResult.success) {
         // Mandatory form sent successfully
-        console.log('Form Details:', {
-          intake_id: formResult.intake_id,
-          intake_url: formResult.intake_url,
-          client_id: clientId,
-          payment_type: paymentType,
-          therapist_name: clientData.selected_therapist?.name || 'Not specified',
-          client_name: `${clientData.first_name} ${clientData.last_name}`.trim()
-        });
         
         // Update user data with form information
         if (currentUserData) {
@@ -1667,7 +1388,6 @@ export default function MainPageComponent() {
         setSuperJsonData(prevSuperJson => {
           if (prevSuperJson && prevSuperJson.current_stage !== 'therapist_matched') {
             const updatedSuperJson = updateSuperJsonWithTherapistMatch(prevSuperJson, matchData);
-            console.log('🔄 SuperJson updated with therapist matching results');
             
             // Send update to backend for Google Sheets logging
             sendSuperJsonToBackend(updatedSuperJson, 'therapist_matched');
@@ -1697,12 +1417,6 @@ export default function MainPageComponent() {
         setCurrentStep(STEPS.NO_MATCH);
       }
 
-      console.log('📦 Match data received:', {
-        paymentType: selectedPaymentType,
-        therapistsReturned: matchData.therapists.length,
-        therapists: matchData.therapists,
-        preloaderCreated: matchData.therapists.length > 0
-      });
     }
   }, [matchData, selectedPaymentType, currentUserData?.state, sendSuperJsonToBackend]);
 
@@ -1790,15 +1504,7 @@ export default function MainPageComponent() {
                 payment_type: (selectedPaymentType || (matchData.client as ExtendedClientData)?.payment_type) as 'cash_pay' | 'insurance' | undefined,
                 response_id: clientResponseId || (matchData.client as ExtendedClientData)?.response_id,
               };
-              
-              console.log('🔍 CLIENT DATA DEBUG - Passing to MatchedTherapist:');
-              console.log('selectedPaymentType:', selectedPaymentType);
-              console.log('matchData.client:', matchData.client);
-              console.log('final clientData:', clientData);
-              console.log('🔍 THERAPIST DATA DEBUG:');
-              console.log('matchData.therapists:', matchData.therapists);
-              console.log('therapists length:', matchData.therapists?.length);
-              console.log('first therapist:', matchData.therapists?.[0]);
+
               
               return (
                 <MatchedTherapist
@@ -1826,7 +1532,6 @@ export default function MainPageComponent() {
                       // MatchedTherapist already sends properly formatted Eastern time with timezone offset
                       // No additional conversion needed - use the datetime as-is for backend
                       const clientState = currentUserData?.state || 'Unknown';
-                      console.log(`📍 Client state: ${clientState}`);
 
                       const userTimezone = getUserTimezone(clientState !== 'Unknown' ? clientState : undefined);
                       const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -1845,19 +1550,6 @@ export default function MainPageComponent() {
                       
                       // Enrich current user data with selected therapist info BEFORE booking
                       if (currentUserData) {
-                        // Debug therapist data structure
-                        console.log('🖼️ [MAIN COMPONENT] Therapist data structure debug:', {
-                          therapist_keys: Object.keys(therapist),
-                          therapist_data_keys: Object.keys(therapistData),
-                          image_link_in_therapist: therapist.image_link,
-                          image_link_in_therapistData: therapistData.therapist?.image_link,
-                          program_in_therapist: therapist.program,
-                          program_in_therapistData: therapistData.therapist?.program,
-                          cohort_in_therapist: therapist.cohort,
-                          cohort_in_therapistData: therapistData.therapist?.cohort,
-                          full_therapist_object: therapist,
-                          full_therapistData_object: therapistData
-                        });
                         
                         const therapistInfo = {
                           id: therapist.id || therapist.email || 'unknown',
@@ -1907,16 +1599,7 @@ export default function MainPageComponent() {
                           appointment: appointmentInfo,
                           last_updated: new Date().toISOString()
                         };
-                        
-                        console.log('🎯 [MAIN COMPONENT] Enriching user data with appointment details:');
-                        console.log({
-                          therapist_name: therapistInfo.name,
-                          appointment_date: appointmentInfo.date,
-                          appointment_time: appointmentInfo.time,
-                          appointment_timezone: appointmentInfo.timezone,
-                          user_selected_time: appointmentInfo.user_selected_time,
-                          est_backend_time: appointmentInfo.est_backend_time
-                        });
+
                         
                         setCurrentUserData(enrichedData);
 
@@ -1950,22 +1633,10 @@ export default function MainPageComponent() {
                         original_user_selection: slot, // Keep original for debugging
                       };
 
-                      console.log('📡 [MAIN COMPONENT] API REQUEST TO BACKEND:');
-                      console.log('==========================================');
-                      console.log('API Endpoint: /api/appointments/book');
-                      console.log('Request Data:', JSON.stringify(apiRequestData, null, 2));
-                      console.log(`🕐 EST datetime being sent to backend: ${backendDatetime}`);
-                      console.log(`🕐 Original user selection: ${slot}`);
-                      console.log(`🌍 User timezone: ${userTimezone}`);
-                      console.log('==========================================');
-
                       const bookedSession = await bookAppointment.makeRequest({
                         data: apiRequestData,
                       });
                       
-                      console.log('✅ [MAIN COMPONENT] API RESPONSE FROM BACKEND:');
-                      console.log('Response:', JSON.stringify(bookedSession, null, 2));
-
                       // Update SuperJson with appointment confirmation
                       if (superJsonData) {
                         const updatedSuperJson = updateSuperJsonWithAppointmentConfirmation(superJsonData, bookedSession);

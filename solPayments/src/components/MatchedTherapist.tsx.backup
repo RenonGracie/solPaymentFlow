@@ -180,7 +180,6 @@ export default function MatchedTherapist({
         // Recorded therapist selection
         setHasRecordedSelection(true);
       } catch (error) {
-        console.error('Failed to record therapist selection:', error);
       }
     };
     
@@ -210,15 +209,6 @@ export default function MatchedTherapist({
   const loadCalendarData = useCallback(async () => {
     const email = therapist?.calendar_email || therapist?.email;
     if (!email || !avKey || isLoadingCalendar || availabilityCache[avKey]) {
-      console.log(`[Calendar Debug] 🛑 Skipping calendar load:`, {
-        hasEmail: !!email,
-        email: email,
-        hasAvKey: !!avKey,
-        avKey: avKey,
-        isLoadingCalendar,
-        hasCachedData: !!availabilityCache[avKey],
-        cacheKeys: Object.keys(availabilityCache)
-      });
       return;
     }
 
@@ -257,7 +247,6 @@ export default function MatchedTherapist({
         }
       }
       
-      console.log(`[Calendar Debug] 📅 Fetching availability for ${bookableDays.length} bookable days in month ${currentYear}-${currentMonth + 1}: [${bookableDays.join(', ')}]`);
       
       // Fetch availability for only the bookable days
       const dailyRequests = bookableDays.map(day => {
@@ -268,23 +257,15 @@ export default function MatchedTherapist({
         url.searchParams.set("timezone", timezone);
         url.searchParams.set("debug", "false");
         
-        // Debug: Log the API call details
-        console.log(`[API Debug] 🚀 Making API call:`, {
-          url: url.toString(),
-          therapistEmail: email,
-          requestedDate: queryDate.toISOString().split('T')[0],
-          dayInMonth: day,
-          timezone: timezone,
-          debug: false
-        });
         
         return fetch(url.toString(), {
           cache: "no-store"
         }).then(async (response) => {
           if (response.ok) {
             const data = await response.json();
-          
             
+            
+            // Store the raw API response directly - fuck the transformation layer
             const apiKey = `${email}:${data.date}`;
             setApiResponseCache(prev => ({
               ...prev,
@@ -293,11 +274,9 @@ export default function MatchedTherapist({
             
             return { day, data, success: true };
           } else {
-            console.warn(`[Calendar Debug] ⚠️ Failed to fetch day ${day}: ${response.status}`);
             return { day, data: null, success: false };
           }
         }).catch((error) => {
-          console.warn(`[Calendar Debug] ⚠️ Error fetching day ${day}:`, error);
           return { day, data: null, success: false };
         });
       });
@@ -307,7 +286,6 @@ export default function MatchedTherapist({
       const results = await Promise.allSettled(dailyRequests);
       const endTime = performance.now();
       
-      console.log(`[Calendar Debug] ⏱️ Fetched ${bookableDays.length} bookable days in ${Math.round(endTime - startTime)}ms`);
       
       // Process results
       let successfulDays = 0;
@@ -346,7 +324,6 @@ export default function MatchedTherapist({
       });
       
       // Calendar data loaded successfully
-      console.log(`[Calendar Debug] ✅ Successfully processed ${successfulDays} days with availability data`);
       
       setAvailabilityCache(prev => ({
         ...prev,
@@ -394,9 +371,7 @@ export default function MatchedTherapist({
       };
       
       if (error instanceof Error && error.name === 'AbortError') {
-        console.warn(`[Calendar Debug] ⏱️ Timeout after 30 seconds:`, errorDetails);
       } else {
-        console.error(`[Calendar Debug] ❌ Request failed:`, errorDetails);
       }
       
       setAvailabilityCache(prev => ({
@@ -444,12 +419,9 @@ export default function MatchedTherapist({
   }, [clientData?.therapist_gender_preference, clientData?.gender_preference]);
   
   const handleFindAnother = async () => {
-    console.log(`[Find Another] Current therapist: ${therapist?.intern_name} (index ${currentIndex})`);
-    console.log(`[Find Another] Total therapists available: ${therapistsList.length}`);
     
     // Check if this was a specific therapist request
     if (clientData?.matching_preference === 'requesting_specific') {
-      console.log('[Find Another] This was a specific therapist request - showing modal');
       setShowSpecificTherapistModal(true);
       return;
     }
@@ -461,7 +433,6 @@ export default function MatchedTherapist({
       const nextIndex = (currentIndex + 1) % therapistsList.length;
       const nextTherapist = therapistsList[nextIndex];
       
-      console.log(`[Find Another] Moving to: ${nextTherapist?.therapist?.intern_name} (index ${nextIndex})`);
       
       // Create preloader for the next therapist
       const preloader = createTherapistPreloader(
@@ -479,7 +450,6 @@ export default function MatchedTherapist({
     }
     
     // If we need new therapists, still use LoadingScreen for consistency
-    console.log(`[Find Another] Need new therapists - using LoadingScreen for consistent UX`);
     
     // Show loading screen immediately for consistent experience
     setShowTherapistSearchLoading(true);
@@ -491,18 +461,15 @@ export default function MatchedTherapist({
   };
   
   const handleTherapistSearchComplete = useCallback(() => {
-    console.log(`[Find Another] ⭐ COMPLETION CALLBACK TRIGGERED - switching to next therapist`);
     
     // Preserve current calendar month when switching therapists
     const currentCalendarMonth = calendarDate;
-    console.log(`[Find Another] Preserving calendar month: ${currentCalendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
     
     // Prevent calendar auto-navigation during therapist switch
     setIsSwitchingTherapists(true);
     
     // Switch to the next therapist
     const nextIndex = (currentIndex + 1) % therapistsList.length;
-    console.log(`[Find Another] ⭐ Switching from index ${currentIndex} to ${nextIndex}`);
     setCurrentIndex(nextIndex);
     setSelectedTimeSlot(null);
     setSelectedDateObj(null);
@@ -512,11 +479,9 @@ export default function MatchedTherapist({
     // Hide loading screen
     setShowTherapistSearchLoading(false);
     setTherapistSearchPreloader(null);
-    console.log(`[Find Another] ⭐ Loading screen hidden, therapist switch complete`);
     
     // Re-enable auto-selection after a brief delay and ensure calendar month is preserved
     setTimeout(() => {
-      console.log(`[Find Another] Re-enabling auto-selection and ensuring calendar month is preserved`);
       // Explicitly preserve the calendar month in case it got changed
       setCalendarDate(currentCalendarMonth);
       setIsSwitchingTherapists(false);
@@ -527,7 +492,6 @@ export default function MatchedTherapist({
     
     // If we only have 1 therapist or want fresh matches, fetch new ones
     if (onFindAnother) {
-      console.log(`[Find Another] Fetching new therapists from backend...`);
       
       try {
         onFindAnother?.();
@@ -537,20 +501,16 @@ export default function MatchedTherapist({
         setImageError({});
         setHasRecordedSelection(false);
         
-        console.log(`[Find Another] ✅ Successfully fetched new therapists`);
       } catch (error) {
-        console.error('[Find Another] ❌ Failed to fetch new therapists:', error);
       } finally {
         // Hide loading screen after backend fetch completes
         setShowTherapistSearchLoading(false);
         setTherapistSearchPreloader(null);
-        console.log(`[Find Another] Loading screen hidden after backend fetch`);
       }
     } else {
       // Fallback: cycle through existing list (original behavior)
       // Preserve current calendar month when switching therapists
       const currentCalendarMonth = calendarDate;
-      console.log(`[Find Another] Fallback - Preserving calendar month: ${currentCalendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
       
       // Prevent calendar auto-navigation during therapist switch
       setIsSwitchingTherapists(true);
@@ -560,13 +520,11 @@ export default function MatchedTherapist({
       
       // Check if we've seen all therapists (about to cycle back to first one)
       if (nextIndex === 0 && viewedTherapistIds.size >= therapistsList.length) {
-        console.log(`[Find Another] All ${therapistsList.length} therapists have been viewed, showing no matches modal`);
         setShowNoMatchesModal(true);
         setIsSwitchingTherapists(false);
         return;
       }
       
-      console.log(`[Find Another] Fallback - Moving to: ${nextTherapist?.intern_name} (index ${nextIndex})`);
       
       setCurrentIndex(nextIndex);
       setSelectedTimeSlot(null);
@@ -579,7 +537,6 @@ export default function MatchedTherapist({
       setTherapistSearchPreloader(null);
       
       setTimeout(() => {
-        console.log(`[Find Another] Fallback - Re-enabling auto-selection and ensuring calendar month is preserved`);
         // Explicitly preserve the calendar month in case it got changed
         setCalendarDate(currentCalendarMonth);
         setIsSwitchingTherapists(false);
@@ -594,7 +551,6 @@ export default function MatchedTherapist({
       
       // Preserve current calendar month when switching therapists
       const currentCalendarMonth = calendarDate;
-      console.log(`[Previous Therapist] Preserving calendar month: ${currentCalendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
       
       // Prevent calendar auto-navigation during therapist switch
       setIsSwitchingTherapists(true);
@@ -613,12 +569,11 @@ export default function MatchedTherapist({
           previous_therapist_index: currentIndex,
           new_therapist_index: therapistIndex,
           total_therapists_viewed: previouslyViewed.length + 1
-        }).catch(console.error);
+        }).catch(() => {});
       }
       
       // Re-enable auto-selection after a brief delay and preserve calendar month
       setTimeout(() => {
-        console.log(`[Previous Therapist] Re-enabling auto-selection and ensuring calendar month is preserved`);
         // Explicitly preserve the calendar month in case it got changed
         setCalendarDate(currentCalendarMonth);
         setIsSwitchingTherapists(false);
@@ -628,7 +583,6 @@ export default function MatchedTherapist({
   
   const handleBookSession = async () => {
     // DEBUG: Log the current state of all booking requirements
-
     
     if (!selectedTimeSlot || !selectedDateObj || !clientData?.response_id) {
       console.warn('❌ BOOKING BLOCKED - Missing required data:', {
@@ -655,41 +609,65 @@ export default function MatchedTherapist({
       });
       return;
     }
+    
+    // ========================================
+    // COMPREHENSIVE BOOKING DATA LOGGING
+    // ========================================
+    
+    
+    // ALL CLIENT DATA
+    
+    // ALL ASSOCIATED THERAPIST DATA (the selected therapist)
+    
+    // RESPONSE_ID
+    
+    // TIMEZONE CONVERSION DATA
+
+    // ADDITIONAL BOOKING CONTEXT
+    const bookingContext = {
+      selectedTimeSlotMapping: selectedTimeSlotMapping,
+      selectedDate: selectedDateObj?.toISOString(),
+      selectedDateLocal: selectedDateObj?.toDateString(),
+      paymentType: getSelectedPaymentType(),
+      timezone: timezone,
+      timezoneDisplay: timezoneDisplay,
+      sessionDuration: getSessionDuration(),
+      therapistCategory: getTherapistCategory(therapist)
+    };
+    
+    // ========================================
+    // JOURNEY TRACKING - SEND TO GOOGLE SHEETS
+    // ========================================
+    
+    try {
+      // Track comprehensive booking context
+      await journeyTracker.trackBookingStarted(
+        clientData,
+        currentTherapistData,
+        bookingContext
+      );
+    } catch (error) {
+      // Don't block the booking flow if tracking fails
+    }
+    
 
     const yyyy = selectedDateObj.getFullYear();
     const mm = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(selectedDateObj.getDate()).padStart(2, '0');
 
-    console.log('🕐 BOOKING TIME DEBUG - USING EST FOR BACKEND:');
-    console.log(`  Selected date object: ${selectedDateObj.toDateString()}`);
-    console.log(`  User display time: "${selectedTimeSlotMapping.displayTime}" (${selectedTimeSlotMapping.timezoneDisplay})`);
-    console.log(`  EST time for backend: "${selectedTimeSlotMapping.originalEST}"`);
 
     // Use EST time directly for backend (no conversion needed)
     const estTime = selectedTimeSlotMapping.originalEST;
-    console.log(`  EST time for backend: "${estTime}"`);
 
     const [hour, minute] = estTime.split(':').map(Number);
-    console.log(`  Parsed hour: ${hour}, minute: ${minute}`);
     
     // FIXED TIMEZONE HANDLING - Create appointment datetime with proper client timezone
-    console.log('🕐 FIXED TIMEZONE CONVERSION:');
-    console.log(`  Client timezone: ${timezone} (${timezoneDisplay})`);
-    console.log(`  Client state: ${clientData?.state || 'Unknown'}`);
     
     // BROWSER TIMEZONE VALIDATION - Cross-check with user's actual device timezone
     const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    console.log(`  Browser detected timezone: ${browserTimezone}`);
     
     // Validate browser timezone matches selected state timezone
     if (browserTimezone !== timezone) {
-      console.log(`  ⚠️ TIMEZONE MISMATCH WARNING:`);
-      console.log(`    Selected state timezone: ${timezone}`);
-      console.log(`    Browser detected timezone: ${browserTimezone}`);
-      console.log(`    This could indicate:`);
-      console.log(`    - User is traveling/VPN`);
-      console.log(`    - User selected wrong state`);
-      console.log(`    - Timezone mapping error`);
       
       // Check if they're at least in the same "timezone family"
       const stateMapping: { [key: string]: string[] } = {
@@ -706,16 +684,13 @@ export default function MatchedTherapist({
       for (const [baseTimezone, variants] of Object.entries(stateMapping)) {
         if (variants.includes(browserTimezone) && variants.includes(timezone)) {
           timezonesMatch = true;
-          console.log(`    ✅ Timezone variants match (${baseTimezone} family)`);
           break;
         }
       }
       
       if (!timezonesMatch) {
-        console.log(`    ⚠️ Timezone families don't match - booking may be incorrect`);
       }
     } else {
-      console.log(`  ✅ Browser timezone matches selected state timezone`);
     }
     
     let datetime: string;
@@ -736,7 +711,6 @@ export default function MatchedTherapist({
         originalDateTimeString: appointmentDateTimeString
       };
       
-      console.log(`  Booking metadata:`, bookingMetadata);
       
       // Create EST/EDT datetime with proper timezone offset based on current DST status
       // Backend expects Eastern times, so we use dynamic offset calculation
@@ -744,9 +718,6 @@ export default function MatchedTherapist({
       const estTimezoneOffset = isDST ? '-04:00' : '-05:00'; // EDT vs EST
       datetime = `${appointmentDateTimeString}${estTimezoneOffset}`;
 
-      console.log(`  EST datetime string: ${appointmentDateTimeString}`);
-      console.log(`  Eastern timezone offset: ${estTimezoneOffset} (${isDST ? 'EDT' : 'EST'})`);
-      console.log(`  Final Eastern datetime: ${datetime}`);
       
       // Verification: Confirm EST time is being sent to backend
       const verificationDate = new Date(datetime);
@@ -761,10 +732,6 @@ export default function MatchedTherapist({
         timeZoneName: 'short'
       });
 
-      console.log(`  ✅ VERIFICATION:`);
-      console.log(`  User sees: ${selectedDateObj.toDateString()} at ${selectedTimeSlotMapping.displayTime} ${selectedTimeSlotMapping.timezoneDisplay}`);
-      console.log(`  Backend gets: ${verificationInEST}`);
-      console.log(`  Eastern time matches original: ${selectedTimeSlotMapping.originalEST}`);
 
       // Parse expected hour from user's display time
       const displayTimeMatch = selectedTimeSlotMapping.displayTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -783,20 +750,14 @@ export default function MatchedTherapist({
       }));
 
       if (Math.abs(actualHourInClientTz - expectedHour) <= 1) { // Allow 1 hour tolerance for edge cases
-        console.log(`  ✅ Hour verification PASSED: Expected ${expectedHour}, got ${actualHourInClientTz}`);
       } else {
-        console.log(`  ⚠️ Hour verification WARNING: Expected ${expectedHour}, got ${actualHourInClientTz}`);
-        console.log(`  This may indicate a timezone conversion issue`);
       }
       
     } catch (error) {
-      console.error('❌ Error in Eastern datetime creation:', error);
 
       // Fallback: Send Eastern time without timezone offset
       const appointmentDateTimeString = `${yyyy}-${mm}-${dd}T${estTime}:00`;
 
-      console.log('🔄 Using fallback: sending Eastern datetime without timezone offset');
-      console.log(`  Fallback Eastern datetime: ${appointmentDateTimeString}`);
 
       datetime = appointmentDateTimeString;
     }
@@ -814,7 +775,6 @@ export default function MatchedTherapist({
 
   const getTherapistOffsetMinutes = (timezone: string): number => {
     // Get standard timezone offset in minutes (no DST calculations)
-    console.log(`[Timezone Debug] Getting standard offset minutes for: ${timezone}`);
 
     let offsetMinutes;
     switch (timezone) {
@@ -841,26 +801,22 @@ export default function MatchedTherapist({
         break;
     }
 
-    console.log(`[Timezone Debug] Standard offset minutes: ${offsetMinutes}`);
     return offsetMinutes;
   };
 
   const convertTo24Hour = (time: string) => {
-    console.log(`[Time Conversion] Converting: "${time}"`);
     
     // Handle different time formats: "3:45pm", "3:45 pm", "15:45", etc.
     const cleanTime = time.toLowerCase().trim();
     
     // If already in 24-hour format, return as-is
     if (/^\d{1,2}:\d{2}$/.test(cleanTime) && !cleanTime.includes('am') && !cleanTime.includes('pm')) {
-      console.log(`[Time Conversion] Already 24-hour format: "${cleanTime}"`);
       return cleanTime;
     }
     
     // Extract hour, minute, and period (am/pm)
     const match = cleanTime.match(/^(\d{1,2}):?(\d{2})?\s*(am|pm)$/i);
     if (!match) {
-      console.error(`[Time Conversion] Invalid time format: "${time}"`);
       return '12:00'; // Default fallback
     }
     
@@ -868,7 +824,6 @@ export default function MatchedTherapist({
     const m = match[2] || '00';
     const period = match[3].toLowerCase();
     
-    console.log(`[Time Conversion] Parsed - Hour: ${h}, Minute: ${m}, Period: ${period}`);
     
     // Convert to 24-hour format
     if (period === 'pm' && h !== 12) {
@@ -878,7 +833,6 @@ export default function MatchedTherapist({
     }
     
     const result = `${h.toString().padStart(2, '0')}:${m}`;
-    console.log(`[Time Conversion] Result: "${result}"`);
     return result;
   };
 
@@ -901,11 +855,9 @@ export default function MatchedTherapist({
     // Handle relative URLs or paths that might need a base URL
     if (cleanLink.startsWith('/')) {
       // If it starts with /, it might be a relative path from a CDN
-      console.warn(`[Image] Relative path detected: ${cleanLink} - might need base URL`);
       return cleanLink; // Return as-is, let the browser handle it
     }
     
-    console.warn(`[Image] Invalid image URL format: "${cleanLink}"`);
     return '';
   };
 
@@ -927,7 +879,6 @@ export default function MatchedTherapist({
     // Fallback - default to Graduate for empty/unknown programs
     else {
       if (program) {
-        console.warn(`[Therapist Category] Unknown program type: "${program}" for therapist. Please update category mapping.`);
       }
       category = 'Graduate Therapist';
     }
@@ -983,8 +934,6 @@ export default function MatchedTherapist({
   const handleImageError = (therapistId: string) => {
     const therapistData = therapistsList.find(t => t.therapist.id === therapistId);
     const imageUrl = therapistData?.therapist?.image_link;
-    console.error(`[Image Error] Failed to load image for therapist ${therapistId} (${therapistData?.therapist?.intern_name})`);
-    console.error(`[Image Error] Image URL was: ${imageUrl}`);
     setImageError(prev => ({ ...prev, [therapistId]: true }));
   };
 
@@ -1070,7 +1019,6 @@ export default function MatchedTherapist({
     const cleanUrl = welcomeVideoLink.trim();
     
     if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
-      console.warn(`[Video] Invalid URL format for ${therapist?.intern_name}: ${cleanUrl}`);
       return { hasVideo: false, videoType: 'invalid', embedUrl: '', reason: 'URL does not start with http/https' };
     }
 
@@ -1078,7 +1026,6 @@ export default function MatchedTherapist({
     if (cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be')) {
       const videoId = extractYouTubeId(cleanUrl);
       if (!videoId) {
-        console.error(`[Video] Could not extract YouTube ID from: ${cleanUrl}`);
         return { hasVideo: false, videoType: 'youtube-invalid', embedUrl: '', reason: 'Invalid YouTube URL format' };
       }
 
@@ -1103,7 +1050,6 @@ export default function MatchedTherapist({
 
         return { hasVideo: true, videoType: 'vimeo', embedUrl, videoId, reason: 'Valid Vimeo video' };
       } else {
-        console.error(`[Video] Could not extract Vimeo ID from: ${cleanUrl}`);
         return { hasVideo: false, videoType: 'vimeo-invalid', embedUrl: '', reason: 'Invalid Vimeo URL format' };
       }
     }
@@ -1125,7 +1071,6 @@ export default function MatchedTherapist({
     }
 
     // Unknown video source
-    console.warn(`[Video] Unknown video source for ${therapist?.intern_name}: ${cleanUrl}`);
     return { hasVideo: false, videoType: 'unknown', embedUrl: '', reason: 'Unknown video platform or format' };
 
   }, [welcomeVideoLink, therapist?.intern_name]);
@@ -1165,12 +1110,11 @@ export default function MatchedTherapist({
         to_month: `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`,
         therapist_id: therapist?.id,
         has_availability: !!availability?.days && Object.keys(availability.days).length > 0
-      }).catch(console.error);
+      }).catch(() => {});
     }
     
     // Clear date selection when navigating to previous month - let auto-selection handle it
     setSelectedDateObj(null);
-    console.log(`[Calendar Navigation] Navigated to previous month, cleared date selection for auto-selection`);
   };
   
   const goNextMonth = () => {
@@ -1183,7 +1127,6 @@ export default function MatchedTherapist({
     
     // Don't navigate to a month that's entirely beyond the 15-day window
     if (next.getTime() > maximumBookingDate.getTime()) {
-      console.log(`[Calendar Navigation] Cannot navigate beyond 15-day booking window`);
       return;
     }
     
@@ -1197,12 +1140,11 @@ export default function MatchedTherapist({
         to_month: `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`,
         therapist_id: therapist?.id,
         has_availability: !!availability?.days && Object.keys(availability.days).length > 0
-      }).catch(console.error);
+      }).catch(() => {});
     }
     
     // Clear date selection when navigating to next month - let auto-selection handle it
     setSelectedDateObj(null);
-    console.log(`[Calendar Navigation] Navigated to next month, cleared date selection for auto-selection`);
   };
 
   // Pull availability for this therapist + month (if fetched)
@@ -1349,6 +1291,26 @@ export default function MatchedTherapist({
         finalSlots = finalSlots.filter((slot: Date) => slot.getMinutes() === 0);
       }
 
+      // 🐛 DEBUG: Add detailed logging for September 15th and 21st
+      if (dayNum === 15 || dayNum === 21) {
+        console.log(`🔍 [CALENDAR DEBUG - PRIMARY] Sept ${dayNum}th getDayAvailableCount:`, {
+          dayNum,
+          selectedDateStr,
+          apiKey,
+          hasApiResponse: !!apiResponse,
+          rawSlotsFromAPI: rawSlots.length,
+          afterBusinessHours: filteredSlots.length,
+          afterTimeWindowFilter: filteredSlotsAfterTimeWindow.length,
+          afterTherapistRestrictions: finalSlots.length,
+          minimumBookingTime: minimumBookingTime.toLocaleString(),
+          maximumBookingTime: maximumBookingTime.toLocaleString(),
+          therapistCategory,
+          finalCount: finalSlots.length,
+          dataSource: 'daily-api-cache',
+          rawApiSlots: apiResponse?.available_slots || 'none'
+        });
+      }
+
       return finalSlots.length;
     }
 
@@ -1404,6 +1366,23 @@ export default function MatchedTherapist({
         availableSessions = availableSessions.filter(session => {
           const sessionTime = new Date(session.start);
           return sessionTime.getMinutes() === 0; // Only hourly slots
+        });
+      }
+      
+      // 🐛 DEBUG: Add detailed logging for September 21st
+      if (dayNum === 21) {
+        console.log(`🔍 [CALENDAR DEBUG - FALLBACK] Sept 21st getDayAvailableCount:`, {
+          dayNum,
+          isSameMonth,
+          hasAvailabilityData: !!availability?.days,
+          hasBookableSessions: payload.has_bookable_sessions,
+          rawSessions: sessions.length,
+          afterTimeWindowFilter: availableSessions.length,
+          minimumBookingTime: minimumBookingTime.toLocaleString(),
+          maximumBookingTime: normalizedMaxBookingTime.toLocaleString(),
+          therapistCategory,
+          finalCount: availableSessions.length,
+          dataSource: 'monthly-fallback'
         });
       }
 
@@ -1469,6 +1448,7 @@ export default function MatchedTherapist({
       
       // Check if selected date is in a different month than current calendar view
       if (selectedMonth !== currentMonth || selectedYear !== currentYear) {
+        console.log(`[Calendar Validation] Selected date ${selectedDateObj.toDateString()} is not in current month (${currentYear}-${currentMonth + 1}), clearing selection`);
         setSelectedDateObj(null);
         return;
       }
@@ -1479,6 +1459,7 @@ export default function MatchedTherapist({
       const isNotFuture = selectedDateObj <= today;
       
       if (isNotFuture || availableCount === 0) {
+        console.log(`[Calendar Validation] Selected date ${selectedDateObj.toDateString()} is not available (future: ${!isNotFuture}, slots: ${availableCount}), clearing selection`);
         setSelectedDateObj(null);
       }
     }
@@ -1505,10 +1486,33 @@ export default function MatchedTherapist({
         timezone,
         selectedDateObj
       );
+
+      console.log(`[API Direct + Timezone] 🎯 Converting EST times to ${timezoneDisplay} for ${selectedDateStr}:`, {
+        apiKey,
+        estSlots: apiResponse.available_slots,
+        userTimezone: timezone,
+        timezoneDisplay: timezoneDisplay,
+        convertedSlots: timeSlotMappings.map(slot => ({
+          est: slot.originalEST,
+          display: slot.displayTime,
+          withTZ: formatTimeWithTimezone(slot)
+        }))
+      });
     }
 
 
-
+    // Extensive logging for debugging
+    console.log(`[Calendar Debug] ${therapist?.intern_name} - ${selectedDateObj.toDateString()}:`, {
+      dataSource,
+      slotMappingsCount: timeSlotMappings.length,
+      timeSlotMappings: timeSlotMappings.map(slot => ({
+        est: slot.originalEST,
+        display: slot.displayTime,
+        timezone: slot.timezoneDisplay
+      })),
+      timezone: `${timezoneDisplay} (${timezone})`,
+      therapistEmail: emailForSlots
+    });
 
     // Filter for business hours (7 AM - 10 PM EST) - use originalEST time for filtering
     let filteredSlots = timeSlotMappings.filter(slot => {
@@ -1783,7 +1787,7 @@ export default function MatchedTherapist({
                                   therapist_id: therapist?.id,
                                   therapist_name: therapist?.intern_name,
                                   has_video: hasValidVideo
-                                }).catch(console.error);
+                                }).catch(() => {});
                               }
                             }}
                             className="w-full h-24 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors overflow-hidden shadow-[1px_1px_0_#5C3106] relative"
@@ -1921,7 +1925,7 @@ export default function MatchedTherapist({
                                         therapist_name: therapist?.intern_name,
                                         total_specialties: nonMatched.length,
                                         matched_specialties: matchedSpecialties.length
-                                      }).catch(console.error);
+                                      }).catch(() => {});
                                     }
                                   }}
                                   className="px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] bg-white border-gray-300 text-blue-700"
@@ -1942,7 +1946,7 @@ export default function MatchedTherapist({
                                         therapist_name: therapist?.intern_name,
                                         total_specialties: nonMatched.length,
                                         matched_specialties: matchedSpecialties.length
-                                      }).catch(console.error);
+                                      }).catch(() => {});
                                     }
                                   }}
                                   className="px-3 py-1 rounded-full text-xs border shadow-[1px_1px_0_#5C3106] bg-white border-gray-300 text-blue-700"
@@ -2222,7 +2226,7 @@ export default function MatchedTherapist({
                                       available_slots: getDayAvailableCount(cell.date),
                                       therapist_id: therapist?.id,
                                       therapist_name: therapist?.intern_name
-                                    }).catch(console.error);
+                                    }).catch(() => {});
                                   }
                                 }
                               }}
@@ -2295,7 +2299,7 @@ export default function MatchedTherapist({
                                   source: 'dynamic_availability',
                                   timezone: timezoneDisplay,
                                   user_timezone: timeSlot.userTimezone
-                                }).catch(console.error);
+                                }).catch(() => {});
                               }
                             }}
                             className={`p-3 rounded-full border transition-all shadow-[1px_1px_0_#5C3106] ${
@@ -2419,7 +2423,7 @@ export default function MatchedTherapist({
               method: 'backdrop_click',
               therapist_id: therapist?.id,
               therapist_name: therapist?.intern_name
-            }).catch(console.error);
+            }).catch(() => {});
           }
         }}>
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-auto overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -2437,7 +2441,7 @@ export default function MatchedTherapist({
                         method: 'close_button',
                         therapist_id: therapist?.id,
                         therapist_name: therapist?.intern_name
-                      }).catch(console.error);
+                      }).catch(() => {});
                     }
                   }}
                   className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full transition-colors"
