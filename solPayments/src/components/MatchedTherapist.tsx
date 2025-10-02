@@ -283,8 +283,19 @@ export default function MatchedTherapist({
         }).then(async (response) => {
           if (response.ok) {
             const data = await response.json();
-          
             
+            // Debug: Log the API response
+            console.log(`[API Debug] 📥 API Response for day ${day}:`, {
+              requestedDate: queryDate.toISOString().split('T')[0],
+              responseData: data,
+              availableSlots: data.available_slots,
+              responseDateFromAPI: data.date,
+              dayOfWeek: data.day_of_week,
+              timezone: data.timezone,
+              totalSlots: data.total_slots
+            });
+            
+            // Store the raw API response directly - fuck the transformation layer
             const apiKey = `${email}:${data.date}`;
             setApiResponseCache(prev => ({
               ...prev,
@@ -628,7 +639,11 @@ export default function MatchedTherapist({
   
   const handleBookSession = async () => {
     // DEBUG: Log the current state of all booking requirements
-
+    console.log('🔍 BOOKING DEBUG - Checking requirements:');
+    console.log('selectedTimeSlot:', selectedTimeSlot);
+    console.log('selectedDateObj:', selectedDateObj);
+    console.log('clientData?.response_id:', clientData?.response_id);
+    console.log('Button should be disabled?', !selectedTimeSlot || !selectedDateObj);
     
     if (!selectedTimeSlot || !selectedDateObj || !clientData?.response_id) {
       console.warn('❌ BOOKING BLOCKED - Missing required data:', {
@@ -655,6 +670,64 @@ export default function MatchedTherapist({
       });
       return;
     }
+    
+    // ========================================
+    // COMPREHENSIVE BOOKING DATA LOGGING
+    // ========================================
+    
+    console.log('🚀 BOOKING SESSION - COMPREHENSIVE DATA DUMP');
+    console.log('==========================================');
+    
+    // ALL CLIENT DATA
+    console.log('📋 ALL CLIENT DATA:');
+    console.log(JSON.stringify(clientData, null, 2));
+    
+    // ALL ASSOCIATED THERAPIST DATA (the selected therapist)
+    console.log('👩‍⚕️ ALL ASSOCIATED THERAPIST DATA:');
+    console.log(JSON.stringify(currentTherapistData, null, 2));
+    
+    // RESPONSE_ID
+    console.log('🆔 RESPONSE_ID:');
+    console.log(JSON.stringify({ response_id: clientData?.response_id }, null, 2));
+    
+    // TIMEZONE CONVERSION DATA
+    console.log('🌐 TIMEZONE CONVERSION:');
+    console.log(`User sees: "${selectedTimeSlotMapping.displayTime}" (${selectedTimeSlotMapping.timezoneDisplay})`);
+    console.log(`Backend gets: "${selectedTimeSlotMapping.originalEST}" EST`);
+    console.log(`User timezone: ${selectedTimeSlotMapping.userTimezone}`);
+
+    // ADDITIONAL BOOKING CONTEXT
+    console.log('📅 BOOKING CONTEXT:');
+    const bookingContext = {
+      selectedTimeSlotMapping: selectedTimeSlotMapping,
+      selectedDate: selectedDateObj?.toISOString(),
+      selectedDateLocal: selectedDateObj?.toDateString(),
+      paymentType: getSelectedPaymentType(),
+      timezone: timezone,
+      timezoneDisplay: timezoneDisplay,
+      sessionDuration: getSessionDuration(),
+      therapistCategory: getTherapistCategory(therapist)
+    };
+    console.log(JSON.stringify(bookingContext, null, 2));
+    
+    // ========================================
+    // JOURNEY TRACKING - SEND TO GOOGLE SHEETS
+    // ========================================
+    
+    try {
+      // Track comprehensive booking context
+      await journeyTracker.trackBookingStarted(
+        clientData,
+        currentTherapistData,
+        bookingContext
+      );
+      console.log('✅ Journey tracking: Booking context sent to Google Sheets');
+    } catch (error) {
+      console.error('❌ Journey tracking failed:', error);
+      // Don't block the booking flow if tracking fails
+    }
+    
+    console.log('==========================================');
 
     const yyyy = selectedDateObj.getFullYear();
     const mm = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
@@ -1294,13 +1367,9 @@ export default function MatchedTherapist({
     const dateMonth = date.getMonth();
     const isSameMonth = (dateYear === currentYear && dateMonth === currentMonth);
 
-    // FIXED: 24-hour minimum lead time check - tomorrow is the minimum booking time
+    // FIXED: True 24-hour minimum lead time (24 hours from current time)
     const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0); // Start of tomorrow
-
-    const minimumBookingTime = tomorrow; // FIXED: Tomorrow is the minimum booking time
+    const minimumBookingTime = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
     const dateEndOfDay = new Date(date);
     dateEndOfDay.setHours(23, 59, 59, 999); // End of the selected day
 
@@ -1347,6 +1416,26 @@ export default function MatchedTherapist({
 
       if (therapistCategory === 'Associate Therapist') {
         finalSlots = finalSlots.filter((slot: Date) => slot.getMinutes() === 0);
+      }
+
+      // 🐛 DEBUG: Add detailed logging for September 15th and 21st
+      if (dayNum === 15 || dayNum === 21) {
+        console.log(`🔍 [CALENDAR DEBUG - PRIMARY] Sept ${dayNum}th getDayAvailableCount:`, {
+          dayNum,
+          selectedDateStr,
+          apiKey,
+          hasApiResponse: !!apiResponse,
+          rawSlotsFromAPI: rawSlots.length,
+          afterBusinessHours: filteredSlots.length,
+          afterTimeWindowFilter: filteredSlotsAfterTimeWindow.length,
+          afterTherapistRestrictions: finalSlots.length,
+          minimumBookingTime: minimumBookingTime.toLocaleString(),
+          maximumBookingTime: maximumBookingTime.toLocaleString(),
+          therapistCategory,
+          finalCount: finalSlots.length,
+          dataSource: 'daily-api-cache',
+          rawApiSlots: apiResponse?.available_slots || 'none'
+        });
       }
 
       return finalSlots.length;
@@ -1404,6 +1493,23 @@ export default function MatchedTherapist({
         availableSessions = availableSessions.filter(session => {
           const sessionTime = new Date(session.start);
           return sessionTime.getMinutes() === 0; // Only hourly slots
+        });
+      }
+      
+      // 🐛 DEBUG: Add detailed logging for September 21st
+      if (dayNum === 21) {
+        console.log(`🔍 [CALENDAR DEBUG - FALLBACK] Sept 21st getDayAvailableCount:`, {
+          dayNum,
+          isSameMonth,
+          hasAvailabilityData: !!availability?.days,
+          hasBookableSessions: payload.has_bookable_sessions,
+          rawSessions: sessions.length,
+          afterTimeWindowFilter: availableSessions.length,
+          minimumBookingTime: minimumBookingTime.toLocaleString(),
+          maximumBookingTime: normalizedMaxBookingTime.toLocaleString(),
+          therapistCategory,
+          finalCount: availableSessions.length,
+          dataSource: 'monthly-fallback'
         });
       }
 
@@ -1469,6 +1575,7 @@ export default function MatchedTherapist({
       
       // Check if selected date is in a different month than current calendar view
       if (selectedMonth !== currentMonth || selectedYear !== currentYear) {
+        console.log(`[Calendar Validation] Selected date ${selectedDateObj.toDateString()} is not in current month (${currentYear}-${currentMonth + 1}), clearing selection`);
         setSelectedDateObj(null);
         return;
       }
@@ -1479,6 +1586,7 @@ export default function MatchedTherapist({
       const isNotFuture = selectedDateObj <= today;
       
       if (isNotFuture || availableCount === 0) {
+        console.log(`[Calendar Validation] Selected date ${selectedDateObj.toDateString()} is not available (future: ${!isNotFuture}, slots: ${availableCount}), clearing selection`);
         setSelectedDateObj(null);
       }
     }
@@ -1505,10 +1613,33 @@ export default function MatchedTherapist({
         timezone,
         selectedDateObj
       );
+
+      console.log(`[API Direct + Timezone] 🎯 Converting EST times to ${timezoneDisplay} for ${selectedDateStr}:`, {
+        apiKey,
+        estSlots: apiResponse.available_slots,
+        userTimezone: timezone,
+        timezoneDisplay: timezoneDisplay,
+        convertedSlots: timeSlotMappings.map(slot => ({
+          est: slot.originalEST,
+          display: slot.displayTime,
+          withTZ: formatTimeWithTimezone(slot)
+        }))
+      });
     }
 
 
-
+    // Extensive logging for debugging
+    console.log(`[Calendar Debug] ${therapist?.intern_name} - ${selectedDateObj.toDateString()}:`, {
+      dataSource,
+      slotMappingsCount: timeSlotMappings.length,
+      timeSlotMappings: timeSlotMappings.map(slot => ({
+        est: slot.originalEST,
+        display: slot.displayTime,
+        timezone: slot.timezoneDisplay
+      })),
+      timezone: `${timezoneDisplay} (${timezone})`,
+      therapistEmail: emailForSlots
+    });
 
     // Filter for business hours (7 AM - 10 PM EST) - use originalEST time for filtering
     let filteredSlots = timeSlotMappings.filter(slot => {
@@ -1518,12 +1649,7 @@ export default function MatchedTherapist({
 
     // 🔧 FIXED: 24-HOUR MINIMUM LEAD TIME & 15-DAY ADVANCE LIMIT: Only show slots within booking window
     const now = new Date();
-    // FIXED: Normalize to tomorrow at start of day for minimum (not day after tomorrow)
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-
-    const minimumBookingTime = tomorrow; // FIXED: Tomorrow is the minimum booking time
+    const minimumBookingTime = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // True 24 hours from now
 
     // Normalize to 15 days from today at end of day for maximum
     const maximumBookingTime = new Date(now);
