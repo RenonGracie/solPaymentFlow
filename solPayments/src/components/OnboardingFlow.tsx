@@ -300,8 +300,8 @@ export default function OnboardingFlow({
   const [verificationResponse, setVerificationResponse] = useState<VerificationResponse | null>(null);
   const [verificationStep, setVerificationStep] = useState<'form' | 'verifying' | 'success' | 'failed'>('form');
   
-  // NJ insurance plan verification
-  const [njInsurancePlan, setNjInsurancePlan] = useState<'yes' | 'no' | null>(null);
+  // Insurance plan verification (NJ or NY)
+  const [insurancePlan, setInsurancePlan] = useState<'nj' | 'ny' | 'no' | null>(null);
 
   // Use dynamic state availability based on payment type and accepting therapists
   const { availableStates, stateCounts, isLoading: statesLoading } = useAvailableStates('cash_pay');
@@ -1630,12 +1630,12 @@ export default function OnboardingFlow({
                       : 'rounded-2xl'
                   }`}
                   style={{
-                    padding: expandedCard === 'insurance' ? '16px 20px 12px 20px' : '16px 20px'
+                    padding: expandedCard === 'insurance' ? '16wpx 20px 12px 20px' : '16px 20px'
                   }}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-base md:text-lg font-semibold text-gray-800" style={{ fontFamily: 'var(--font-inter)' }}>
-                      Use My Insurance (NJ Only)
+                      Use My Insurance (NJ & NY)
                     </h3>
                     <span className="text-xs md:text-sm text-gray-600 font-medium flex items-center transition-transform" 
                           style={{ fontFamily: 'var(--font-inter)' }}>
@@ -2012,7 +2012,7 @@ export default function OnboardingFlow({
           <button onClick={() => {
             // Go back to payment selection and clear any payment-related state
             setCurrentStep(4);
-            setNjInsurancePlan(null);
+            setInsurancePlan(null);
             setSelectedProvider('');
             setVerificationResponse(null);
             setVerificationStep('form');
@@ -2043,9 +2043,9 @@ export default function OnboardingFlow({
         <div className="flex-1 flex items-center justify-center px-4 md:px-6 py-4">
           <div className="w-full max-w-md mx-auto">
             <div className="text-center mb-5">
-              <h1 className="text-xl sm:text-2xl md:text-3xl mb-2 text-gray-800" 
+              <h1 className="text-xl sm:text-2xl md:text-3xl mb-2 text-gray-800"
                   style={{ fontFamily: 'var(--font-very-vogue), Georgia, serif', lineHeight: '1.1' }}>
-                Is Your Health Plan From New Jersey?
+                Is Your Health Plan From New Jersey or New York?
               </h1>
             </div>
 
@@ -2053,33 +2053,69 @@ export default function OnboardingFlow({
             <div className="space-y-3 mb-6">
               {/* Yes, NJ Plan */}
               <button
-                onClick={() => setNjInsurancePlan('yes')}
+                onClick={() => setInsurancePlan('nj')}
                 className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
-                  njInsurancePlan === 'yes'
-                    ? 'border-[#5C3106] text-white shadow-lg' 
+                  insurancePlan === 'nj'
+                    ? 'border-[#5C3106] text-white shadow-lg'
                     : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
                 }`}
                 style={{
-                  backgroundColor: njInsurancePlan === 'yes' ? '#5C3106' : 'white'
+                  backgroundColor: insurancePlan === 'nj' ? '#5C3106' : 'white'
                 }}
               >
-                <div className={`w-8 h-8 flex items-center justify-center ${njInsurancePlan === 'yes' ? '' : 'opacity-60'}`}>
-                  <img 
+                <div className={`w-8 h-8 flex items-center justify-center ${insurancePlan === 'nj' ? '' : 'opacity-60'}`}>
+                  <img
                     src="/state-icons/nj.svg"
                     alt="New Jersey"
                     className="w-6 h-6"
                     style={{
-                      filter: njInsurancePlan === 'yes' ? 'brightness(0) invert(1)' : 'none'
+                      filter: insurancePlan === 'nj' ? 'brightness(0) invert(1)' : 'none'
                     }}
                   />
                 </div>
-                
-                <span className={`text-base font-medium flex-1 text-center ${njInsurancePlan === 'yes' ? 'text-white' : 'text-gray-800'}`}>
+
+                <span className={`text-base font-medium flex-1 text-center ${insurancePlan === 'nj' ? 'text-white' : 'text-gray-800'}`}>
                   Yes, I have a New Jersey plan
                 </span>
-                
+
                 <div className="w-8 h-8 flex items-center justify-center">
-                  {njInsurancePlan === 'yes' && (
+                  {insurancePlan === 'nj' && (
+                    <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
+                      <Check className="w-4 h-4" style={{ color: '#5C3106' }} />
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {/* Yes, NY Plan */}
+              <button
+                onClick={() => setInsurancePlan('ny')}
+                className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
+                  insurancePlan === 'ny'
+                    ? 'border-[#5C3106] text-white shadow-lg'
+                    : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                }`}
+                style={{
+                  backgroundColor: insurancePlan === 'ny' ? '#5C3106' : 'white'
+                }}
+              >
+                <div className={`w-8 h-8 flex items-center justify-center ${insurancePlan === 'ny' ? '' : 'opacity-60'}`}>
+                  <img
+                    src="/state-icons/ny.svg"
+                    alt="New York"
+                    className="w-6 h-6"
+                    style={{
+                      filter: insurancePlan === 'ny' ? 'brightness(0) invert(1)' : 'none'
+                    }}
+                  />
+                </div>
+
+                <span className={`text-base font-medium flex-1 text-center ${insurancePlan === 'ny' ? 'text-white' : 'text-gray-800'}`}>
+                  Yes, I have a New York plan
+                </span>
+
+                <div className="w-8 h-8 flex items-center justify-center">
+                  {insurancePlan === 'ny' && (
                     <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
                       <Check className="w-4 h-4" style={{ color: '#5C3106' }} />
                     </div>
@@ -2089,24 +2125,24 @@ export default function OnboardingFlow({
 
               {/* No, Different State */}
               <button
-                onClick={() => setNjInsurancePlan('no')}
+                onClick={() => setInsurancePlan('no')}
                 className={`w-full py-4 px-4 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between transform hover:scale-[1.01] ${
-                  njInsurancePlan === 'no'
-                    ? 'border-[#5C3106] text-white shadow-lg' 
+                  insurancePlan === 'no'
+                    ? 'border-[#5C3106] text-white shadow-lg'
                     : 'bg-white border-gray-300 hover:border-gray-400 hover:shadow-sm'
                 }`}
                 style={{
-                  backgroundColor: njInsurancePlan === 'no' ? '#5C3106' : 'white'
+                  backgroundColor: insurancePlan === 'no' ? '#5C3106' : 'white'
                 }}
               >
                 <div className="w-8 h-8"></div>
-                
-                <span className={`text-base font-medium flex-1 text-center ${njInsurancePlan === 'no' ? 'text-white' : 'text-gray-800'}`}>
+
+                <span className={`text-base font-medium flex-1 text-center ${insurancePlan === 'no' ? 'text-white' : 'text-gray-800'}`}>
                   No, my plan is in a different state
                 </span>
-                
+
                 <div className="w-8 h-8 flex items-center justify-center">
-                  {njInsurancePlan === 'no' && (
+                  {insurancePlan === 'no' && (
                     <div className="bg-white rounded-full p-1 animate-in zoom-in-50 duration-300">
                       <Check className="w-4 h-4" style={{ color: '#5C3106' }} />
                     </div>
@@ -2116,7 +2152,7 @@ export default function OnboardingFlow({
             </div>
 
             {/* Show options based on selection */}
-            {njInsurancePlan === 'yes' && (
+            {insurancePlan === 'nj' && (
               <Button
                 onClick={() => {
                   // Set state to NJ and go to insurance form
@@ -2131,14 +2167,43 @@ export default function OnboardingFlow({
               </Button>
             )}
 
-            {njInsurancePlan === 'no' && (
+            {insurancePlan === 'ny' && (
+              <Button
+                onClick={() => {
+                  // Build Typeform URL with UTM parameters
+                  const typeformUrl = new URL('https://solhealth.typeform.com/to/m4y26Eob');
+
+                  // Add UTM parameters
+                  typeformUrl.searchParams.set('utm_source', 'onboarding');
+                  typeformUrl.searchParams.set('utm_medium', 'web');
+                  typeformUrl.searchParams.set('utm_content', 'insurance_selection');
+                  typeformUrl.searchParams.set('utm_term', 'ny_plan');
+                  typeformUrl.searchParams.set('utm_campaign', 'insurance_onboarding');
+                  typeformUrl.searchParams.set('utm_adgroup', '');
+                  typeformUrl.searchParams.set('utm_adid', '');
+
+                  // Add client_id and session_id
+                  typeformUrl.hash = `client_id=${formData.email || 'unknown'}&session_id=${Date.now()}`;
+
+                  // Open in new tab
+                  window.open(typeformUrl.toString(), '_blank');
+                }}
+                className="w-full py-3 px-6 rounded-full text-base font-medium transition-colors duration-200 bg-blue-100 text-gray-800 hover:bg-blue-200"
+                style={{ fontFamily: 'var(--font-inter)' }}
+              >
+                Continue to NY Insurance Form
+                <ChevronRight className="inline w-4 h-4 ml-2" />
+              </Button>
+            )}
+
+            {insurancePlan === 'no' && (
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-6 space-y-4">
                 <div className="text-center px-2">
                   <p className="text-sm text-gray-600 mb-2 leading-relaxed">
-                    We're currently only accepting NJ insurance plans, but we're expanding quickly to other states.
+                    We're currently only accepting NJ and NY insurance plans, but we're expanding quickly to other states.
                   </p>
                   <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                    We offer care for $30/session out-of-pocket where you'll be matched to an intern-therapist.
+                    We offer care for $30/session out-of-pocket where you'll be matched to a graduate therapist.
                   </p>
                 </div>
                 
