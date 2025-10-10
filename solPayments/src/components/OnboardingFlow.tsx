@@ -2171,7 +2171,7 @@ export default function OnboardingFlow({
               <Button
                 onClick={() => {
                   // Build Typeform URL with UTM parameters
-                  const typeformUrl = new URL('https://solhealth.typeform.com/to/m4y26Eob');
+                  const typeformUrl = new URL('https://www.solhealth.co/use-my-insurance-new-york');
 
                   // Add UTM parameters
                   typeformUrl.searchParams.set('utm_source', 'onboarding');
